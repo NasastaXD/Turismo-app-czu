@@ -52,21 +52,45 @@ fun Foto(
     }
 }
 
-/** Foto con velo encima, para cuando lleva texto blanco arriba. */
+/**
+ * Foto con velo encima, para cuando lleva texto blanco arriba.
+ *
+ * `colorSinFoto` cubre el caso de un tile sin imagen: en vez de un gris muerto
+ * queda el color de su categoria, oscurecido para que el texto blanco siga
+ * leyendose. Un hueco con identidad es mejor que un hueco.
+ */
 @Composable
 fun FotoConVelo(
     imagen: Imagen?,
     descripcion: String,
     modifier: Modifier = Modifier,
+    colorSinFoto: String? = null,
 ) {
     Box(modifier) {
-        Foto(imagen, descripcion, Modifier.fillMaxSize())
+        if (imagen == null && !colorSinFoto.isNullOrBlank()) {
+            Box(Modifier.fillMaxSize().background(colorDeTexto(colorSinFoto, Tono.tintaSuave)))
+        } else {
+            Foto(imagen, descripcion, Modifier.fillMaxSize())
+        }
         Box(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(listOf(Tono.velo, Tono.velo.copy(alpha = 0.55f))),
             ),
         )
     }
+}
+
+/**
+ * Interpreta un color que llega del servidor como texto.
+ *
+ * Si viene mal escrito no se cae: se usa el de respaldo. Un color invalido en
+ * una categoria no puede tumbar la pantalla entera.
+ */
+fun colorDeTexto(hex: String?, respaldo: Color): Color {
+    val limpio = hex?.trim()?.removePrefix("#") ?: return respaldo
+    if (limpio.length != 6 && limpio.length != 8) return respaldo
+    val valor = limpio.toLongOrNull(16) ?: return respaldo
+    return if (limpio.length == 6) Color(valor or 0xFF000000L) else Color(valor)
 }
 
 /** Control primario: pildora negra, radio completo. */

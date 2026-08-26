@@ -16,9 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -49,45 +49,19 @@ fun Principal(
     alVerArticulo: (Int) -> Unit,
     alVerRecorrido: (Int) -> Unit,
     alVerInventario: () -> Unit,
+    alVerArticulos: () -> Unit,
+    alVerRecorridos: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val (inventario, _) = cargar { Datos.api.inventario(porPagina = 12) }
+    val (eventos, _) = cargar { Datos.api.eventos() }
     val (articulos, _) = cargar { Datos.api.articulos() }
     val (recorridos, _) = cargar { Datos.api.recorridos() }
-    val (eventos, _) = cargar { Datos.api.eventos() }
-    val (inventario, _) = cargar { Datos.api.inventario(porPagina = 12) }
 
     LazyColumn(modifier.fillMaxSize().background(Tono.papel)) {
 
         item {
-            Banda(Tono.papel, Textos.t("nav.articulos")) { ancho ->
-                Carrusel(articulos.value) { articulo ->
-                    TarjetaCarrusel(
-                        ancho = ancho,
-                        imagen = articulo.portada,
-                        encima = fechaCorta(articulo.publicado),
-                        titulo = articulo.titulo,
-                        alTocar = { alVerArticulo(articulo.id) },
-                    )
-                }
-            }
-        }
-
-        item {
-            Banda(Tono.banda, Textos.t("nav.recorridos")) { ancho ->
-                Carrusel(recorridos.value) { recorrido ->
-                    TarjetaCarrusel(
-                        ancho = ancho,
-                        imagen = recorrido.portada,
-                        encima = recorrido.duracionEstimada,
-                        titulo = recorrido.titulo,
-                        alTocar = { alVerRecorrido(recorrido.id) },
-                    )
-                }
-            }
-        }
-
-        item {
-            Banda(Tono.papel, Textos.t("nav.inventario")) { ancho ->
+            Banda(Tono.papel, Textos.t("nav.inventario"), alVerInventario) { ancho ->
                 Carrusel(inventario.value) { item ->
                     TarjetaCarrusel(
                         ancho = ancho,
@@ -101,7 +75,7 @@ fun Principal(
         }
 
         item {
-            Banda(Tono.banda, Textos.t("principal.eventos")) { ancho ->
+            Banda(Tono.banda, Textos.t("principal.eventos"), alVerInventario) { ancho ->
                 Carrusel(eventos.value) { evento ->
                     TarjetaCarrusel(
                         ancho = ancho,
@@ -113,17 +87,49 @@ fun Principal(
                 }
             }
         }
+
+        item {
+            Banda(Tono.papel, Textos.t("nav.articulos"), alVerArticulos) { ancho ->
+                Carrusel(articulos.value) { articulo ->
+                    TarjetaCarrusel(
+                        ancho = ancho,
+                        imagen = articulo.portada,
+                        encima = fechaCorta(articulo.publicado),
+                        titulo = articulo.titulo,
+                        alTocar = { alVerArticulo(articulo.id) },
+                    )
+                }
+            }
+        }
+
+        item {
+            Banda(Tono.banda, Textos.t("nav.recorridos"), alVerRecorridos) { ancho ->
+                Carrusel(recorridos.value) { recorrido ->
+                    TarjetaCarrusel(
+                        ancho = ancho,
+                        imagen = recorrido.portada,
+                        encima = recorrido.duracionEstimada,
+                        titulo = recorrido.titulo,
+                        alTocar = { alVerRecorrido(recorrido.id) },
+                    )
+                }
+            }
+        }
     }
 }
 
 /**
- * Unidad estructural de la pantalla. Titulo y contenido, nada intermedio: el
- * sistema no lleva descripcion bajo el titulo de seccion.
+ * Unidad estructural de la pantalla.
+ *
+ * Titulo y "ver todo" comparten linea base en extremos opuestos, y despues el
+ * contenido. Nada intermedio: el sistema no lleva descripcion bajo el titulo de
+ * seccion. "Ver todo" es texto plano — ni boton ni chevron.
  */
 @Composable
 private fun Banda(
     fondo: Color,
     titulo: String,
+    alVerTodo: () -> Unit,
     contenido: @Composable (Dp) -> Unit,
 ) {
     BoxWithConstraints(
@@ -136,12 +142,29 @@ private fun Banda(
         val anchoTarjeta = maxWidth * Medida.FRACCION_TARJETA
 
         Column {
-            Texto(
-                texto = titulo,
-                estilo = Letra.tituloSeccion,
-                color = Tono.tinta,
-                modifier = Modifier.padding(horizontal = Medida.margen),
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Medida.margen),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Texto(
+                    texto = titulo,
+                    estilo = Letra.tituloSeccion,
+                    color = Tono.tinta,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Texto(
+                    texto = Textos.t("banda.verTodo"),
+                    estilo = Letra.verTodo,
+                    color = Tono.tinta,
+                    maxLineas = 1,
+                    modifier = Modifier
+                        .clickable(onClick = alVerTodo)
+                        .padding(start = 12.dp),
+                )
+            }
             Box(Modifier.height(Medida.tituloACarrusel))
             contenido(anchoTarjeta)
         }
@@ -159,6 +182,7 @@ private fun <T> Carrusel(estado: Estado<Pagina<T>>, tarjeta: @Composable (T) -> 
     if (elementos.isEmpty()) return
 
     LazyRow(
+        // Solo margen a la izquierda: el carrusel sangra hasta el borde derecho.
         contentPadding = PaddingValues(start = Medida.margen),
         horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
     ) {
@@ -166,6 +190,14 @@ private fun <T> Carrusel(estado: Estado<Pagina<T>>, tarjeta: @Composable (T) -> 
     }
 }
 
+/**
+ * Tarjeta de carrusel.
+ *
+ * Foto cuadrada a sangre dentro de la tarjeta y, debajo, el bloque de texto
+ * sobre gris: fecha en acento y titulo en negrita. El bloque tiene altura fija
+ * aunque el titulo sea corto — asi todas las tarjetas de una fila terminan a la
+ * misma altura, que es de donde sale el orden de la pantalla.
+ */
 @Composable
 private fun TarjetaCarrusel(
     ancho: Dp,
@@ -177,21 +209,24 @@ private fun TarjetaCarrusel(
     Column(
         modifier = Modifier
             .width(ancho)
-            .clickable(onClick = alTocar)
-            .background(Tono.superficie),
+            .clickable(onClick = alTocar),
     ) {
         Foto(imagen, titulo, Modifier.fillMaxWidth().aspectRatio(1f))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(112.dp)
+                .height(ALTO_BLOQUE)
+                .background(Tono.superficie)
                 .padding(Medida.dentroTarjeta),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (!encima.isNullOrBlank()) {
                 Texto(encima, Letra.fecha, Tono.acento, maxLineas = 1)
             }
-            Texto(titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
+            Texto(titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 3)
         }
     }
 }
+
+/** Cabe la fecha y tres lineas de titulo con el aire de abajo del sistema. */
+private val ALTO_BLOQUE = 140.dp

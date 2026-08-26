@@ -59,6 +59,8 @@ fun Aplicacion() {
                             navegador.recorridos.abrir(id)
                         },
                         alVerInventario = { navegador.ir(Seccion.INVENTARIO) },
+                        alVerArticulos = { navegador.ir(Seccion.ARTICULOS) },
+                        alVerRecorridos = { navegador.ir(Seccion.RECORRIDOS) },
                     )
                     Seccion.INVENTARIO -> Inventario(navegador.inventario)
                     Seccion.ARTICULOS -> Articulos(navegador.articulos)

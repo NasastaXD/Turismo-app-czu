@@ -53,7 +53,16 @@ data class Categoria(
     val padre: Int? = null,
     val icono: String = "",
     val color: String = "",
+    /** PNG pre-renderizado del pin. Es para el mapa: no sirve de fondo. */
     val marker: String? = null,
+    /**
+     * Foto de fondo del tile de categoria.
+     *
+     * Todavia no existe en el contrato — esta pedida al panel. Mientras no
+     * llegue viene null y la pantalla cae a la foto del primer atractivo de la
+     * categoria, que es contenido real y no una imagen de archivo.
+     */
+    val portada: Imagen? = null,
     val total: Int = 0,
 )
 

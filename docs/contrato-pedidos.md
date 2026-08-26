@@ -147,6 +147,33 @@ Propuesta: agregar `portada` con la misma forma que en el inventario.
 
 ---
 
+## 6 bis. Las categorías necesitan una foto de fondo
+
+`GET /categorias` devuelve `icono`, `color` y `marker`. `marker` es el PNG del
+pin del mapa: sirve para un pin de 24 píxeles, no como fondo de un tile a
+pantalla completa.
+
+La pantalla de categorías del inventario son tiles de 16:10 con la foto a
+sangre y la etiqueta encima. Sin una foto propia, esos tiles no se pueden
+construir como están diseñados.
+
+Propuesta: agregar `portada` a cada categoría, con la misma forma que en el
+inventario.
+
+```json
+{
+  "id": 12, "slug": "paisaje-natural", "nombre": "…",
+  "icono": "nature", "color": "#2E7D32",
+  "marker": "…",
+  "portada": { "url": "…", "w": 1600, "h": 1000, "credito": "…", "alt": "" },
+  "total": 14
+}
+```
+
+Mientras no exista, la app cae a la foto del primer atractivo de esa categoría.
+Funciona, pero elige sola: cuál foto representa a una categoría es una decisión
+editorial, y debería tomarla el promotor.
+
 ## 7. El manifiesto de medios debería admitir animaciones
 
 Una restricción del proyecto es que el público no lee párrafos, y que donde haría falta
@@ -238,6 +265,7 @@ Si hay que ordenarlo por lo que bloquea antes:
 | `rango_precio` (§3) | El indicador y el filtro de precio |
 | `articulos_relacionados` (§4) | Una sección de la ficha |
 | `portada` en eventos (§6) | Las tarjetas de evento |
+| `portada` en categorías (§6 bis) | Los tiles de la pantalla de categorías |
 | `eliminados` en `/sync` (§8) | Nada todavía; rompe la caché más adelante |
 
 Mientras tanto la app se construye contra mocks con estos mismos payloads, así que
