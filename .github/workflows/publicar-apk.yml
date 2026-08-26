@@ -1,8 +1,9 @@
 # Compila el APK y lo publica como release descargable.
 #
-# Se dispara al empujar un tag `v*`. Se hace por tag y no por rama a proposito:
-# una release tiene que corresponder a un punto exacto del historial, no a
-# "lo que hubiera en la rama en ese momento".
+# Dos formas de dispararlo:
+#   - empujando un tag `v*`, que ata la release a un punto exacto del historial;
+#   - a mano desde Actions, indicando la version. En ese caso el tag lo crea la
+#     propia publicacion sobre el commit que se compilo.
 name: Publicar APK
 
 on:
@@ -10,6 +11,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version a publicar, sin la v (ej: 0.1.0)'
+        required: true
+        default: '0.1.0'
 
 permissions:
   contents: write
@@ -49,26 +55,40 @@ jobs:
       - name: Compilar release
         run: ./gradlew :app:assembleRelease --no-daemon
 
-      - name: Renombrar con la version
+      - name: Preparar los archivos a publicar
         id: preparar
+        env:
+          ENTRADA: ${{ github.event.inputs.version }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          # Por tag manda el tag; a mano, la version que se indico.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="v${ENTRADA}"
+          fi
+          VERSION="${TAG#v}"
+
           mkdir -p entrega
           cp app/build/outputs/apk/release/app-arm64-v8a-release.apk    "entrega/caaguazu-$VERSION-arm64.apk"
           cp app/build/outputs/apk/release/app-armeabi-v7a-release.apk  "entrega/caaguazu-$VERSION-armv7.apk"
           cp app/build/outputs/apk/release/app-universal-release.apk    "entrega/caaguazu-$VERSION-universal.apk"
-          # Sin el mapa de R8, un log de release es ilegible incluso para quien
-          # escribio el codigo. Va adjunto a cada publicacion.
+          # Sin el mapa de R8, un registro de error de release es ilegible
+          # incluso para quien escribio el codigo. Va adjunto a cada publicacion.
           cp app/build/outputs/mapping/release/mapping.txt "entrega/mapping-$VERSION.txt"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           ls -lh entrega
 
       - name: Publicar la release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.preparar.outputs.tag }}
           VERSION: ${{ steps.preparar.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
+          # --target ata el tag al commit compilado; si el tag ya existe, gh lo respeta.
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
             --title "Caaguazú $VERSION" \
             --notes-file .github/notas-release.md \
             --prerelease \
