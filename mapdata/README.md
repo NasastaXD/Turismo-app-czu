@@ -5,9 +5,13 @@ peticiones de red, no necesita API key ni cuenta de ningún servicio.
 
 ## Archivos
 
+El recorte del distrito es el que usa la app y vive directamente en sus assets, en
+`app/src/main/assets/map/caaguazu.pmtiles`, para no tener el mismo archivo dos veces
+en el repositorio. Aquí queda el del departamento, todavía sin usar.
+
 | Archivo | Cobertura | Área | Tamaño |
 |---|---|---|---|
-| `caaguazu-distrito.pmtiles` | Ciudad de Caaguazú y alrededores | ~942 km² | 2,0 MB |
+| _(en `app/src/main/assets/map/caaguazu.pmtiles`)_ | Ciudad de Caaguazú y alrededores | ~942 km² | 2,0 MB |
 | `caaguazu-departamento.pmtiles` | Departamento de Caaguazú completo | ~12.546 km² | 11 MB |
 
 Ambos cubren z0–z15. El renderizador vectorial sobre-amplía hasta z18-19 sin
@@ -26,8 +30,8 @@ go install github.com/protomaps/go-pmtiles@latest
 
 PLANET=https://build.protomaps.com/20260825.pmtiles
 
-# Distrito (caja de ~942 km² centrada en la ciudad)
-go-pmtiles extract $PLANET caaguazu-distrito.pmtiles \
+# Distrito (caja de ~942 km² centrada en la ciudad) — va a los assets de la app
+go-pmtiles extract $PLANET ../app/src/main/assets/map/caaguazu.pmtiles \
   --bbox=-56.1751,-25.6118,-55.8696,-25.3342 --maxzoom=15
 
 # Departamento (polígono real, relación OSM 389890)

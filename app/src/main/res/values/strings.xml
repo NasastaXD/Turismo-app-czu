@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unico texto del sistema: el nombre de la app. Todo el resto pasa por Textos. -->
+    <string name="app_name">Caaguazú</string>
+</resources>

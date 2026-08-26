@@ -1,0 +1,19 @@
+{
+  "app.nombre": "Caaguazú",
+
+  "nav.principal": "Principal",
+  "nav.inventario": "Inventario Turístico",
+  "nav.ia": "AI",
+  "nav.articulos": "Artículos Turísticos",
+  "nav.recorridos": "Recorridos",
+
+  "barra.buscar": "‹barra.buscar›",
+  "barra.perfil": "‹barra.perfil›",
+
+  "perfil.titulo": "‹perfil.titulo›",
+  "estado.pendiente": "‹estado.pendiente›",
+
+  "mapa.atribucion": "© OpenStreetMap",
+  "mapa.error.titulo": "‹mapa.error.titulo›",
+  "mapa.error.detalle": "‹mapa.error.detalle›"
+}
