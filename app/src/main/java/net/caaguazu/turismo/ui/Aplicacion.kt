@@ -9,8 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import net.caaguazu.turismo.core.Textos
+import net.caaguazu.turismo.ui.articulos.Articulos
 import net.caaguazu.turismo.ui.inventario.Inventario
+import net.caaguazu.turismo.ui.inventario.RutaInv
+import net.caaguazu.turismo.ui.recorridos.Recorridos
 import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
+import net.caaguazu.turismo.ui.principal.Principal
 import net.caaguazu.turismo.ui.perfil.PantallaPerfil
 import net.caaguazu.turismo.ui.piezas.BarraInferior
 import net.caaguazu.turismo.ui.piezas.BarraSuperior
@@ -45,10 +49,28 @@ fun Aplicacion() {
                 navegador.diagnosticoAbierto -> PantallaDiagnostico()
                 navegador.perfilAbierto -> PantallaPerfil(navegador::abrirDiagnostico)
                 else -> when (navegador.seccion) {
-                    Seccion.PRINCIPAL -> SeccionPendiente("nav.principal")
+                    Seccion.PRINCIPAL -> Principal(
+                        alVerArticulo = { id ->
+                            navegador.ir(Seccion.ARTICULOS)
+                            navegador.articulos.abrir(id)
+                        },
+                        alVerRecorrido = { id ->
+                            navegador.ir(Seccion.RECORRIDOS)
+                            navegador.recorridos.abrir(id)
+                        },
+                        alVerInventario = { navegador.ir(Seccion.INVENTARIO) },
+                    )
                     Seccion.INVENTARIO -> Inventario(navegador.inventario)
-                    Seccion.ARTICULOS -> SeccionPendiente("nav.articulos")
-                    Seccion.RECORRIDOS -> SeccionPendiente("nav.recorridos")
+                    Seccion.ARTICULOS -> Articulos(navegador.articulos)
+                    Seccion.RECORRIDOS -> Recorridos(
+                        pila = navegador.recorridos,
+                        alAbrirFicha = { id ->
+                            // Abrir una ficha desde un recorrido lleva al
+                            // inventario, que es donde vive esa pantalla.
+                            navegador.ir(Seccion.INVENTARIO)
+                            navegador.inventario.ir(RutaInv.Ficha(id))
+                        },
+                    )
                 }
             }
         }
@@ -60,7 +82,13 @@ fun Aplicacion() {
     }
 }
 
-private fun Navegador.enFicha(): Boolean =
-    !perfilAbierto && !diagnosticoAbierto &&
-        seccion == Seccion.INVENTARIO &&
-        inventario.actual is net.caaguazu.turismo.ui.inventario.RutaInv.Ficha
+/** Las pantallas que llevan su propia cabecera sobre la foto o el mapa. */
+private fun Navegador.enFicha(): Boolean {
+    if (perfilAbierto || diagnosticoAbierto) return false
+    return when (seccion) {
+        Seccion.INVENTARIO -> inventario.actual is RutaInv.Ficha
+        Seccion.ARTICULOS -> articulos.abierto != null
+        Seccion.RECORRIDOS -> recorridos.abierto != null
+        Seccion.PRINCIPAL -> false
+    }
+}

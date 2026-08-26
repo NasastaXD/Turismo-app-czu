@@ -52,5 +52,14 @@
   "diag.origen": "‹gn:diag.origen›",
   "diag.version": "‹gn:diag.version›",
   "ficha.quitar": "‹gn:ficha.quitar›",
-  "accion.volver": "‹gn:accion.volver›"
+  "accion.volver": "‹gn:accion.volver›",
+  "rec.prehechos": "‹gn:rec.prehechos›",
+  "rec.mio": "‹gn:rec.mio›",
+  "rec.vacio": "‹gn:rec.vacio›",
+  "rec.abrir": "‹gn:rec.abrir›",
+  "rec.quitar": "‹gn:rec.quitar›",
+  "rec.demasiadas": "‹gn:rec.demasiadas›",
+  "rec.noDisponible": "‹gn:rec.noDisponible›",
+  "principal.eventos": "‹gn:principal.eventos›",
+  "rec.paradas": "‹gn:rec.paradas›"
 }

@@ -52,5 +52,14 @@
   "diag.origen": "‹diag.origen›",
   "diag.version": "‹diag.version›",
   "ficha.quitar": "‹ficha.quitar›",
-  "accion.volver": "‹accion.volver›"
+  "accion.volver": "‹accion.volver›",
+  "rec.prehechos": "‹rec.prehechos›",
+  "rec.mio": "‹rec.mio›",
+  "rec.vacio": "‹rec.vacio›",
+  "rec.abrir": "‹rec.abrir›",
+  "rec.quitar": "‹rec.quitar›",
+  "rec.demasiadas": "‹rec.demasiadas›",
+  "rec.noDisponible": "‹rec.noDisponible›",
+  "principal.eventos": "‹principal.eventos›",
+  "rec.paradas": "‹rec.paradas›"
 }

@@ -5,7 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import net.caaguazu.turismo.ui.articulos.PilaArticulos
 import net.caaguazu.turismo.ui.inventario.PilaInventario
+import net.caaguazu.turismo.ui.recorridos.PilaRecorridos
 import net.caaguazu.turismo.ui.piezas.Icono
 
 /**
@@ -36,12 +38,19 @@ class Navegador {
 
     /** Cada seccion conserva donde estaba: cambiar de pestaña no reinicia nada. */
     val inventario = PilaInventario()
+    val articulos = PilaArticulos()
+    val recorridos = PilaRecorridos()
 
     fun ir(destino: Seccion) {
         if (seccion == destino) {
             // Tocar la pestaña activa vuelve a su raiz, que es lo que espera
             // quien se metio tres niveles y quiere salir.
-            if (destino == Seccion.INVENTARIO) inventario.raiz()
+            when (destino) {
+                Seccion.INVENTARIO -> inventario.raiz()
+                Seccion.ARTICULOS -> articulos.raiz()
+                Seccion.RECORRIDOS -> recorridos.raiz()
+                Seccion.PRINCIPAL -> Unit
+            }
             return
         }
         seccion = destino
@@ -55,6 +64,8 @@ class Navegador {
         diagnosticoAbierto -> { diagnosticoAbierto = false; true }
         perfilAbierto -> { perfilAbierto = false; true }
         seccion == Seccion.INVENTARIO && inventario.volver() -> true
+        seccion == Seccion.ARTICULOS && articulos.volver() -> true
+        seccion == Seccion.RECORRIDOS && recorridos.volver() -> true
         seccion != Seccion.PRINCIPAL -> { seccion = Seccion.PRINCIPAL; true }
         else -> false
     }

@@ -59,6 +59,14 @@ class SinRedaccionTest {
             "La comprobacion marco como falta un texto que si viene de Textos",
             buscarLiterales("""Texto(texto = Textos.t("nav.principal"), estilo = e)""").isEmpty(),
         )
+        assertTrue(
+            "Un valor interpolado desde los datos no es redaccion",
+            buscarLiterales("Texto(texto = \"\${item.total}\", estilo = e)").isEmpty(),
+        )
+        assertTrue(
+            "Una frase con un valor interpolado adentro si es redaccion",
+            buscarLiterales("Texto(texto = \"Quedan \${item.total} lugares\", estilo = e)").isNotEmpty(),
+        )
     }
 
     /**
@@ -71,11 +79,15 @@ class SinRedaccionTest {
             .replace(Regex("""/\*.*?\*/""", RegexOption.DOT_MATCHES_ALL), "")
             .replace(Regex("""//[^\n]*"""), "")
 
+        val soloInterpolacion = Regex("""\s*(\$\{[^}]*\}\s*)+""")
         val enParametro = Regex("""\b(texto|text|descripcion|contentDescription)\s*=\s*"([^"]{2,})"""")
         val posicional = Regex("""\b(Texto|BasicText|Text)\s*\(\s*"([^"]{2,})"""")
 
         return (enParametro.findAll(limpio) + posicional.findAll(limpio))
             .map { it.groupValues[2] }
+            // Un valor interpolado desde los datos no es redaccion: "${'$'}{item.total}"
+            // es un numero que viene del servidor, no una frase escrita a mano.
+            .filterNot { soloInterpolacion.matches(it) }
             .toList()
     }
 

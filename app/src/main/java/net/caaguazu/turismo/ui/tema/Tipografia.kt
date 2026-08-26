@@ -9,13 +9,24 @@ import net.caaguazu.turismo.R
 
 /**
  * Una sola familia en toda la app: sans geometrica de apertura ancha.
- * La unica excepcion prevista es el titular de articulo, que lleva serif.
+ *
+ * La unica excepcion es el articulo. Ahi la referencia es un diario, y el
+ * titular serif es parte de lo que hace que un articulo se lea como un
+ * articulo y no como una pantalla mas. La excepcion vale porque leer un texto
+ * largo es un contexto distinto de operar una interfaz.
  */
 val Sans = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_medium, FontWeight.Medium),
     Font(R.font.poppins_semibold, FontWeight.SemiBold),
     Font(R.font.poppins_bold, FontWeight.Bold),
+)
+
+/** Serif de lectura. Solo para articulos: titular, bajada y cuerpo. */
+val Serif = FontFamily(
+    Font(R.font.serif_regular, FontWeight.Normal),
+    Font(R.font.serif_semibold, FontWeight.SemiBold),
+    Font(R.font.serif_bold, FontWeight.Bold),
 )
 
 object Letra {
@@ -48,5 +59,24 @@ object Letra {
     val sobreFoto = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Bold,
         fontSize = 17.sp, lineHeight = 21.sp,
+    )
+
+    /* --- Articulo: el unico lugar con serif --- */
+
+    val titularArticulo = TextStyle(
+        fontFamily = Serif, fontWeight = FontWeight.Bold,
+        fontSize = 32.sp, lineHeight = 37.sp, letterSpacing = (-0.4).sp,
+    )
+    val bajadaArticulo = TextStyle(
+        fontFamily = Serif, fontWeight = FontWeight.Normal,
+        fontSize = 19.sp, lineHeight = 26.sp,
+    )
+    val cuerpoArticulo = TextStyle(
+        fontFamily = Serif, fontWeight = FontWeight.Normal,
+        fontSize = 18.sp, lineHeight = 29.sp,
+    )
+    val titularTarjeta = TextStyle(
+        fontFamily = Serif, fontWeight = FontWeight.Bold,
+        fontSize = 21.sp, lineHeight = 26.sp,
     )
 }
