@@ -1,0 +1,86 @@
+{
+  "version": 8,
+  "name": "Caaguazu",
+  "glyphs": "asset://map/glifos/{fontstack}/{range}.pbf",
+  "sources": {
+    "base": {
+      "type": "vector",
+      "url": "pmtiles://__RUTA_PMTILES__",
+      "attribution": "© OpenStreetMap"
+    }
+  },
+  "layers": [
+    { "id": "fondo", "type": "background",
+      "paint": { "background-color": "#EDEAE4" } },
+
+    { "id": "tierra", "type": "fill", "source": "base", "source-layer": "earth",
+      "paint": { "fill-color": "#FAF9F7" } },
+
+    { "id": "suelo-verde", "type": "fill", "source": "base", "source-layer": "landuse",
+      "filter": ["in", ["get", "kind"],
+        ["literal", ["park", "forest", "wood", "grass", "scrub", "nature_reserve", "pitch", "garden", "cemetery"]]],
+      "paint": { "fill-color": "#E4EBE0" } },
+
+    { "id": "suelo-urbano", "type": "fill", "source": "base", "source-layer": "landuse",
+      "filter": ["in", ["get", "kind"],
+        ["literal", ["residential", "commercial", "industrial", "retail", "school", "hospital", "university"]]],
+      "paint": { "fill-color": "#F2F0EC" } },
+
+    { "id": "agua", "type": "fill", "source": "base", "source-layer": "water",
+      "paint": { "fill-color": "#BFD8E5" } },
+
+    { "id": "edificios", "type": "fill", "source": "base", "source-layer": "buildings",
+      "minzoom": 14,
+      "paint": { "fill-color": "#E3DFD8", "fill-opacity": 0.9 } },
+
+    { "id": "calles-borde", "type": "line", "source": "base", "source-layer": "roads",
+      "minzoom": 11,
+      "filter": ["!", ["in", ["get", "kind"], ["literal", ["path", "rail"]]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": {
+        "line-color": "#DFDBD4",
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"],
+          11, 1.6, 14, 3.2, 16, 7, 18, 18]
+      } },
+
+    { "id": "calles", "type": "line", "source": "base", "source-layer": "roads",
+      "minzoom": 11,
+      "filter": ["!", ["in", ["get", "kind"], ["literal", ["path", "rail"]]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": {
+        "line-color": "#FFFFFF",
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"],
+          11, 0.6, 14, 1.8, 16, 4.6, 18, 14]
+      } },
+
+    { "id": "sendas", "type": "line", "source": "base", "source-layer": "roads",
+      "minzoom": 14,
+      "filter": ["==", ["get", "kind"], "path"],
+      "paint": {
+        "line-color": "#C9C3B8", "line-dasharray": [2, 2],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 18, 2.4]
+      } },
+
+    { "id": "calles-nombre", "type": "symbol", "source": "base", "source-layer": "roads",
+      "minzoom": 15,
+      "filter": ["all", ["has", "name"],
+        ["!", ["in", ["get", "kind"], ["literal", ["path", "rail"]]]]],
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": ["get", "name"],
+        "text-font": ["Poppins"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 15, 10, 18, 13],
+        "text-letter-spacing": 0.02
+      },
+      "paint": { "text-color": "#6E6A63", "text-halo-color": "#FFFFFF", "text-halo-width": 1.4 } },
+
+    { "id": "lugares", "type": "symbol", "source": "base", "source-layer": "places",
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": ["PoppinsSemiBold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 9, 12, 13, 16, 16, 19],
+        "text-max-width": 8
+      },
+      "paint": { "text-color": "#1D1D1F", "text-halo-color": "#FFFFFF", "text-halo-width": 1.8 } }
+  ]
+}

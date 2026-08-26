@@ -1,0 +1,1213 @@
+[
+  {
+    "id": 101,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 1 con un nombre bastante más largo que ocupa dos líneas›",
+    "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
+    "categoria": {
+      "id": 12,
+      "slug": "paisaje-natural",
+      "nombre": "‹Paisaje Natural›",
+      "color": "#2E7D32"
+    },
+    "zona": {
+      "id": 3,
+      "slug": "centro",
+      "nombre": "‹Zona Centro›"
+    },
+    "coordenadas": {
+      "lat": -25.483951,
+      "lng": -56.055669
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/1.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 90,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/2.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/3.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 0,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 102,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 2›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 13,
+      "slug": "gastronomia",
+      "nombre": "‹Gastronomía›",
+      "color": "#B4531F"
+    },
+    "zona": {
+      "id": 4,
+      "slug": "norte",
+      "nombre": "‹Zona Norte›"
+    },
+    "coordenadas": {
+      "lat": -25.462689,
+      "lng": -56.063119
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/2.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 91,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/3.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/4.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 1,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 103,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 3›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 14,
+      "slug": "cultura-historia",
+      "nombre": "‹Cultura e Historia›",
+      "color": "#6A4C93"
+    },
+    "zona": {
+      "id": 5,
+      "slug": "sur",
+      "nombre": "‹Zona Sur›"
+    },
+    "coordenadas": {
+      "lat": -25.470168,
+      "lng": -56.03526
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/3.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 92,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/4.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/5.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 2,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 104,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 4›",
+    "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
+    "categoria": {
+      "id": 15,
+      "slug": "artesania",
+      "nombre": "‹Artesanía›",
+      "color": "#9C6644"
+    },
+    "zona": {
+      "id": 6,
+      "slug": "rural",
+      "nombre": "‹Zona Rural›"
+    },
+    "coordenadas": {
+      "lat": -25.50123,
+      "lng": -56.021794
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/4.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 93,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/5.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/6.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 3,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 105,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 5 con un nombre bastante más largo que ocupa dos líneas›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 16,
+      "slug": "alojamiento",
+      "nombre": "‹Alojamiento›",
+      "color": "#1F6F8B"
+    },
+    "zona": {
+      "id": 3,
+      "slug": "centro",
+      "nombre": "‹Zona Centro›"
+    },
+    "coordenadas": {
+      "lat": -25.502563,
+      "lng": -56.028804
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/5.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 94,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/6.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/7.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 4,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 106,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 6›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 17,
+      "slug": "eventos",
+      "nombre": "‹Eventos›",
+      "color": "#C2185B"
+    },
+    "zona": {
+      "id": 4,
+      "slug": "norte",
+      "nombre": "‹Zona Norte›"
+    },
+    "coordenadas": {
+      "lat": -25.500459,
+      "lng": -56.061382
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/6.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 95,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/7.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/8.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 0,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 107,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 7›",
+    "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
+    "categoria": {
+      "id": 12,
+      "slug": "paisaje-natural",
+      "nombre": "‹Paisaje Natural›",
+      "color": "#2E7D32"
+    },
+    "zona": {
+      "id": 5,
+      "slug": "sur",
+      "nombre": "‹Zona Sur›"
+    },
+    "coordenadas": {
+      "lat": -25.477406,
+      "lng": -55.991449
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/7.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 96,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/8.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/1.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 1,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 108,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 8›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 13,
+      "slug": "gastronomia",
+      "nombre": "‹Gastronomía›",
+      "color": "#B4531F"
+    },
+    "zona": {
+      "id": 6,
+      "slug": "rural",
+      "nombre": "‹Zona Rural›"
+    },
+    "coordenadas": {
+      "lat": -25.496953,
+      "lng": -56.048792
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/8.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 97,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/1.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/2.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 2,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 109,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 9 con un nombre bastante más largo que ocupa dos líneas›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 14,
+      "slug": "cultura-historia",
+      "nombre": "‹Cultura e Historia›",
+      "color": "#6A4C93"
+    },
+    "zona": {
+      "id": 3,
+      "slug": "centro",
+      "nombre": "‹Zona Centro›"
+    },
+    "coordenadas": {
+      "lat": -25.464217,
+      "lng": -55.979968
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/1.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 98,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/2.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/3.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 3,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 110,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 10›",
+    "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
+    "categoria": {
+      "id": 15,
+      "slug": "artesania",
+      "nombre": "‹Artesanía›",
+      "color": "#9C6644"
+    },
+    "zona": {
+      "id": 4,
+      "slug": "norte",
+      "nombre": "‹Zona Norte›"
+    },
+    "coordenadas": {
+      "lat": -25.467488,
+      "lng": -56.032315
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/2.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 99,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/3.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/4.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 4,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 111,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 11›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 16,
+      "slug": "alojamiento",
+      "nombre": "‹Alojamiento›",
+      "color": "#1F6F8B"
+    },
+    "zona": {
+      "id": 5,
+      "slug": "sur",
+      "nombre": "‹Zona Sur›"
+    },
+    "coordenadas": {
+      "lat": -25.441543,
+      "lng": -56.065575
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/3.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 100,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/4.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/5.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 0,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 112,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 12›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 17,
+      "slug": "eventos",
+      "nombre": "‹Eventos›",
+      "color": "#C2185B"
+    },
+    "zona": {
+      "id": 6,
+      "slug": "rural",
+      "nombre": "‹Zona Rural›"
+    },
+    "coordenadas": {
+      "lat": -25.4492,
+      "lng": -56.042487
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/4.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 101,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/5.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/6.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 1,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 113,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 13 con un nombre bastante más largo que ocupa dos líneas›",
+    "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
+    "categoria": {
+      "id": 12,
+      "slug": "paisaje-natural",
+      "nombre": "‹Paisaje Natural›",
+      "color": "#2E7D32"
+    },
+    "zona": {
+      "id": 3,
+      "slug": "centro",
+      "nombre": "‹Zona Centro›"
+    },
+    "coordenadas": {
+      "lat": -25.495623,
+      "lng": -56.05881
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/5.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 102,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/6.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/7.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 2,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      },
+      {
+        "id": 202,
+        "titulo": "‹Artículo relacionado 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 1200,
+          "h": 800,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  },
+  {
+    "id": 114,
+    "tipo": "destino",
+    "titulo": "‹Atractivo 14›",
+    "gancho": "‹gancho: una línea corta›",
+    "categoria": {
+      "id": 13,
+      "slug": "gastronomia",
+      "nombre": "‹Gastronomía›",
+      "color": "#B4531F"
+    },
+    "zona": {
+      "id": 4,
+      "slug": "norte",
+      "nombre": "‹Zona Norte›"
+    },
+    "coordenadas": {
+      "lat": -25.484949,
+      "lng": -55.992468
+    },
+    "portada": {
+      "url": "file:///android_asset/mocks/img/6.png",
+      "w": 1200,
+      "h": 800,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "actualizado": "2026-08-20T14:00:00+00:00",
+    "etiquetas": [
+      {
+        "id": 103,
+        "slug": "etq",
+        "nombre": "‹etiqueta›"
+      }
+    ],
+    "galeria": [
+      {
+        "url": "file:///android_asset/mocks/img/7.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      {
+        "url": "file:///android_asset/mocks/img/8.png",
+        "w": 1200,
+        "h": 800,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      }
+    ],
+    "video": null,
+    "practicos": {
+      "horario": "‹horario›",
+      "costo": "‹costo›",
+      "rango_precio": 3,
+      "duracion": "‹duración›",
+      "servicios": "‹servicios›",
+      "temporada": "‹temporada›",
+      "contacto": "‹contacto›"
+    },
+    "acceso": {
+      "como_llegar": "‹cómo llegar›",
+      "referencia": "‹referencia›",
+      "estado_camino": "asfalto",
+      "accesibilidad": "‹accesibilidad›"
+    },
+    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "articulos_relacionados": [],
+    "fuentes": "‹fuentes›",
+    "autor": {
+      "id": 7,
+      "nombre": "‹Promotor›"
+    }
+  }
+]

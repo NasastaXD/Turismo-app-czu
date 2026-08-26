@@ -1,0 +1,15 @@
+# Gradle y compilacion
+.gradle/
+build/
+app/build/
+local.properties
+*.hprof
+
+# Firmas: nunca al repositorio
+*.jks
+*.keystore
+keystore.properties
+
+# Entornos
+.idea/
+.DS_Store
