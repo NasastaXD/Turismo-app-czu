@@ -1,6 +1,7 @@
 package net.caaguazu.turismo.ui.piezas
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -10,14 +11,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -39,6 +42,7 @@ fun Foto(
     imagen: Imagen?,
     descripcion: String,
     modifier: Modifier = Modifier,
+    desaturada: Boolean = false,
 ) {
     Box(modifier.background(Tono.banda)) {
         if (imagen != null) {
@@ -46,11 +50,18 @@ fun Foto(
                 model = imagen.url,
                 contentDescription = descripcion,
                 contentScale = ContentScale.Crop,
+                // El sistema reserva la desaturacion para los tiles de menu. En
+                // tarjetas la foto va tal cual, con su saturacion natural.
+                colorFilter = if (desaturada) FILTRO_DESATURADO else null,
                 modifier = Modifier.fillMaxSize(),
             )
         }
     }
 }
+
+/** Casi gris, no gris del todo: la referencia conserva un resto de color. */
+private val FILTRO_DESATURADO =
+    ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0.2f) })
 
 /**
  * Foto con velo encima, para cuando lleva texto blanco arriba.
@@ -70,13 +81,10 @@ fun FotoConVelo(
         if (imagen == null && !colorSinFoto.isNullOrBlank()) {
             Box(Modifier.fillMaxSize().background(colorDeTexto(colorSinFoto, Tono.tintaSuave)))
         } else {
-            Foto(imagen, descripcion, Modifier.fillMaxSize())
+            Foto(imagen, descripcion, Modifier.fillMaxSize(), desaturada = true)
         }
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(listOf(Tono.velo, Tono.velo.copy(alpha = 0.55f))),
-            ),
-        )
+        // Velo uniforme, no degradado: el sistema lo especifica plano.
+        Box(Modifier.fillMaxSize().background(Tono.velo))
     }
 }
 
@@ -214,6 +222,59 @@ fun RangoPrecio(rango: Int?, modifier: Modifier = Modifier) {
                 color = if (i < rango) Tono.tinta else Tono.linea,
             )
         }
+    }
+}
+
+/**
+ * Icono de accion de una tarjeta de lista: circulo de 56, borde de 1.5 en
+ * acento, glifo en acento, fondo transparente.
+ *
+ * El sistema es explicito en que solo aparecen los disponibles y en que el
+ * bloque no reserva huecos vacios: una tarjeta sin telefono no deja el aire de
+ * un boton que no existe.
+ */
+@Composable
+fun IconoAccion(
+    icono: androidx.compose.ui.graphics.vector.ImageVector,
+    descripcion: String,
+    alTocar: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(56.dp)
+            .border(1.5.dp, Tono.acento, CircleShape)
+            .clickable(onClick = alTocar),
+        contentAlignment = Alignment.Center,
+    ) {
+        Glifo(icono, descripcion, Tono.acento, Modifier.size(22.dp))
+    }
+}
+
+/**
+ * Corazon de favorito: circulo blanco de 44 sobre la esquina superior izquierda
+ * de la media, con el glifo en acento y sin relleno.
+ */
+@Composable
+fun Corazon(
+    marcado: Boolean,
+    alTocar: () -> Unit,
+    descripcion: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(44.dp)
+            .background(Tono.papel, CircleShape)
+            .clickable(onClick = alTocar),
+        contentAlignment = Alignment.Center,
+    ) {
+        Glifo(
+            icono = if (marcado) Icono.corazonLleno else Icono.corazon,
+            descripcion = descripcion,
+            color = Tono.acento,
+            modifier = Modifier.size(20.dp),
+        )
     }
 }
 

@@ -109,8 +109,8 @@ private fun Boton(
 private fun BotonCentral() {
     Box(
         modifier = Modifier
-            .size(60.dp)
-            .shadow(8.dp, CircleShape)
+            .size(88.dp)
+            .shadow(16.dp, CircleShape)
             .background(Tono.negro, CircleShape),
         contentAlignment = Alignment.Center,
     ) {

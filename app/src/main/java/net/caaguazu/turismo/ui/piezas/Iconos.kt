@@ -29,6 +29,19 @@ private fun trazo(nombre: String, contenido: String): ImageVector =
         )
     }.build()
 
+/** Variante rellena, para el corazon marcado y la flecha del breadcrumb. */
+private fun relleno(nombre: String, contenido: String): ImageVector =
+    ImageVector.Builder(
+        name = nombre,
+        defaultWidth = 24.dp, defaultHeight = 24.dp,
+        viewportWidth = 24f, viewportHeight = 24f,
+    ).apply {
+        addPath(
+            pathData = PathParser().parsePathString(contenido).toNodes(),
+            fill = SolidColor(Color.Black),
+        )
+    }.build()
+
 object Icono {
 
     /** Casa: techo a dos aguas y cuerpo. */
@@ -101,6 +114,36 @@ object Icono {
             "M12 3.5 L12 15 M8 7.2 L12 3.4 L16 7.2 " +
                 "M5.5 13 V19.5 H18.5 V13",
         )
+    }
+
+    /** Corazon de favorito, sin relleno. */
+    val corazon: ImageVector by lazy {
+        trazo(
+            "corazon",
+            "M12 20 C12 20 3.5 14.6 3.5 9.1 C3.5 6.3 5.7 4.2 8.4 4.2 " +
+                "C10.1 4.2 11.3 5.1 12 6.2 C12.7 5.1 13.9 4.2 15.6 4.2 " +
+                "C18.3 4.2 20.5 6.3 20.5 9.1 C20.5 14.6 12 20 12 20 Z",
+        )
+    }
+
+    /** Corazon marcado. Mismo dibujo, relleno. */
+    val corazonLleno: ImageVector by lazy {
+        relleno(
+            "corazonLleno",
+            "M12 20 C12 20 3.5 14.6 3.5 9.1 C3.5 6.3 5.7 4.2 8.4 4.2 " +
+                "C10.1 4.2 11.3 5.1 12 6.2 C12.7 5.1 13.9 4.2 15.6 4.2 " +
+                "C18.3 4.2 20.5 6.3 20.5 9.1 C20.5 14.6 12 20 12 20 Z",
+        )
+    }
+
+    /** Flecha del breadcrumb: solida, no chevron. */
+    val flechaBreadcrumb: ImageVector by lazy {
+        relleno("flechaBreadcrumb", "M4 10.4 H13 V6.4 L20 12 L13 17.6 V13.6 H4 Z")
+    }
+
+    /** Casa del breadcrumb. */
+    val casa: ImageVector by lazy {
+        trazo("casa", "M3.5 11 L12 4 L20.5 11 M6 9.7 V19.5 H18 V9.7")
     }
 
     /** Lista, para el interruptor lista/mapa. */

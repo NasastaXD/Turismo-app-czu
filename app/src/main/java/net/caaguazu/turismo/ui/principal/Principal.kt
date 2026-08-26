@@ -66,7 +66,7 @@ fun Principal(
                     TarjetaCarrusel(
                         ancho = ancho,
                         imagen = item.portada,
-                        encima = item.categoria?.nombre,
+                        encima = item.zona?.nombre,
                         titulo = item.titulo,
                         alTocar = alVerInventario,
                     )

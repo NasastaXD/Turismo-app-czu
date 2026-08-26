@@ -223,7 +223,7 @@ private fun Seccion(titulo: String) {
 @Composable
 private fun Dato(etiqueta: String, valor: String) {
     Column(Modifier.fillMaxWidth().padding(horizontal = Medida.margen, vertical = 7.dp)) {
-        Texto(etiqueta, Letra.chip, Tono.acento, maxLineas = 1)
+        Texto(etiqueta, Letra.chip, Tono.tintaSuave, maxLineas = 1)
         Texto(valor, Letra.descripcion, Tono.tinta)
     }
 }

@@ -1,6 +1,7 @@
 package net.caaguazu.turismo.ui.recorridos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -102,6 +103,15 @@ private fun Pestanas(pila: PilaRecorridos) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(Radio.lista))
                     .background(if (activa) Tono.papel else Tono.banda)
+                    // Activa: fondo blanco con borde de 1.5 en tinta.
+                    // Inactivas: fondo banda y sin borde.
+                    .then(
+                        if (activa) {
+                            Modifier.border(1.5.dp, Tono.tinta, RoundedCornerShape(Radio.lista))
+                        } else {
+                            Modifier
+                        },
+                    )
                     .clickable { pila.pestana = pestana }
                     .padding(horizontal = 18.dp, vertical = 10.dp),
             ) {
@@ -164,7 +174,7 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
                 // entra se dice, en vez de abrir un recorrido incompleto sin
                 // que nadie se entere.
                 if (!entra && puntos.size > 2) {
-                    Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.acento)
+                    Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.tinta)
                 }
                 PildoraNegra(
                     texto = Textos.t("rec.abrir"),
