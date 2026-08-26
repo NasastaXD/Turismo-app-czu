@@ -64,6 +64,16 @@ object Textos {
         }
     }
 
+    /** Aplica un mapa ya interpretado, como el que devuelve la API. */
+    fun aplicarMapa(nuevos: Map<String, String>, origen: String) {
+        if (nuevos.isEmpty()) {
+            Registro.aviso(ETIQUETA, "textos de $origen vinieron vacios, se conserva lo anterior")
+            return
+        }
+        mapa = nuevos
+        Registro.info(ETIQUETA, "cargados ${nuevos.size} textos de $origen")
+    }
+
     /** El unico camino por el que un texto llega a la pantalla. */
     fun t(clave: String): String = mapa[clave] ?: marcador(clave)
 

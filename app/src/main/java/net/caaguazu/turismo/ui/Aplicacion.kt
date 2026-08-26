@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import net.caaguazu.turismo.core.Textos
-import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
+import net.caaguazu.turismo.ui.inventario.Inventario
+import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
+import net.caaguazu.turismo.ui.perfil.PantallaPerfil
 import net.caaguazu.turismo.ui.piezas.BarraInferior
 import net.caaguazu.turismo.ui.piezas.BarraSuperior
 import net.caaguazu.turismo.ui.tema.Tono
@@ -17,8 +19,8 @@ import net.caaguazu.turismo.ui.tema.Tono
 /**
  * Armazon de la app: barra superior, contenido y barra inferior.
  *
- * El contenido se elige por seccion. Las secciones todavia sin construir se ven como
- * huecos marcados, no como pantallas vacias.
+ * Las secciones todavia sin construir se ven como huecos marcados, no como
+ * pantallas vacias que aparentan estar terminadas.
  */
 @Composable
 fun Aplicacion() {
@@ -27,18 +29,24 @@ fun Aplicacion() {
     BackHandler(enabled = true) { navegador.volver() }
 
     Column(Modifier.fillMaxSize().background(Tono.papel)) {
-        BarraSuperior(
-            titulo = { Textos.t("app.nombre") },
-            alTocarPerfil = navegador::abrirPerfil,
-        )
+        // La ficha lleva su propia cabecera sobre la foto: la barra general
+        // taparia el titulo justo donde tiene que leerse.
+        val conBarra = !navegador.enFicha()
+
+        if (conBarra) {
+            BarraSuperior(
+                titulo = { Textos.t("app.nombre") },
+                alTocarPerfil = navegador::abrirPerfil,
+            )
+        }
 
         Box(Modifier.weight(1f)) {
-            if (navegador.perfilAbierto) {
-                SeccionPendiente("perfil.titulo")
-            } else {
-                when (navegador.seccion) {
+            when {
+                navegador.diagnosticoAbierto -> PantallaDiagnostico()
+                navegador.perfilAbierto -> PantallaPerfil(navegador::abrirDiagnostico)
+                else -> when (navegador.seccion) {
                     Seccion.PRINCIPAL -> SeccionPendiente("nav.principal")
-                    Seccion.INVENTARIO -> MapaCaaguazu()
+                    Seccion.INVENTARIO -> Inventario(navegador.inventario)
                     Seccion.ARTICULOS -> SeccionPendiente("nav.articulos")
                     Seccion.RECORRIDOS -> SeccionPendiente("nav.recorridos")
                 }
@@ -51,3 +59,8 @@ fun Aplicacion() {
         )
     }
 }
+
+private fun Navegador.enFicha(): Boolean =
+    !perfilAbierto && !diagnosticoAbierto &&
+        seccion == Seccion.INVENTARIO &&
+        inventario.actual is net.caaguazu.turismo.ui.inventario.RutaInv.Ficha

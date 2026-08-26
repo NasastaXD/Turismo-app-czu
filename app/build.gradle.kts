@@ -21,6 +21,11 @@ android {
 
         // x86 solo sirve para emuladores. Cada ABI de mas son 12 MB de MapLibre.
         ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a") }
+
+        // La URL base nunca va quemada en el codigo. Mientras la API no este
+        // publicada, la app arranca contra los mocks que viajan en los assets.
+        buildConfigField("String", "URL_BASE", "\"https://caaguazu.net/wp-json/czu-app/v1/\"")
+        buildConfigField("boolean", "USAR_MOCKS", "true")
     }
 
     buildTypes {
@@ -94,8 +99,10 @@ dependencies {
 
     implementation(libs.maplibre)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -89,6 +89,20 @@ object Icono {
         )
     }
 
+    /** Flecha de volver. */
+    val volver: ImageVector by lazy {
+        trazo("volver", "M14.5 5 L7.5 12 L14.5 19")
+    }
+
+    /** Compartir. */
+    val compartir: ImageVector by lazy {
+        trazo(
+            "compartir",
+            "M12 3.5 L12 15 M8 7.2 L12 3.4 L16 7.2 " +
+                "M5.5 13 V19.5 H18.5 V13",
+        )
+    }
+
     /** Lista, para el interruptor lista/mapa. */
     val lista: ImageVector by lazy {
         trazo("lista", "M4 6.5 H6 M9 6.5 H20 M4 12 H6 M9 12 H20 M4 17.5 H6 M9 17.5 H20")

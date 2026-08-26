@@ -1,0 +1,62 @@
+[
+  {
+    "id": 12,
+    "slug": "paisaje-natural",
+    "nombre": "‹Paisaje Natural›",
+    "padre": null,
+    "icono": "nature",
+    "color": "#2E7D32",
+    "marker": "file:///android_asset/mocks/img/1.png",
+    "total": 2
+  },
+  {
+    "id": 13,
+    "slug": "gastronomia",
+    "nombre": "‹Gastronomía›",
+    "padre": null,
+    "icono": "restaurant",
+    "color": "#B4531F",
+    "marker": "file:///android_asset/mocks/img/2.png",
+    "total": 3
+  },
+  {
+    "id": 14,
+    "slug": "cultura-historia",
+    "nombre": "‹Cultura e Historia›",
+    "padre": null,
+    "icono": "museum",
+    "color": "#6A4C93",
+    "marker": "file:///android_asset/mocks/img/3.png",
+    "total": 4
+  },
+  {
+    "id": 15,
+    "slug": "artesania",
+    "nombre": "‹Artesanía›",
+    "padre": null,
+    "icono": "craft",
+    "color": "#9C6644",
+    "marker": "file:///android_asset/mocks/img/4.png",
+    "total": 5
+  },
+  {
+    "id": 16,
+    "slug": "alojamiento",
+    "nombre": "‹Alojamiento›",
+    "padre": null,
+    "icono": "hotel",
+    "color": "#1F6F8B",
+    "marker": "file:///android_asset/mocks/img/5.png",
+    "total": 6
+  },
+  {
+    "id": 17,
+    "slug": "eventos",
+    "nombre": "‹Eventos›",
+    "padre": null,
+    "icono": "event",
+    "color": "#C2185B",
+    "marker": "file:///android_asset/mocks/img/6.png",
+    "total": 7
+  }
+]
