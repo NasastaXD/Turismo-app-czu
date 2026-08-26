@@ -3,8 +3,6 @@
 De: el lado de la app Android.
 Sobre: el contrato de la Parte 3 del brief, antes de que se implemente.
 
-Versión para leer y compartir: https://claude.ai/code/artifact/c60448b1-2e1e-48fd-b40b-85a3cecbd81f
-
 El brief dice que el contrato está propuesto y no grabado en piedra, y que cambiarlo
 antes de implementarlo es barato. Esto es eso: un cambio que quita trabajo, seis
 huecos que bloquean pantallas concretas, y cuatro confirmaciones.
