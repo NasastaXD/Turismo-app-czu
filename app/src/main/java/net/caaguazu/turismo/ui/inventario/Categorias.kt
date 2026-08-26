@@ -23,6 +23,8 @@ import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.FotoConVelo
+import net.caaguazu.turismo.ui.piezas.cedeAlTocar
+import net.caaguazu.turismo.ui.piezas.recordarInteraccion
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -78,11 +80,13 @@ fun PantallaCategorias(
 
 @Composable
 private fun TileCategoria(categoria: Categoria, fondo: Imagen?, alTocar: () -> Unit) {
+    val interaccion = recordarInteraccion()
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 10f)
-            .clickable(onClick = alTocar),
+            .cedeAlTocar(interaccion)
+            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar),
     ) {
         FotoConVelo(
             imagen = fondo,

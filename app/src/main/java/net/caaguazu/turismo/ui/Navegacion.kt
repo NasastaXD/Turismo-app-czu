@@ -59,6 +59,22 @@ class Navegador {
     fun abrirPerfil() { perfilAbierto = true }
     fun abrirDiagnostico() { diagnosticoAbierto = true }
 
+    /**
+     * Identifica que pantalla se ve, para cruzar entre ellas.
+     *
+     * Se compone de la seccion y de donde este parada dentro de ella: pasar de
+     * una lista a una ficha tambien es un cambio de pantalla, no solo cambiar
+     * de pestaña.
+     */
+    fun caraActual(): String = when {
+        diagnosticoAbierto -> "diagnostico"
+        perfilAbierto -> "perfil"
+        seccion == Seccion.INVENTARIO -> "inv:" + inventario.actual::class.simpleName
+        seccion == Seccion.ARTICULOS -> "art:" + (articulos.abierto?.let { "detalle" } ?: "lista")
+        seccion == Seccion.RECORRIDOS -> "rec:" + (recorridos.abierto?.let { "detalle" } ?: "lista")
+        else -> "principal"
+    }
+
     /** Devuelve true si consumio el gesto de volver. */
     fun volver(): Boolean = when {
         diagnosticoAbierto -> { diagnosticoAbierto = false; true }

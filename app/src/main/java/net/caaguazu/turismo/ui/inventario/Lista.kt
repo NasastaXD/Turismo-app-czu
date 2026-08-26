@@ -30,6 +30,9 @@ import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.Cruce
+import net.caaguazu.turismo.ui.piezas.cedeAlTocar
+import net.caaguazu.turismo.ui.piezas.recordarInteraccion
 import net.caaguazu.turismo.ui.piezas.Corazon
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Glifo
@@ -99,7 +102,8 @@ fun PantallaLista(
             vacio = { it.items.isEmpty() },
             modifier = Modifier.fillMaxSize(),
         ) { pagina ->
-            if (enMapa()) {
+            Cruce(enMapa()) { mostrandoMapa ->
+            if (mostrandoMapa) {
                 MapaCaaguazu(
                     marcadores = pagina.items.mapNotNull { item ->
                         item.coordenadas?.let { Pin(item.id, it.lat, it.lng, item.categoria?.color) }
@@ -120,6 +124,7 @@ fun PantallaLista(
                         TarjetaLista(item, indice) { alAbrir(item.id) }
                     }
                 }
+            }
             }
         }
     }
@@ -179,13 +184,15 @@ private fun RangoResultados(estado: net.caaguazu.turismo.ui.piezas.Estado<*>) {
 private fun TarjetaLista(item: ItemInventario, indice: Int, alTocar: () -> Unit) {
     val contexto = LocalContext.current
     val coordenadas = item.coordenadas
+    val interaccion = recordarInteraccion()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .cedeAlTocar(interaccion)
             .clip(RoundedCornerShape(Radio.lista))
             .background(if (indice % 2 == 0) Tono.papel else Tono.banda)
-            .clickable(onClick = alTocar)
+            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar)
             .padding(Medida.dentroTarjeta),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -196,7 +203,10 @@ private fun TarjetaLista(item: ItemInventario, indice: Int, alTocar: () -> Unit)
             Box(Modifier.size(LADO_MEDIA)) {
                 Foto(item.portada, item.titulo, Modifier.fillMaxSize())
                 Corazon(
-                    marcado = Guardado.esFavorito(item.id),
+                    // Lectura diferida: el estado se lee dentro del corazon, no
+                    // en el cuerpo de la tarjeta. Marcar un favorito redibuja un
+                    // corazon, no la lista entera.
+                    marcado = { Guardado.esFavorito(item.id) },
                     alTocar = { Guardado.alternarFavorito(item.id) },
                     descripcion = item.titulo,
                     modifier = Modifier.align(Alignment.TopStart),

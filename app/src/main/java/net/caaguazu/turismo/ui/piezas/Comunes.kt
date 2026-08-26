@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -26,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Imagen
+import net.caaguazu.turismo.ui.tema.AnimacionesActivas
 import net.caaguazu.turismo.ui.tema.Letra
+import net.caaguazu.turismo.ui.tema.Movimiento
 import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
 
@@ -257,11 +262,24 @@ fun IconoAccion(
  */
 @Composable
 fun Corazon(
-    marcado: Boolean,
+    marcado: () -> Boolean,
     alTocar: () -> Unit,
     descripcion: String,
     modifier: Modifier = Modifier,
 ) {
+    val activo = marcado()
+    val animar = AnimacionesActivas.current
+    val latido = remember { Animatable(1f) }
+
+    // Un latido corto al marcar. Al desmarcar no late: quitar algo no se
+    // celebra, y el movimiento tiene que significar algo o no estar.
+    LaunchedEffect(activo) {
+        if (activo && animar) {
+            latido.animateTo(1.25f, Movimiento.toque())
+            latido.animateTo(1f, Movimiento.entrada(180))
+        }
+    }
+
     Box(
         modifier = modifier
             .size(44.dp)
@@ -270,10 +288,10 @@ fun Corazon(
         contentAlignment = Alignment.Center,
     ) {
         Glifo(
-            icono = if (marcado) Icono.corazonLleno else Icono.corazon,
+            icono = if (activo) Icono.corazonLleno else Icono.corazon,
             descripcion = descripcion,
             color = Tono.acento,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(20.dp).scale(latido.value),
         )
     }
 }

@@ -148,7 +148,11 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
 
     Cargador(estado = estado.value, reintentar = reintentar, modifier = Modifier.fillMaxSize()) { pagina ->
         // Se respeta el orden en que la persona las fue agregando.
-        val paradas = guardadas.mapNotNull { id -> pagina.items.firstOrNull { it.id == id } }
+        // Un indice por id: buscar linealmente dentro del bucle que dibuja la
+        // lista convierte el dibujado en cuadratico.
+        val porId = pagina.items.associateBy { it.id }
+        val paradas = guardadas.mapNotNull(porId::get)
+        val orden = Guardado.ordenDeParada
         val puntos = paradas.mapNotNull { it.coordenadas?.let { c -> c.lat to c.lng } }
         val entra = puntos.size >= 2 &&
             puntos.size - 2 <= MapasExternos.MAX_PARADAS_INTERMEDIAS
@@ -157,7 +161,7 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
             LazyColumn(Modifier.weight(1f)) {
                 items(paradas, key = { it.id }) { parada ->
                     FilaParada(
-                        orden = guardadas.indexOf(parada.id) + 1,
+                        orden = orden[parada.id] ?: 0,
                         item = parada,
                         alAbrir = { alAbrirFicha(parada.id) },
                         alQuitar = { Guardado.alternarEnRecorrido(parada.id) },

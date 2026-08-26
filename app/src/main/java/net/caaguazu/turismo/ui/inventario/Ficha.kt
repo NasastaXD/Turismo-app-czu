@@ -158,6 +158,18 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 items(ficha.articulosRelacionados) { articulo -> FilaRelacionado(articulo) }
             }
 
+            if (ficha.fuentes.isNotBlank()) {
+                item { Seccion(Textos.t("ficha.fuentes")) }
+                item {
+                    Texto(
+                        texto = ficha.fuentes,
+                        estilo = Letra.descripcion,
+                        color = Tono.tintaSuave,
+                        modifier = Modifier.padding(horizontal = Medida.margen),
+                    )
+                }
+            }
+
             ficha.autor?.let { autor ->
                 item {
                     Column(Modifier.padding(Medida.margen)) {

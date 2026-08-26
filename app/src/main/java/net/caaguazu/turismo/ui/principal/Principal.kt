@@ -30,6 +30,8 @@ import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
+import net.caaguazu.turismo.ui.piezas.cedeAlTocar
+import net.caaguazu.turismo.ui.piezas.recordarInteraccion
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -206,10 +208,12 @@ private fun TarjetaCarrusel(
     titulo: String,
     alTocar: () -> Unit,
 ) {
+    val interaccion = recordarInteraccion()
     Column(
         modifier = Modifier
             .width(ancho)
-            .clickable(onClick = alTocar),
+            .cedeAlTocar(interaccion)
+            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar),
     ) {
         Foto(imagen, titulo, Modifier.fillMaxWidth().aspectRatio(1f))
         Column(

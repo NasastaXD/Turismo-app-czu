@@ -27,16 +27,24 @@ object Guardado {
 
     private var carpeta: File? = null
 
-    /** Leerlos desde una composicion la suscribe: la estrella se pinta sola. */
-    var favoritos by mutableStateOf<List<Int>>(emptyList())
+    /** Leerlos desde una composicion la suscribe: el corazon se pinta solo. */
+    var favoritos by mutableStateOf<Set<Int>>(emptySet())
         private set
 
+    /**
+     * El recorrido es una lista y no un conjunto porque el orden es el
+     * recorrido: son las paradas en el orden en que la persona las agrego.
+     */
     var recorrido by mutableStateOf<List<Int>>(emptyList())
         private set
 
+    /** Posicion de cada parada, para no buscarla dentro del bucle que la dibuja. */
+    val ordenDeParada: Map<Int, Int>
+        get() = recorrido.withIndex().associate { (indice, id) -> id to indice + 1 }
+
     fun iniciar(contexto: Context) {
         carpeta = contexto.filesDir
-        favoritos = leer(FAVORITOS)
+        favoritos = leer(FAVORITOS).toSet()
         recorrido = leer(RECORRIDO)
         Registro.info(ETIQUETA, "${favoritos.size} favoritos, ${recorrido.size} paradas guardadas")
     }
@@ -45,7 +53,7 @@ object Guardado {
 
     fun alternarFavorito(id: Int) {
         favoritos = if (id in favoritos) favoritos - id else favoritos + id
-        escribir(FAVORITOS, favoritos)
+        escribir(FAVORITOS, favoritos.toList())
     }
 
     fun enRecorrido(id: Int) = id in recorrido
