@@ -1,5 +1,6 @@
 package net.caaguazu.turismo.datos
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,6 +15,7 @@ import kotlinx.serialization.Serializable
  * foto— y una pantalla que asuma lo contrario se cae con contenido real.
  */
 
+@Immutable
 @Serializable
 data class Pagina<T>(
     val items: List<T> = emptyList(),
@@ -25,6 +27,7 @@ data class Pagina<T>(
     fun hayMas(): Boolean = pagina * porPagina < total
 }
 
+@Immutable
 @Serializable
 data class Imagen(
     val url: String,
@@ -37,6 +40,7 @@ data class Imagen(
     fun proporcion(): Float = if (w > 0 && h > 0) w.toFloat() / h else 1f
 }
 
+@Immutable
 @Serializable
 data class Termino(
     val id: Int,
@@ -45,6 +49,7 @@ data class Termino(
     val color: String? = null,
 )
 
+@Immutable
 @Serializable
 data class Categoria(
     val id: Int,
@@ -53,10 +58,20 @@ data class Categoria(
     val padre: Int? = null,
     val icono: String = "",
     val color: String = "",
+    /** PNG pre-renderizado del pin. Es para el mapa: no sirve de fondo. */
     val marker: String? = null,
+    /**
+     * Foto de fondo del tile de categoria.
+     *
+     * Todavia no existe en el contrato — esta pedida al panel. Mientras no
+     * llegue viene null y la pantalla cae a la foto del primer atractivo de la
+     * categoria, que es contenido real y no una imagen de archivo.
+     */
+    val portada: Imagen? = null,
     val total: Int = 0,
 )
 
+@Immutable
 @Serializable
 data class Zona(
     val id: Int,
@@ -66,10 +81,12 @@ data class Zona(
     val total: Int = 0,
 )
 
+@Immutable
 @Serializable
 data class Coordenadas(val lat: Double, val lng: Double)
 
 /** Elemento de lista: solo lo que pinta una tarjeta. */
+@Immutable
 @Serializable
 data class ItemInventario(
     val id: Int,
@@ -85,6 +102,7 @@ data class ItemInventario(
     val actualizado: String? = null,
 )
 
+@Immutable
 @Serializable
 data class Practicos(
     val horario: String = "",
@@ -96,6 +114,7 @@ data class Practicos(
     val contacto: String = "",
 )
 
+@Immutable
 @Serializable
 data class Acceso(
     @SerialName("como_llegar") val comoLlegar: String = "",
@@ -104,9 +123,11 @@ data class Acceso(
     val accesibilidad: String = "",
 )
 
+@Immutable
 @Serializable
 data class Autor(val id: Int, val nombre: String = "")
 
+@Immutable
 @Serializable
 data class ResumenArticulo(
     val id: Int,
@@ -117,6 +138,7 @@ data class ResumenArticulo(
     val publicado: String? = null,
 )
 
+@Immutable
 @Serializable
 data class Ficha(
     val id: Int,
@@ -140,6 +162,7 @@ data class Ficha(
 )
 
 /** Payload minimo a proposito: el mapa carga todos los pines de una sola vez. */
+@Immutable
 @Serializable
 data class Marcador(
     val id: Int,
@@ -149,6 +172,7 @@ data class Marcador(
     val categoria: Int? = null,
 )
 
+@Immutable
 @Serializable
 data class Lugar(
     @SerialName("ref_tipo") val refTipo: String? = null,
@@ -158,6 +182,7 @@ data class Lugar(
     val lng: Double = 0.0,
 )
 
+@Immutable
 @Serializable
 data class Evento(
     val id: Int,
@@ -175,6 +200,7 @@ data class Evento(
     val actualizado: String? = null,
 )
 
+@Immutable
 @Serializable
 data class Articulo(
     val id: Int,
@@ -199,6 +225,7 @@ data class Articulo(
  * que mostrarla como perdida: si desapareciera sin avisar, el recorrido guardado
  * cambiaria solo y nadie entenderia por que.
  */
+@Immutable
 @Serializable
 data class Parada(
     val orden: Int,
@@ -216,6 +243,7 @@ data class Parada(
     val nota: String = "",
 )
 
+@Immutable
 @Serializable
 data class Historia(
     val introduccion: String = "",
@@ -225,6 +253,7 @@ data class Historia(
     @SerialName("articulos_ref") val articulosRef: List<Int> = emptyList(),
 )
 
+@Immutable
 @Serializable
 data class Recorrido(
     val id: Int,
@@ -241,6 +270,7 @@ data class Recorrido(
 )
 
 /** Entrada del manifiesto de medios: imagen o animacion. */
+@Immutable
 @Serializable
 data class Medio(
     val tipo: String = "imagen",
@@ -251,6 +281,7 @@ data class Medio(
     val h: Int = 0,
 )
 
+@Immutable
 @Serializable
 data class Delta(
     val desde: String? = null,
@@ -262,9 +293,11 @@ data class Delta(
 )
 
 /** Cuerpo uniforme de todo 4xx y 5xx. */
+@Immutable
 @Serializable
 data class ErrorApi(val error: DetalleError = DetalleError())
 
+@Immutable
 @Serializable
 data class DetalleError(
     val codigo: String = "",

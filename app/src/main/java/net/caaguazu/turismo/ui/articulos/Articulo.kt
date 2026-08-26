@@ -161,7 +161,7 @@ private fun BloqueDeTexto(bloque: HtmlSencillo.Bloque) {
             modifier = Modifier.padding(start = Medida.margen, end = Medida.margen, top = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Texto("•", Letra.cuerpoArticulo, Tono.acento)
+            Texto("•", Letra.cuerpoArticulo, Tono.tintaSuave)
             TextoRico(bloque.texto, Letra.cuerpoArticulo, Tono.tinta)
         }
 

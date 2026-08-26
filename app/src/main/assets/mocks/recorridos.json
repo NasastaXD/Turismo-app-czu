@@ -7,8 +7,8 @@
       "resumen": "‹resumen del recorrido›",
       "portada": {
         "url": "file:///android_asset/mocks/img/1.png",
-        "w": 1200,
-        "h": 800,
+        "w": 900,
+        "h": 900,
         "credito": "‹crédito de foto›",
         "alt": ""
       },
@@ -22,8 +22,8 @@
       "resumen": "‹resumen del recorrido›",
       "portada": {
         "url": "file:///android_asset/mocks/img/2.png",
-        "w": 1200,
-        "h": 800,
+        "w": 900,
+        "h": 900,
         "credito": "‹crédito de foto›",
         "alt": ""
       },
@@ -37,8 +37,8 @@
       "resumen": "‹resumen del recorrido›",
       "portada": {
         "url": "file:///android_asset/mocks/img/3.png",
-        "w": 1200,
-        "h": 800,
+        "w": 900,
+        "h": 900,
         "credito": "‹crédito de foto›",
         "alt": ""
       },

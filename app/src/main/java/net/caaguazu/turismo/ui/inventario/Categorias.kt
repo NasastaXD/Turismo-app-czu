@@ -3,10 +3,10 @@ package net.caaguazu.turismo.ui.inventario
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,12 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Categoria
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.FotoConVelo
+import net.caaguazu.turismo.ui.piezas.cedeAlTocar
+import net.caaguazu.turismo.ui.piezas.recordarInteraccion
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -42,6 +44,16 @@ fun PantallaCategorias(
 ) {
     val (estado, reintentar) = cargar { Datos.api.categorias() }
 
+    // El contrato todavia no trae foto de categoria. Mientras tanto se toma la
+    // del primer atractivo de cada una: es contenido real del propio destino,
+    // no una imagen de archivo.
+    val (respaldo, _) = cargar { Datos.api.inventario(porPagina = 100) }
+    val fotoPorCategoria = (respaldo.value as? Estado.Listo)?.valor?.items
+        ?.mapNotNull { item -> item.categoria?.id?.let { it to item.portada } }
+        ?.filter { it.second != null }
+        ?.toMap()
+        .orEmpty()
+
     Cargador(
         estado = estado.value,
         reintentar = reintentar,
@@ -56,23 +68,30 @@ fun PantallaCategorias(
             verticalArrangement = Arrangement.spacedBy(Medida.margen),
         ) {
             items(categorias, key = { it.id }) { categoria ->
-                TileCategoria(categoria) { alElegir(categoria) }
+                TileCategoria(
+                    categoria = categoria,
+                    fondo = categoria.portada ?: fotoPorCategoria[categoria.id],
+                    alTocar = { alElegir(categoria) },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun TileCategoria(categoria: Categoria, alTocar: () -> Unit) {
+private fun TileCategoria(categoria: Categoria, fondo: Imagen?, alTocar: () -> Unit) {
+    val interaccion = recordarInteraccion()
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 10f)
-            .clickable(onClick = alTocar),
+            .cedeAlTocar(interaccion)
+            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar),
     ) {
         FotoConVelo(
-            imagen = categoria.marker?.let { Imagen(url = it) },
+            imagen = fondo,
             descripcion = categoria.nombre,
+            colorSinFoto = categoria.color,
             modifier = Modifier.fillMaxSize(),
         )
         Texto(

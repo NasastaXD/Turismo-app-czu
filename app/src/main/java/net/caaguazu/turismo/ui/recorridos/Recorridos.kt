@@ -1,6 +1,7 @@
 package net.caaguazu.turismo.ui.recorridos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -102,6 +103,15 @@ private fun Pestanas(pila: PilaRecorridos) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(Radio.lista))
                     .background(if (activa) Tono.papel else Tono.banda)
+                    // Activa: fondo blanco con borde de 1.5 en tinta.
+                    // Inactivas: fondo banda y sin borde.
+                    .then(
+                        if (activa) {
+                            Modifier.border(1.5.dp, Tono.tinta, RoundedCornerShape(Radio.lista))
+                        } else {
+                            Modifier
+                        },
+                    )
                     .clickable { pila.pestana = pestana }
                     .padding(horizontal = 18.dp, vertical = 10.dp),
             ) {
@@ -138,7 +148,11 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
 
     Cargador(estado = estado.value, reintentar = reintentar, modifier = Modifier.fillMaxSize()) { pagina ->
         // Se respeta el orden en que la persona las fue agregando.
-        val paradas = guardadas.mapNotNull { id -> pagina.items.firstOrNull { it.id == id } }
+        // Un indice por id: buscar linealmente dentro del bucle que dibuja la
+        // lista convierte el dibujado en cuadratico.
+        val porId = pagina.items.associateBy { it.id }
+        val paradas = guardadas.mapNotNull(porId::get)
+        val orden = Guardado.ordenDeParada
         val puntos = paradas.mapNotNull { it.coordenadas?.let { c -> c.lat to c.lng } }
         val entra = puntos.size >= 2 &&
             puntos.size - 2 <= MapasExternos.MAX_PARADAS_INTERMEDIAS
@@ -147,7 +161,7 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
             LazyColumn(Modifier.weight(1f)) {
                 items(paradas, key = { it.id }) { parada ->
                     FilaParada(
-                        orden = guardadas.indexOf(parada.id) + 1,
+                        orden = orden[parada.id] ?: 0,
                         item = parada,
                         alAbrir = { alAbrirFicha(parada.id) },
                         alQuitar = { Guardado.alternarEnRecorrido(parada.id) },
@@ -164,7 +178,7 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
                 // entra se dice, en vez de abrir un recorrido incompleto sin
                 // que nadie se entere.
                 if (!entra && puntos.size > 2) {
-                    Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.acento)
+                    Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.tinta)
                 }
                 PildoraNegra(
                     texto = Textos.t("rec.abrir"),

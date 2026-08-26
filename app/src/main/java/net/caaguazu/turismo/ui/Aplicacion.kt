@@ -18,6 +18,9 @@ import net.caaguazu.turismo.ui.principal.Principal
 import net.caaguazu.turismo.ui.perfil.PantallaPerfil
 import net.caaguazu.turismo.ui.piezas.BarraInferior
 import net.caaguazu.turismo.ui.piezas.BarraSuperior
+import net.caaguazu.turismo.ui.piezas.ConMovimientoDelSistema
+import net.caaguazu.turismo.ui.piezas.Cruce
+import net.caaguazu.turismo.ui.tema.recordarAnimacionesActivas
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
@@ -32,6 +35,7 @@ fun Aplicacion() {
 
     BackHandler(enabled = true) { navegador.volver() }
 
+    ConMovimientoDelSistema(recordarAnimacionesActivas()) {
     Column(Modifier.fillMaxSize().background(Tono.papel)) {
         // La ficha lleva su propia cabecera sobre la foto: la barra general
         // taparia el titulo justo donde tiene que leerse.
@@ -45,6 +49,7 @@ fun Aplicacion() {
         }
 
         Box(Modifier.weight(1f)) {
+            Cruce(navegador.caraActual()) { _ ->
             when {
                 navegador.diagnosticoAbierto -> PantallaDiagnostico()
                 navegador.perfilAbierto -> PantallaPerfil(navegador::abrirDiagnostico)
@@ -59,6 +64,8 @@ fun Aplicacion() {
                             navegador.recorridos.abrir(id)
                         },
                         alVerInventario = { navegador.ir(Seccion.INVENTARIO) },
+                        alVerArticulos = { navegador.ir(Seccion.ARTICULOS) },
+                        alVerRecorridos = { navegador.ir(Seccion.RECORRIDOS) },
                     )
                     Seccion.INVENTARIO -> Inventario(navegador.inventario)
                     Seccion.ARTICULOS -> Articulos(navegador.articulos)
@@ -73,12 +80,14 @@ fun Aplicacion() {
                     )
                 }
             }
+            }
         }
 
         BarraInferior(
             seleccionada = { navegador.seccion },
             alElegir = navegador::ir,
         )
+    }
     }
 }
 

@@ -66,16 +66,30 @@ fun <T> Cargador(
     vacio: (T) -> Boolean = { false },
     contenido: @Composable (T) -> Unit,
 ) {
-    when (estado) {
-        is Estado.Cargando -> Aviso("estado.cargando", modifier)
-        is Estado.Error -> AvisoConReintento(estado.falla, reintentar, modifier)
-        is Estado.Listo -> if (vacio(estado.valor)) {
-            Aviso("estado.vacio", modifier)
-        } else {
-            contenido(estado.valor)
+    // Se cruza por la CLASE de estado y no por el estado entero: si se cruzara
+    // por el valor, cada dato que llegara volveria a fundir la pantalla.
+    val cara = when {
+        estado is Estado.Cargando -> Cara.CARGANDO
+        estado is Estado.Error -> Cara.ERROR
+        estado is Estado.Listo && vacio(estado.valor) -> Cara.VACIO
+        else -> Cara.CONTENIDO
+    }
+
+    Cruce(cara, modifier) { actual ->
+        when (actual) {
+            Cara.CARGANDO -> Aviso("estado.cargando")
+            Cara.ERROR -> AvisoConReintento(
+                (estado as? Estado.Error)?.falla ?: Falla.DESCONOCIDA,
+                reintentar,
+            )
+            Cara.VACIO -> Aviso("estado.vacio")
+            Cara.CONTENIDO -> (estado as? Estado.Listo)?.let { contenido(it.valor) }
         }
     }
 }
+
+/** Las cuatro caras que puede mostrar una pantalla que trae datos. */
+private enum class Cara { CARGANDO, ERROR, VACIO, CONTENIDO }
 
 @Composable
 private fun Aviso(clave: String, modifier: Modifier = Modifier) {

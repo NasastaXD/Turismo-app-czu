@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -16,6 +15,7 @@ import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Sans
+import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
@@ -31,7 +31,7 @@ fun AtribucionMapa(modifier: Modifier = Modifier) {
         estilo = Letra.etiquetaNav.copy(fontSize = 11.sp),
         color = Tono.tintaSuave,
         modifier = modifier
-            .background(Color.White.copy(alpha = 0.82f), RoundedCornerShape(999.dp))
+            .background(Tono.papel.copy(alpha = 0.82f), RoundedCornerShape(Radio.completo))
             .padding(horizontal = 8.dp, vertical = 3.dp),
     )
 }

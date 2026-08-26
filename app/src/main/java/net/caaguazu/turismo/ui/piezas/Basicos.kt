@@ -27,13 +27,16 @@ fun Texto(
     modifier: Modifier = Modifier,
     maxLineas: Int = Int.MAX_VALUE,
     alinear: TextAlign? = null,
+    conPuntosSuspensivos: Boolean = true,
 ) {
     BasicText(
         text = texto,
         modifier = modifier,
         style = estilo.copy(color = color, textAlign = alinear ?: estilo.textAlign),
         maxLines = maxLineas,
-        overflow = TextOverflow.Ellipsis,
+        // El sistema pide que las descripciones corten sin puntos suspensivos:
+        // los titulos truncan con puntos, las descripciones simplemente terminan.
+        overflow = if (conPuntosSuspensivos) TextOverflow.Ellipsis else TextOverflow.Clip,
     )
 }
 

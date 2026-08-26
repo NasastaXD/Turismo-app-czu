@@ -3,14 +3,14 @@
     "tipo": "imagen",
     "url": "file:///android_asset/mocks/img/1.png",
     "alt": "",
-    "w": 1200,
-    "h": 800
+    "w": 900,
+    "h": 900
   },
   "splash.fondo": {
     "tipo": "imagen",
     "url": "file:///android_asset/mocks/img/3.png",
     "alt": "",
-    "w": 1200,
-    "h": 800
+    "w": 900,
+    "h": 900
   }
 }

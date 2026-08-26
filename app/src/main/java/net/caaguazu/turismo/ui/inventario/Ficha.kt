@@ -158,6 +158,18 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 items(ficha.articulosRelacionados) { articulo -> FilaRelacionado(articulo) }
             }
 
+            if (ficha.fuentes.isNotBlank()) {
+                item { Seccion(Textos.t("ficha.fuentes")) }
+                item {
+                    Texto(
+                        texto = ficha.fuentes,
+                        estilo = Letra.descripcion,
+                        color = Tono.tintaSuave,
+                        modifier = Modifier.padding(horizontal = Medida.margen),
+                    )
+                }
+            }
+
             ficha.autor?.let { autor ->
                 item {
                     Column(Modifier.padding(Medida.margen)) {
@@ -223,7 +235,7 @@ private fun Seccion(titulo: String) {
 @Composable
 private fun Dato(etiqueta: String, valor: String) {
     Column(Modifier.fillMaxWidth().padding(horizontal = Medida.margen, vertical = 7.dp)) {
-        Texto(etiqueta, Letra.chip, Tono.acento, maxLineas = 1)
+        Texto(etiqueta, Letra.chip, Tono.tintaSuave, maxLineas = 1)
         Texto(valor, Letra.descripcion, Tono.tinta)
     }
 }

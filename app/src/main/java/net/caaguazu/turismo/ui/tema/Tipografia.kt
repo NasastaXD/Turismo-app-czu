@@ -50,6 +50,11 @@ object Letra {
         fontFamily = Sans, fontWeight = FontWeight.Normal,
         fontSize = 15.sp, lineHeight = 21.sp,
     )
+    /** "Ver todo": texto plano en la linea base del titulo de seccion. */
+    val verTodo = TextStyle(
+        fontFamily = Sans, fontWeight = FontWeight.Medium,
+        fontSize = 15.sp, lineHeight = 20.sp,
+    )
     val chip = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Medium, fontSize = 15.sp,
     )
