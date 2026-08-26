@@ -1,0 +1,75 @@
+# Compila el APK y lo publica como release descargable.
+#
+# Se dispara al empujar un tag `v*`. Se hace por tag y no por rama a proposito:
+# una release tiene que corresponder a un punto exacto del historial, no a
+# "lo que hubiera en la rama en ese momento".
+name: Publicar APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Traer el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Aceptar licencias e instalar el SDK que pide el proyecto
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" "build-tools;36.0.0" > /dev/null
+
+      - name: Cache de Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: gradle-
+
+      - name: Pruebas
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Compilar release
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Renombrar con la version
+        id: preparar
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p entrega
+          cp app/build/outputs/apk/release/app-arm64-v8a-release.apk    "entrega/caaguazu-$VERSION-arm64.apk"
+          cp app/build/outputs/apk/release/app-armeabi-v7a-release.apk  "entrega/caaguazu-$VERSION-armv7.apk"
+          cp app/build/outputs/apk/release/app-universal-release.apk    "entrega/caaguazu-$VERSION-universal.apk"
+          # Sin el mapa de R8, un log de release es ilegible incluso para quien
+          # escribio el codigo. Va adjunto a cada publicacion.
+          cp app/build/outputs/mapping/release/mapping.txt "entrega/mapping-$VERSION.txt"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          ls -lh entrega
+
+      - name: Publicar la release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.preparar.outputs.version }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Caaguazú $VERSION" \
+            --notes-file .github/notas-release.md \
+            --prerelease \
+            entrega/*
