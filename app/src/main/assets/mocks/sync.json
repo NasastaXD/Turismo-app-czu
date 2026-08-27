@@ -1,22 +1,7 @@
 {
-  "desde": "2026-08-20T14:00:00+00:00",
+  "desde": null,
   "hasta": "2026-08-26T09:00:00+00:00",
-  "cambiados": {
-    "inventario": [
-      101,
-      102
-    ],
-    "eventos": [],
-    "articulos": [
-      201
-    ],
-    "recorridos": []
-  },
-  "eliminados": {
-    "inventario": [],
-    "eventos": [],
-    "articulos": [],
-    "recorridos": []
-  },
-  "completo": false
+  "cambiados": {},
+  "eliminados": {},
+  "completo": true
 }

@@ -26,9 +26,14 @@ import java.io.File
 /**
  * Los modelos contra los payloads.
  *
- * Los mocks estan calcados de lo que devuelve el plugin czu-app/v1, campo por
- * campo. Si un modelo se desalinea del contrato, esto falla antes de que se note
- * como una pantalla vacia en un telefono.
+ * Los datos de esta prueba viven en src/test/resources y no en los assets de la
+ * app, y esa separacion es deliberada: lo que la app sirve como ejemplo cambia
+ * segun lo que haga falta demostrar, pero la forma del contrato no. Vaciar el
+ * contenido de ejemplo no puede dejar de verificar el contrato.
+ *
+ * Los payloads estan calcados de lo que devuelve el plugin czu-app/v1, campo por
+ * campo. Si un modelo se desalinea, esto falla antes de que se note como una
+ * pantalla vacia en un telefono.
  */
 class ContratoTest {
 
@@ -41,7 +46,7 @@ class ContratoTest {
     }
 
     private fun <T> mock(archivo: String, serializador: KSerializer<T>): T =
-        analizador.decodeFromString(serializador, File("src/main/assets/mocks/$archivo").readText())
+        analizador.decodeFromString(serializador, File("src/test/resources/contrato/$archivo").readText())
 
     @Test
     fun `cada payload del contrato se interpreta`() {

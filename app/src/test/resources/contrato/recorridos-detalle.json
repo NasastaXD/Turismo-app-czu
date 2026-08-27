@@ -1,0 +1,390 @@
+[
+  {
+    "id": 401,
+    "tipo": "prehecho",
+    "titulo": "‹Recorrido 1›",
+    "resumen": "‹resumen del recorrido›",
+    "portada": {
+      "url": "file:///android_asset/mocks/img/1.png",
+      "w": 900,
+      "h": 900,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "duracion_estimada": "2h",
+    "cantidad_paradas": 3,
+    "paradas": [
+      {
+        "orden": 1,
+        "ref_tipo": "destino",
+        "ref_id": 101,
+        "disponible": true,
+        "titulo": "‹Atractivo 1 con un nombre bastante más largo que ocupa dos líneas›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 12,
+          "slug": "paisaje-natural",
+          "nombre": "‹Paisaje Natural›",
+          "color": "#2E7D32"
+        },
+        "coordenadas": {
+          "lat": -25.483951,
+          "lng": -56.055669
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": "‹nota de la parada›"
+      },
+      {
+        "orden": 2,
+        "ref_tipo": "destino",
+        "ref_id": 102,
+        "disponible": true,
+        "titulo": "‹Atractivo 2›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/2.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 13,
+          "slug": "gastronomia",
+          "nombre": "‹Gastronomía›",
+          "color": "#B4531F"
+        },
+        "coordenadas": {
+          "lat": -25.462689,
+          "lng": -56.063119
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 3,
+        "ref_tipo": "destino",
+        "ref_id": 103,
+        "disponible": true,
+        "titulo": "‹Atractivo 3›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/3.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 14,
+          "slug": "cultura-historia",
+          "nombre": "‹Cultura e Historia›",
+          "color": "#6A4C93"
+        },
+        "coordenadas": {
+          "lat": -25.470168,
+          "lng": -56.03526
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      }
+    ],
+    "costo_total": "‹costo total›",
+    "historia": {
+      "introduccion": "‹introducción de la historia›",
+      "correlacion": "‹correlación›",
+      "personas": [],
+      "curiosidades": [],
+      "articulos_ref": [
+        201
+      ]
+    },
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+  },
+  {
+    "id": 402,
+    "tipo": "prehecho",
+    "titulo": "‹Recorrido 2›",
+    "resumen": "‹resumen del recorrido›",
+    "portada": {
+      "url": "file:///android_asset/mocks/img/2.png",
+      "w": 900,
+      "h": 900,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "duracion_estimada": "3h",
+    "cantidad_paradas": 4,
+    "paradas": [
+      {
+        "orden": 1,
+        "ref_tipo": "destino",
+        "ref_id": 103,
+        "disponible": true,
+        "titulo": "‹Atractivo 3›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/3.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 14,
+          "slug": "cultura-historia",
+          "nombre": "‹Cultura e Historia›",
+          "color": "#6A4C93"
+        },
+        "coordenadas": {
+          "lat": -25.470168,
+          "lng": -56.03526
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": "‹nota de la parada›"
+      },
+      {
+        "orden": 2,
+        "ref_tipo": "destino",
+        "ref_id": 104,
+        "disponible": true,
+        "titulo": "‹Atractivo 4›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/4.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 15,
+          "slug": "artesania",
+          "nombre": "‹Artesanía›",
+          "color": "#9C6644"
+        },
+        "coordenadas": {
+          "lat": -25.50123,
+          "lng": -56.021794
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 3,
+        "ref_tipo": "destino",
+        "ref_id": 105,
+        "disponible": true,
+        "titulo": "‹Atractivo 5 con un nombre bastante más largo que ocupa dos líneas›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/5.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 16,
+          "slug": "alojamiento",
+          "nombre": "‹Alojamiento›",
+          "color": "#1F6F8B"
+        },
+        "coordenadas": {
+          "lat": -25.502563,
+          "lng": -56.028804
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 4,
+        "ref_tipo": "destino",
+        "ref_id": 106,
+        "disponible": true,
+        "titulo": "‹Atractivo 6›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/6.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 17,
+          "slug": "eventos",
+          "nombre": "‹Eventos›",
+          "color": "#C2185B"
+        },
+        "coordenadas": {
+          "lat": -25.500459,
+          "lng": -56.061382
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      }
+    ],
+    "costo_total": "‹costo total›",
+    "historia": {
+      "introduccion": "‹introducción de la historia›",
+      "correlacion": "‹correlación›",
+      "personas": [],
+      "curiosidades": [],
+      "articulos_ref": [
+        201
+      ]
+    },
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+  },
+  {
+    "id": 403,
+    "tipo": "prehecho",
+    "titulo": "‹Recorrido 3›",
+    "resumen": "‹resumen del recorrido›",
+    "portada": {
+      "url": "file:///android_asset/mocks/img/3.png",
+      "w": 900,
+      "h": 900,
+      "credito": "‹crédito de foto›",
+      "alt": ""
+    },
+    "duracion_estimada": "4h",
+    "cantidad_paradas": 5,
+    "paradas": [
+      {
+        "orden": 1,
+        "ref_tipo": "destino",
+        "ref_id": 105,
+        "disponible": true,
+        "titulo": "‹Atractivo 5 con un nombre bastante más largo que ocupa dos líneas›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/5.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 16,
+          "slug": "alojamiento",
+          "nombre": "‹Alojamiento›",
+          "color": "#1F6F8B"
+        },
+        "coordenadas": {
+          "lat": -25.502563,
+          "lng": -56.028804
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": "‹nota de la parada›"
+      },
+      {
+        "orden": 2,
+        "ref_tipo": "destino",
+        "ref_id": 106,
+        "disponible": true,
+        "titulo": "‹Atractivo 6›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/6.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 17,
+          "slug": "eventos",
+          "nombre": "‹Eventos›",
+          "color": "#C2185B"
+        },
+        "coordenadas": {
+          "lat": -25.500459,
+          "lng": -56.061382
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 3,
+        "ref_tipo": "destino",
+        "ref_id": 107,
+        "disponible": true,
+        "titulo": "‹Atractivo 7›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/7.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 12,
+          "slug": "paisaje-natural",
+          "nombre": "‹Paisaje Natural›",
+          "color": "#2E7D32"
+        },
+        "coordenadas": {
+          "lat": -25.477406,
+          "lng": -55.991449
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 4,
+        "ref_tipo": "destino",
+        "ref_id": 108,
+        "disponible": true,
+        "titulo": "‹Atractivo 8›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/8.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        },
+        "categoria": {
+          "id": 13,
+          "slug": "gastronomia",
+          "nombre": "‹Gastronomía›",
+          "color": "#B4531F"
+        },
+        "coordenadas": {
+          "lat": -25.496953,
+          "lng": -56.048792
+        },
+        "costo": "‹costo›",
+        "horario": "‹horario›",
+        "nota": ""
+      },
+      {
+        "orden": 5,
+        "ref_tipo": "destino",
+        "ref_id": 109,
+        "disponible": false,
+        "nota": ""
+      }
+    ],
+    "costo_total": "‹costo total›",
+    "historia": {
+      "introduccion": "‹introducción de la historia›",
+      "correlacion": "‹correlación›",
+      "personas": [],
+      "curiosidades": [],
+      "articulos_ref": [
+        201
+      ]
+    },
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+  }
+]
