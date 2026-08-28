@@ -113,7 +113,7 @@ class ContratoTest {
         assertTrue("los mocks deberian traer costo_total", recorridos.all { it.costoTotal != null })
         assertTrue(
             "hay_pago en true deberia traer detalle",
-            recorridos.all { it.costoTotal?.hayPago != true || it.costoTotal?.detalle?.isNotEmpty() == true },
+            recorridos.all { r -> r.costoTotal?.let { !it.hayPago || it.detalle.isNotEmpty() } ?: true },
         )
 
         val paradas = recorridos.flatMap { it.paradas }.filter { it.disponible }
