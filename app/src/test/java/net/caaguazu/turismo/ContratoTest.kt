@@ -60,6 +60,14 @@ class ContratoTest {
         assertEquals("el total no coincide con los items", inventario.items.size, inventario.total)
         assertTrue("una ficha sin coordenadas", inventario.items.all { it.coordenadas != null })
 
+        val eventos = inventario.items.filter { it.tipoItem == "evento" }
+        assertTrue("los mocks deberian incluir al menos un evento", eventos.isNotEmpty())
+        assertTrue("un evento sin fecha de inicio", eventos.all { it.fechas?.inicio != null })
+        assertTrue(
+            "el filtro de proximos deberia dejar afuera al menos uno ya terminado",
+            eventos.any { it.fechas?.terminado == true },
+        )
+
         val fichas = mock("fichas.json", ListSerializer(Ficha.serializer()))
         assertTrue("hay fichas de mas o de menos", fichas.size == inventario.items.size)
         assertNotNull("la ficha no trae autor", fichas.first().autor)
@@ -91,6 +99,26 @@ class ContratoTest {
 
         assertTrue("los mocks deberian incluir una parada colgada", colgadas.isNotEmpty())
         assertTrue("una parada colgada no deberia traer titulo", colgadas.all { it.titulo.isBlank() })
+    }
+
+    /**
+     * `costo_total` paso de string a objeto (`hay_pago` + `detalle[]`). Antes
+     * de este cambio de modelo, esto tumbaba la decodificacion entera del
+     * recorrido en vez de quedar en un campo vacio.
+     */
+    @Test
+    fun `el costo total del recorrido decodifica como objeto`() {
+        val recorridos = mock("recorridos-detalle.json", ListSerializer(Recorrido.serializer()))
+
+        assertTrue("los mocks deberian traer costo_total", recorridos.all { it.costoTotal != null })
+        assertTrue(
+            "hay_pago en true deberia traer detalle",
+            recorridos.all { it.costoTotal?.hayPago != true || it.costoTotal?.detalle?.isNotEmpty() == true },
+        )
+
+        val paradas = recorridos.flatMap { it.paradas }.filter { it.disponible }
+        assertTrue("una parada disponible sin texto", paradas.any { it.texto.isNotBlank() })
+        assertTrue("falta el audio/video de alguna parada", paradas.any { it.medio != null })
     }
 
     /** Un campo que el servidor agregue manana no puede tumbar una app publicada. */

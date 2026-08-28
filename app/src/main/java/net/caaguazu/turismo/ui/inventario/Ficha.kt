@@ -210,11 +210,7 @@ private fun datosPracticos(ficha: Ficha): List<Pair<String, String>> = buildList
     }
     mas("ficha.horario", ficha.practicos.horario)
     mas("ficha.costo", ficha.practicos.costo)
-    mas("ficha.duracion", ficha.practicos.duracion)
-    mas("ficha.servicios", ficha.practicos.servicios)
-    mas("ficha.temporada", ficha.practicos.temporada)
     mas("ficha.contacto", ficha.practicos.contacto)
-    mas("ficha.llegar", ficha.acceso.comoLlegar)
     mas("ficha.camino", ficha.acceso.estadoCamino)
     mas("ficha.acceso", ficha.acceso.accesibilidad)
 }

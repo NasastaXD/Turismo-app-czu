@@ -34,6 +34,7 @@ class ApiHttp(
         categoria: Int?,
         zona: Int?,
         buscar: String?,
+        tipoItem: String?,
         pagina: Int,
         porPagina: Int,
     ) = pedir(
@@ -41,6 +42,7 @@ class ApiHttp(
             si("categoria", categoria)
             si("zona", zona)
             si("buscar", buscar)
+            si("tipo_item", tipoItem)
             si("pagina", pagina)
             si("por_pagina", porPagina)
         },
