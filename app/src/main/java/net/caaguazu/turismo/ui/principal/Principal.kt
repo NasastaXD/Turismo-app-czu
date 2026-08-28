@@ -3,15 +3,15 @@ package net.caaguazu.turismo.ui.principal
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Textos
-import net.caaguazu.turismo.datos.Categoria
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.datos.ItemInventario
@@ -27,38 +26,49 @@ import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.AtajoFoto
 import net.caaguazu.turismo.ui.piezas.Badge
+import net.caaguazu.turismo.ui.piezas.BandaPromocional
 import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Corazon
 import net.caaguazu.turismo.ui.piezas.EncabezadoSeccion
+import net.caaguazu.turismo.ui.piezas.EntradaBusqueda
 import net.caaguazu.turismo.ui.piezas.Estado
+import net.caaguazu.turismo.ui.piezas.FilaCompacta
 import net.caaguazu.turismo.ui.piezas.Icono
-import net.caaguazu.turismo.ui.piezas.TarjetaFoto
+import net.caaguazu.turismo.ui.piezas.TarjetaGrande
 import net.caaguazu.turismo.ui.piezas.TileEtiquetado
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Medida
 import net.caaguazu.turismo.ui.tema.Tono
 
+/** Cuantos lugares entran en el mosaico del inicio antes de mandar a buscar. */
+private const val LUGARES_EN_PORTADA = 6
+
+/** Cuantos articulos se listan antes de mandar a la seccion. */
+private const val ARTICULOS_EN_PORTADA = 3
+
 /**
- * La pantalla de inicio.
+ * El inicio.
  *
- * Es una galeria, no un indice: fotos grandes sueltas sobre el fondo, sin caja
- * blanca alrededor y sin bandas de color alternadas. Lo que separa una seccion
- * de la siguiente es el aire, que es la unica forma de que las fotos —que son
- * el contenido— no compitan con la estructura que las ordena.
+ * La version anterior eran cuatro carruseles horizontales iguales, uno debajo
+ * del otro. Eso es un indice disfrazado de portada: cuatro rieles de miniaturas
+ * donde ninguna foto se ve, y donde las cuatro secciones pesan lo mismo aunque
+ * no lo valgan.
  *
- * Arriba, los atajos de categoria: es el camino corto al inventario para quien
- * ya sabe que esta buscando. Debajo, cada seccion con su carrusel, con la
- * tercera tarjeta cortada por el borde. Ese corte es la unica señal de que hay
- * mas: el sistema no lleva flechas, ni puntos, ni barra de progreso.
+ * Esta portada tiene jerarquia. Arriba la busqueda, que es como llega quien ya
+ * sabe que quiere. Despues los atajos de categoria. Despues **una** cosa
+ * grande: el evento que esta pasando o el que viene, que es lo unico de la app
+ * que caduca. Despues el mosaico de lugares, que es lo que se mira sin buscar
+ * nada. La banda del recorrido, y al final los articulos como lista, porque un
+ * articulo se elige por el titular y no por la foto.
  */
 @Composable
 fun Principal(
+    alBuscar: () -> Unit,
+    alBuscarCategoria: (Int) -> Unit,
+    alAbrirFicha: (Int) -> Unit,
     alVerArticulo: (Int) -> Unit,
     alVerRecorrido: (Int) -> Unit,
-    alVerFicha: (Int) -> Unit,
-    alVerCategoria: (Categoria) -> Unit,
-    alVerInventario: () -> Unit,
     alVerArticulos: () -> Unit,
     alVerRecorridos: () -> Unit,
     alAbrirPerfil: () -> Unit,
@@ -68,7 +78,7 @@ fun Principal(
     // fallo se traduce en una seccion que no aparece, no en una pantalla de
     // error. Por eso no hay Cargador: no hay una sola cosa que reintentar.
     val (categorias, _) = cargar { Datos.api.categorias() }
-    val (inventario, _) = cargar { Datos.api.inventario(porPagina = 12) }
+    val (inventario, _) = cargar { Datos.api.inventario(porPagina = 24) }
     // La agenda sale de clonar el inventario y filtrar del lado del telefono,
     // no de /eventos: es lo que permite que funcione sin conexion, y evita
     // arrastrar la forma distinta de un evento legado a esta pantalla.
@@ -76,187 +86,177 @@ fun Principal(
     val (articulos, _) = cargar { Datos.api.articulos() }
     val (recorridos, _) = cargar { Datos.api.recorridos() }
 
-    BoxWithConstraints(modifier.fillMaxSize().background(Tono.fondo)) {
-        // 45% del ancho: dos tarjetas enteras y el borde de la tercera.
-        val anchoTarjeta = maxWidth * Medida.FRACCION_TARJETA
+    val lugares = itemsDe(inventario.value)
+    val proximo = proximoEvento(itemsDe(eventos.value))
 
-        LazyColumn(contentPadding = PaddingValues(bottom = Medida.colaDeLista)) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize().background(Tono.fondo),
+        contentPadding = PaddingValues(bottom = Medida.colaDeLista),
+    ) {
 
+        item {
+            CabeceraPantalla(Textos.t("app.nombre")) {
+                BotonIcono(
+                    icono = Icono.perfil,
+                    descripcion = Textos.t("barra.perfil"),
+                    alTocar = alAbrirPerfil,
+                )
+            }
+        }
+
+        item {
+            EntradaBusqueda(
+                marcador = Textos.t("barra.buscar"),
+                alTocar = alBuscar,
+                modifier = Modifier.padding(horizontal = Medida.margen),
+            )
+        }
+
+        item {
+            val lista = (categorias.value as? Estado.Listo)?.valor.orEmpty()
+            val fotos = fotoPorCategoria(lugares)
+            if (lista.isNotEmpty()) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = Medida.margen),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(top = Medida.entreTarjetas),
+                ) {
+                    items(lista.size) { indice ->
+                        val categoria = lista[indice]
+                        AtajoFoto(
+                            imagen = categoria.portada ?: fotos[categoria.id],
+                            etiqueta = categoria.nombre,
+                            colorSinFoto = categoria.color,
+                            alTocar = { alBuscarCategoria(categoria.id) },
+                        )
+                    }
+                }
+            }
+        }
+
+        // Lo unico de la app que caduca va primero y va grande. Si no hay
+        // ningun evento por delante, la portada no reserva el hueco: arranca
+        // directamente en los lugares.
+        if (proximo != null) {
             item {
-                CabeceraPantalla(Textos.t("app.nombre")) {
-                    BotonIcono(
-                        icono = Icono.perfil,
-                        descripcion = Textos.t("barra.perfil"),
-                        alTocar = alAbrirPerfil,
+                Column(Modifier.padding(top = Medida.entreSecciones)) {
+                    EncabezadoSeccion(Textos.t("principal.eventos"))
+                    Box(Modifier.height(Medida.tituloACarrusel))
+                    TarjetaGrande(
+                        imagen = proximo.portada,
+                        titulo = proximo.titulo,
+                        encima = fechaCorta(proximo.fechas?.inicio),
+                        modifier = Modifier.padding(horizontal = Medida.margen),
+                        alTocar = { alAbrirFicha(proximo.id) },
+                        esquina = {
+                            if (proximo.fechas?.enCurso == true) {
+                                Badge(Textos.t("evento.enCurso"))
+                            } else {
+                                Corazon(
+                                    marcado = { Guardado.esFavorito(proximo.id) },
+                                    alTocar = { Guardado.alternarFavorito(proximo.id) },
+                                    descripcion = proximo.titulo,
+                                )
+                            }
+                        },
                     )
                 }
             }
+        }
 
+        // El mosaico de lugares. Se arma a mano en filas de dos y no con una
+        // grilla perezosa: una grilla dentro de una columna perezosa no tiene
+        // alto que medir, y para seis elementos la fila a mano no cuesta nada.
+        if (lugares.isNotEmpty()) {
             item {
-                val lista = (categorias.value as? Estado.Listo)?.valor.orEmpty()
-                val fotos = fotoPorCategoria(inventario.value)
-                if (lista.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = Medida.margen),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.padding(bottom = Medida.entreSecciones),
-                    ) {
-                        items(lista.size) { indice ->
-                            val categoria = lista[indice]
-                            AtajoFoto(
-                                imagen = categoria.portada ?: fotos[categoria.id],
-                                etiqueta = categoria.nombre,
-                                colorSinFoto = categoria.color,
-                                alTocar = { alVerCategoria(categoria) },
+                Column(Modifier.padding(top = Medida.entreSecciones)) {
+                    EncabezadoSeccion(Textos.t("nav.inventario"), alVerTodo = alBuscar)
+                    Box(Modifier.height(Medida.tituloACarrusel))
+                }
+            }
+            items(lugares.take(LUGARES_EN_PORTADA).chunked(2)) { fila ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Medida.margen)
+                        .padding(bottom = Medida.entreTarjetas),
+                    horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+                ) {
+                    fila.forEach { lugar ->
+                        Box(Modifier.weight(1f)) {
+                            TileEtiquetado(
+                                imagen = lugar.portada,
+                                etiqueta = lugar.titulo,
+                                proporcion = 16f / 13f,
+                                alTocar = { alAbrirFicha(lugar.id) },
                             )
                         }
                     }
+                    // Si la ultima fila queda impar, el hueco se reserva para
+                    // que el tile solitario no se estire al doble de ancho.
+                    if (fila.size == 1) Box(Modifier.weight(1f))
                 }
             }
+        }
 
-            seccion(
-                titulo = Textos.t("nav.inventario"),
-                estado = inventario.value,
-                alVerTodo = alVerInventario,
-            ) { item ->
-                TarjetaFoto(
-                    imagen = item.portada,
-                    titulo = item.titulo,
-                    encima = item.zona?.nombre,
-                    modifier = Modifier.width(anchoTarjeta),
-                    alTocar = { alVerFicha(item.id) },
-                    esquina = {
-                        Corazon(
-                            // Lectura diferida: marcar un favorito redibuja un
-                            // corazon, no el carrusel entero.
-                            marcado = { Guardado.esFavorito(item.id) },
-                            alTocar = { Guardado.alternarFavorito(item.id) },
-                            descripcion = item.titulo,
+        item {
+            val recorrido = (recorridos.value as? Estado.Listo)?.valor?.items?.firstOrNull()
+            if (recorrido != null) {
+                Column(Modifier.padding(top = Medida.entreTarjetas)) {
+                    EncabezadoSeccion(Textos.t("nav.recorridos"), alVerTodo = alVerRecorridos)
+                    Box(Modifier.height(Medida.tituloACarrusel))
+                    BandaPromocional(
+                        imagen = recorrido.portada,
+                        titulo = recorrido.titulo,
+                        textoAccion = Textos.t("rec.abrir"),
+                        alTocar = { alVerRecorrido(recorrido.id) },
+                        modifier = Modifier.padding(horizontal = Medida.margen),
+                    )
+                }
+            }
+        }
+
+        item {
+            val lista = (articulos.value as? Estado.Listo)?.valor?.items.orEmpty()
+            if (lista.isNotEmpty()) {
+                Column(Modifier.padding(top = Medida.entreSecciones)) {
+                    EncabezadoSeccion(Textos.t("nav.articulos"), alVerTodo = alVerArticulos)
+                    Box(Modifier.height(Medida.tituloACarrusel))
+                    lista.take(ARTICULOS_EN_PORTADA).forEach { articulo ->
+                        FilaCompacta(
+                            imagen = articulo.portada,
+                            titulo = articulo.titulo,
+                            detalle = articulo.entradilla.ifBlank { null },
+                            meta = fechaCorta(articulo.publicado),
+                            modifier = Modifier
+                                .padding(horizontal = Medida.margen)
+                                .padding(bottom = 10.dp),
+                            alTocar = { alVerArticulo(articulo.id) },
                         )
-                    },
-                )
-            }
-
-            seccion(
-                titulo = Textos.t("principal.eventos"),
-                estado = eventos.value,
-                alVerTodo = alVerInventario,
-                ordenar = ::proximosEventos,
-            ) { evento ->
-                TarjetaFoto(
-                    imagen = evento.portada,
-                    titulo = evento.titulo,
-                    encima = fechaCorta(evento.fechas?.inicio),
-                    modifier = Modifier.width(anchoTarjeta),
-                    alTocar = { alVerFicha(evento.id) },
-                    esquina = {
-                        // Un evento que esta pasando ahora es la unica cosa de
-                        // la pantalla que cambia sola. Por eso lleva el unico
-                        // badge, y el unico mango.
-                        if (evento.fechas?.enCurso == true) {
-                            Badge(Textos.t("evento.enCurso"))
-                        }
-                    },
-                )
-            }
-
-            seccion(
-                titulo = Textos.t("nav.articulos"),
-                estado = articulos.value,
-                alVerTodo = alVerArticulos,
-            ) { articulo ->
-                TarjetaFoto(
-                    imagen = articulo.portada,
-                    titulo = articulo.titulo,
-                    encima = fechaCorta(articulo.publicado),
-                    proporcion = 3f / 4f,
-                    modifier = Modifier.width(anchoTarjeta),
-                    alTocar = { alVerArticulo(articulo.id) },
-                )
-            }
-
-            // Los recorridos cierran la pantalla a lo ancho: un recorrido se
-            // elige por la foto y por el paisaje que promete, no comparando dos
-            // miniaturas de al lado.
-            item {
-                val lista = (recorridos.value as? Estado.Listo)?.valor?.items.orEmpty()
-                if (lista.isNotEmpty()) {
-                    Column {
-                        EncabezadoSeccion(Textos.t("nav.recorridos"), alVerTodo = alVerRecorridos)
-                        Box(Modifier.height(Medida.tituloACarrusel))
-                        LazyRow(
-                            contentPadding = PaddingValues(
-                                start = Medida.margen,
-                                end = Medida.margen,
-                                bottom = Medida.entreSecciones,
-                            ),
-                            horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-                        ) {
-                            items(lista.size) { indice ->
-                                val recorrido = lista[indice]
-                                TileEtiquetado(
-                                    imagen = recorrido.portada,
-                                    etiqueta = recorrido.titulo,
-                                    proporcion = 16f / 10f,
-                                    modifier = Modifier.width(anchoTarjeta * 2),
-                                    alTocar = { alVerRecorrido(recorrido.id) },
-                                )
-                            }
-                        }
                     }
                 }
             }
         }
+
     }
 }
 
-/**
- * Una seccion con su encabezado y su carrusel.
- *
- * Si la seccion no tiene nada, no se dibuja ni el titulo: un encabezado sobre
- * una fila vacia deja un hueco que parece un error de carga. Y si falla, falla
- * sola — el resto de la pantalla de inicio sigue funcionando, que es mejor que
- * una pantalla entera rota por una seccion.
- */
-private fun <T> LazyListScope.seccion(
-    titulo: String,
-    estado: Estado<Pagina<T>>,
-    alVerTodo: () -> Unit,
-    ordenar: (List<T>) -> List<T> = { it },
-    tarjeta: @Composable (T) -> Unit,
-) {
-    item {
-        val elementos = ordenar((estado as? Estado.Listo)?.valor?.items.orEmpty())
-        if (elementos.isNotEmpty()) {
-            Column {
-                EncabezadoSeccion(titulo, alVerTodo = alVerTodo)
-                Box(Modifier.height(Medida.tituloACarrusel))
-                LazyRow(
-                    // Solo margen a la izquierda: el carrusel sangra hasta el
-                    // borde derecho, que es lo que deja la tercera cortada.
-                    contentPadding = PaddingValues(
-                        start = Medida.margen,
-                        bottom = Medida.entreSecciones,
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-                ) {
-                    items(elementos.size) { indice -> tarjeta(elementos[indice]) }
-                }
-            }
-        }
-    }
-}
+private fun <T> itemsDe(estado: Estado<Pagina<T>>): List<T> =
+    (estado as? Estado.Listo)?.valor?.items.orEmpty()
 
 /** La foto del primer atractivo de cada categoria, para los atajos sin portada. */
-private fun fotoPorCategoria(
-    inventario: Estado<Pagina<ItemInventario>>,
-): Map<Int, Imagen?> =
-    (inventario as? Estado.Listo)?.valor?.items
-        ?.mapNotNull { item -> item.categoria?.id?.let { it to item.portada } }
-        ?.filter { it.second != null }
-        ?.toMap()
-        .orEmpty()
+private fun fotoPorCategoria(lugares: List<ItemInventario>): Map<Int, Imagen?> =
+    lugares
+        .mapNotNull { item -> item.categoria?.id?.let { it to item.portada } }
+        .filter { it.second != null }
+        .toMap()
 
-/** Los que no terminaron todavia, del mas cercano al mas lejano. */
-private fun proximosEventos(items: List<ItemInventario>): List<ItemInventario> =
-    items.filter { it.fechas?.terminado != true }.sortedBy { it.fechas?.inicio ?: "" }
+/**
+ * El evento que hay que mostrar: el que esta ocurriendo, y si no hay ninguno,
+ * el mas cercano que todavia no termino.
+ */
+private fun proximoEvento(items: List<ItemInventario>): ItemInventario? {
+    val vigentes = items.filter { it.fechas?.terminado != true }
+    return vigentes.firstOrNull { it.fechas?.enCurso == true }
+        ?: vigentes.minByOrNull { it.fechas?.inicio ?: "" }
+}

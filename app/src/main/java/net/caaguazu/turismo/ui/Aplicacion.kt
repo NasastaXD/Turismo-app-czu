@@ -6,14 +6,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import net.caaguazu.turismo.ui.articulos.Articulos
-import net.caaguazu.turismo.ui.inventario.Inventario
-import net.caaguazu.turismo.ui.inventario.RutaInv
+import net.caaguazu.turismo.ui.buscar.Buscar
 import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
 import net.caaguazu.turismo.ui.perfil.PantallaPerfil
 import net.caaguazu.turismo.ui.piezas.BarraInferior
@@ -27,15 +25,11 @@ import net.caaguazu.turismo.ui.tema.recordarAnimacionesActivas
 /**
  * Armazon de la app: contenido y barra inferior.
  *
- * Ya no hay barra superior. Cada pantalla abre con su propio titulo grande
- * alineado a la izquierda, que es de donde sale el aire del sistema: una barra
- * con el nombre de la app repetido arriba de las cinco pantallas gastaba alto
- * para decir algo que nadie necesita leer cinco veces.
- *
- * El armazon solo decide una cosa: si el contenido arranca debajo de la barra
- * de estado o corre por debajo de ella. Las pantallas con foto o mapa a sangre
- * corren por debajo — la imagen llega hasta arriba de todo y los botones
- * flotan encima.
+ * No decide nada mas. No hay barra superior —cada pantalla abre con su propio
+ * titulo— y tampoco pone el hueco de la barra de estado: eso lo resuelve cada
+ * cabecera, porque las pantallas que van a sangre —la ficha, el mapa, el
+ * articulo— necesitan llegar hasta arriba de todo y un padding puesto aca se lo
+ * impedia a todas por igual.
  */
 @Composable
 fun Aplicacion() {
@@ -59,19 +53,16 @@ fun Aplicacion() {
 
     ConMovimientoDelSistema(recordarAnimacionesActivas()) {
         Column(Modifier.fillMaxSize().background(Tono.fondo)) {
-            val aSangre = navegador.enPantallaASangre()
-
-            Box(
-                Modifier
-                    .weight(1f)
-                    .then(if (aSangre) Modifier else Modifier.statusBarsPadding()),
-            ) {
+            Box(Modifier.weight(1f)) {
                 Cruce(navegador.caraActual()) { _ ->
                     when {
                         navegador.diagnosticoAbierto -> PantallaDiagnostico()
                         navegador.perfilAbierto -> PantallaPerfil(navegador::abrirDiagnostico)
                         else -> when (navegador.seccion) {
-                            Seccion.PRINCIPAL -> Principal(
+                            Seccion.INICIO -> Principal(
+                                alBuscar = { navegador.ir(Seccion.BUSCAR) },
+                                alBuscarCategoria = navegador::buscarPorCategoria,
+                                alAbrirFicha = navegador::abrirFicha,
                                 alVerArticulo = { id ->
                                     navegador.ir(Seccion.ARTICULOS)
                                     navegador.articulos.abrir(id)
@@ -80,22 +71,13 @@ fun Aplicacion() {
                                     navegador.ir(Seccion.RECORRIDOS)
                                     navegador.recorridos.abrir(id)
                                 },
-                                alVerFicha = { id ->
-                                    navegador.ir(Seccion.INVENTARIO)
-                                    navegador.inventario.ir(RutaInv.Ficha(id))
-                                },
-                                alVerCategoria = { categoria ->
-                                    navegador.ir(Seccion.INVENTARIO)
-                                    navegador.inventario.ir(RutaInv.Lista(categoria))
-                                },
-                                alVerInventario = { navegador.ir(Seccion.INVENTARIO) },
                                 alVerArticulos = { navegador.ir(Seccion.ARTICULOS) },
                                 alVerRecorridos = { navegador.ir(Seccion.RECORRIDOS) },
                                 alAbrirPerfil = navegador::abrirPerfil,
                             )
 
-                            Seccion.INVENTARIO -> Inventario(
-                                pila = navegador.inventario,
+                            Seccion.BUSCAR -> Buscar(
+                                pila = navegador.busqueda,
                                 alAbrirPerfil = navegador::abrirPerfil,
                             )
 
@@ -107,12 +89,7 @@ fun Aplicacion() {
                             Seccion.RECORRIDOS -> Recorridos(
                                 pila = navegador.recorridos,
                                 alAbrirPerfil = navegador::abrirPerfil,
-                                alAbrirFicha = { id ->
-                                    // Abrir una ficha desde un recorrido lleva al
-                                    // inventario, que es donde vive esa pantalla.
-                                    navegador.ir(Seccion.INVENTARIO)
-                                    navegador.inventario.ir(RutaInv.Ficha(id))
-                                },
+                                alAbrirFicha = navegador::abrirFicha,
                             )
                         }
                     }
@@ -124,16 +101,5 @@ fun Aplicacion() {
                 alElegir = navegador::ir,
             )
         }
-    }
-}
-
-/** Las pantallas cuya foto o mapa llega hasta arriba de todo. */
-private fun Navegador.enPantallaASangre(): Boolean {
-    if (perfilAbierto || diagnosticoAbierto) return false
-    return when (seccion) {
-        Seccion.INVENTARIO -> inventario.actual is RutaInv.Ficha
-        Seccion.ARTICULOS -> articulos.abierto != null
-        Seccion.RECORRIDOS -> recorridos.abierto != null
-        Seccion.PRINCIPAL -> false
     }
 }

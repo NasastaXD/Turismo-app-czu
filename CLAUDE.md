@@ -62,7 +62,51 @@ son marcadores evidentemente sintéticos.
 
 ---
 
-## 3. El sistema visual
+## 3. La forma de la app
+
+Cuatro secciones abajo: **inicio, buscar, artículos, recorridos**. El perfil no
+ocupa una: vive en un botón redondo en la cabecera de cada sección, porque se
+entra dos veces y no se vuelve.
+
+**Buscar no es un índice, es una búsqueda.** El inventario dejó de ser un árbol
+por el que se baja —categorías, lista, ficha— y pasó a ser una sola pantalla que
+cambia de cara: mientras no se pidió nada, muestra las categorías como mosaico;
+en cuanto hay algo escrito o filtrado, muestra resultados. Las categorías siguen
+estando, pero como sugerencia y no como peaje.
+
+**Los filtros viven en una hoja que sube.** Cuatro ejes —categoría, zona,
+etiqueta y precio— en una capa sobre lo que ya estaba, no en una pantalla
+aparte. La diferencia no es estética: quien filtra quiere ver cómo cambia lo que
+tiene detrás. Se aplican al tocarlos; el botón de abajo solo cierra.
+
+**El mapa es la misma búsqueda, dibujada sobre el lienzo.** Ocupa la pantalla
+entera, los controles flotan encima y el pin tocado abre una tarjeta abajo.
+Antes el mapa era el último tercio de una columna con cabecera, buscador, chips
+y contador: en un teléfono quedaba del tamaño de una estampilla, que para un
+distrito de 942 km² no alcanza para ubicarse.
+
+**El inicio tiene jerarquía, no cuatro rieles.** Búsqueda, atajos de categoría,
+*una* cosa grande —el evento que está pasando o el que viene, que es lo único de
+la app que caduca—, el mosaico de lugares, la banda del recorrido y los
+artículos como lista. Cuatro carruseles horizontales iguales son un índice
+disfrazado de portada: ninguna foto se ve y las cuatro secciones pesan lo mismo
+aunque no lo valgan.
+
+**La ficha es una hoja que sube sobre la foto.** La foto queda fija al fondo, a
+sangre y hasta arriba de todo; el contenido la tapa con esquinas redondeadas. Al
+desplazar, la foto se queda y la hoja avanza, así que el lugar sigue presente
+mientras se lee sobre él. El título va en la hoja, en tinta — un titular blanco
+sobre una imagen depende de que la imagen sea oscura justo ahí, y las fotos del
+destino no se eligen pensando en eso.
+
+**El precio se filtra en el teléfono.** El contrato no tiene parámetro para eso
+y esperar una versión del servidor para poder mover un control sería atarse las
+manos. Cuando el panel lo agregue, se cambia por el parámetro y se borra el
+filtro local.
+
+---
+
+## 4. El sistema visual
 
 La definición en una línea: **fotos y tarjetas muy redondeadas que flotan sobre
 un fondo claro con una sombra ancha y suave, con toda la interacción encapsulada
@@ -191,7 +235,7 @@ sería ignorar una decisión ya tomada.
 
 ---
 
-## 4. El código
+## 5. El código
 
 **Sin capas ceremoniales.** Si hay una sola implementación de algo, no hay
 interfaz ni fábrica ni inyección de dependencias. Un único modelo por entidad,
@@ -267,7 +311,7 @@ completo, splits por ABI, y sin ceremonia que cueste kilobytes.
 
 ---
 
-## 5. El mapa
+## 6. El mapa
 
 **Vectorial, embebido, sin servidor.** El recorte de Caaguazú pesa 2 MB y viaja
 dentro del APK; la pirámide ráster equivalente pesaría unos 250 MB. MapLibre lo
@@ -289,7 +333,7 @@ incompleto sin que nadie se entere.
 
 ---
 
-## 6. Avisos y calendario
+## 7. Avisos y calendario
 
 Las dos cosas siguen el mismo criterio que el mapa: **se delega en lo que el
 teléfono ya tiene, en vez de construirlo de nuevo.**
@@ -331,7 +375,7 @@ el otro y eso solo funciona si están separados desde el principio.
 
 ---
 
-## 7. Cómo se trabaja
+## 8. Cómo se trabaja
 
 Las correcciones se acumulan como commits en la rama de trabajo hasta que se
 pida **"Release!"**. Cada release compila en Actions y publica los tres APK más
@@ -343,7 +387,7 @@ APK. Decir "listo" sobre algo que no se vio dibujado sería mentir.
 
 ---
 
-## 8. Lo que no se hace
+## 9. Lo que no se hace
 
 - Escribir contenido de producto.
 - Usar imágenes de archivo.

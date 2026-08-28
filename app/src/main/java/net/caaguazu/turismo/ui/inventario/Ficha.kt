@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Calendario
 import net.caaguazu.turismo.core.Guardado
@@ -63,17 +64,24 @@ import net.caaguazu.turismo.ui.tema.Tono
 /** Cuantas lineas del cuerpo se ven antes de tener que pedir el resto. */
 private const val LINEAS_PLEGADAS = 4
 
+/** Cuatro lineas de descripcion a lo ancho de un telefono, aproximado. */
+private const val LARGO_DE_CUATRO_LINEAS = 220
+
+/** Cuanto de la foto tapa la hoja al arrancar. */
+private val SOLAPE = 32.dp
+
 /**
- * La ficha de un atractivo.
+ * La ficha de un lugar.
  *
- * La foto llega hasta arriba de todo y se redondea solo abajo, contra el
- * contenido: el titulo ya no va encima de la imagen sino debajo, en tinta sobre
- * el fondo. Un titulo blanco sobre una foto depende de que la foto sea oscura
- * justo ahi, y las fotos del destino no se eligen pensando en eso.
+ * La foto queda fija al fondo, a sangre y hasta arriba de todo, y el contenido
+ * sube por encima como una hoja de esquinas redondeadas que la tapa. Es la
+ * forma de la referencia y no es decorativa: al desplazar, la foto se queda y
+ * la hoja avanza, asi que el lugar sigue presente mientras se lee sobre el, en
+ * vez de desaparecer al primer gesto.
  *
- * Debajo del titulo, la fila de metadatos como pildoras —donde, cuando,
- * cuanto— y recien despues el texto. Lo fijo abajo es la accion principal, que
- * se quiere a mano en cualquier punto del scroll.
+ * El titulo va en la hoja, en tinta, no sobre la foto en blanco. Un titular
+ * blanco encima de una imagen depende de que la imagen sea oscura justo ahi, y
+ * las fotos del destino no se eligen pensando en eso.
  */
 @Composable
 fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) {
@@ -83,8 +91,8 @@ fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) 
         Cargador(estado = estado.value, reintentar = reintentar) { ficha ->
             Contenido(ficha)
         }
-        // El boton de volver vive fuera del contenido: tiene que existir aunque
-        // la ficha no haya cargado.
+        // Volver vive fuera del contenido: tiene que existir aunque la ficha no
+        // haya cargado.
         BotonFlotante(
             icono = Icono.volver,
             descripcion = Textos.t("accion.volver"),
@@ -104,23 +112,56 @@ private fun Contenido(ficha: Ficha) {
     // cada recomposicion del scroll.
     val cuerpo = remember(ficha.id) { HtmlSencillo.bloques(ficha.articuloHtml) }
 
-    Box(Modifier.fillMaxSize()) {
-        LazyColumn(contentPadding = PaddingValues(bottom = 108.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val altoFoto: Dp = maxWidth * 3f / 4f
 
-            item { Cabecera(ficha) }
+        // La foto no esta dentro de la lista: se dibuja detras y no se mueve.
+        Box(Modifier.fillMaxWidth().height(altoFoto)) {
+            Foto(ficha.portada, ficha.titulo, Modifier.fillMaxSize(), radio = Radio.ninguno)
+            Corazon(
+                marcado = { Guardado.esFavorito(ficha.id) },
+                alTocar = { Guardado.alternarFavorito(ficha.id) },
+                descripcion = ficha.titulo,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(Medida.entreTarjetas),
+            )
+            if (ficha.fechas?.enCurso == true) {
+                Badge(
+                    texto = Textos.t("evento.enCurso"),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = Medida.margen, bottom = SOLAPE + 14.dp),
+                )
+            }
+        }
+
+        LazyColumn(contentPadding = PaddingValues(bottom = 112.dp)) {
+
+            // El hueco que deja ver la foto. Es un item de la lista para que se
+            // desplace con ella: la hoja sube y la foto se queda.
+            item { Box(Modifier.height(altoFoto - SOLAPE)) }
 
             item {
                 Column(
-                    modifier = Modifier.padding(
-                        start = Medida.margen,
-                        end = Medida.margen,
-                        top = 18.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(topStart = Radio.hoja, topEnd = Radio.hoja))
+                        .background(Tono.fondo)
+                        .padding(top = 22.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Texto(ficha.titulo, Letra.tituloPagina, Tono.tinta, maxLineas = 3)
+                    Texto(
+                        texto = ficha.titulo,
+                        estilo = Letra.tituloPagina,
+                        color = Tono.tinta,
+                        maxLineas = 3,
+                        modifier = Modifier.padding(horizontal = Medida.margen),
+                    )
                     ficha.zona?.let { zona ->
                         Row(
+                            modifier = Modifier.padding(horizontal = Medida.margen),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(7.dp),
                         ) {
@@ -128,26 +169,23 @@ private fun Contenido(ficha: Ficha) {
                             Texto(zona.nombre, Letra.fecha, Tono.acento, maxLineas = 1)
                         }
                     }
-                }
-            }
 
-            // Los metadatos como pildoras: cada dato en su capsula, en una fila
-            // que se corre. Es mas legible que una linea de textos separados
-            // por puntos, sobre todo cuando alguno falta.
-            item {
-                val metadatos = metadatosDe(ficha)
-                if (metadatos.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = Medida.margen),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = Medida.entreTarjetas),
-                    ) {
-                        items(metadatos) { dato -> PildoraMeta(dato) }
+                    // Los metadatos como pildoras: cada dato en su capsula, en
+                    // una fila que se corre. Es mas legible que una linea de
+                    // textos separados por puntos, sobre todo cuando alguno
+                    // falta.
+                    val metadatos = metadatosDe(ficha)
+                    if (metadatos.isNotEmpty()) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = Medida.margen),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(metadatos) { dato -> PildoraMeta(dato) }
+                        }
                     }
                 }
             }
 
-            // Salir al mapa y agendar.
             item {
                 val enlaceMapa = ficha.googleMaps
                 val coordenadas = ficha.coordenadas
@@ -161,6 +199,7 @@ private fun Contenido(ficha: Ficha) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .background(Tono.fondo)
                             .padding(horizontal = Medida.margen)
                             .padding(top = Medida.entreTarjetas),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -168,7 +207,7 @@ private fun Contenido(ficha: Ficha) {
                         if (hayMapa) {
                             PildoraSuave(
                                 texto = Textos.t("ficha.mapa"),
-                                icono = Icono.inventario,
+                                icono = Icono.pin,
                                 alTocar = {
                                     // El enlace del panel puede ser uno pegado a
                                     // mano, mas preciso que un pin armado solo
@@ -211,11 +250,11 @@ private fun Contenido(ficha: Ficha) {
                         texto = ficha.gancho,
                         estilo = Letra.descripcion,
                         color = Tono.tinta,
-                        modifier = Modifier.padding(
-                            start = Medida.margen,
-                            end = Medida.margen,
-                            top = Medida.entreTarjetas,
-                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Tono.fondo)
+                            .padding(horizontal = Medida.margen)
+                            .padding(top = Medida.entreTarjetas),
                     )
                 }
             }
@@ -239,10 +278,10 @@ private fun Contenido(ficha: Ficha) {
                             text = texto,
                             style = Letra.descripcion.copy(color = Tono.tintaSuave),
                             maxLines = if (desplegado) Int.MAX_VALUE else LINEAS_PLEGADAS,
-                            modifier = Modifier.padding(
-                                horizontal = Medida.margen,
-                                vertical = 6.dp,
-                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Tono.fondo)
+                                .padding(horizontal = Medida.margen, vertical = 6.dp),
                         )
                     }
                 }
@@ -251,15 +290,17 @@ private fun Contenido(ficha: Ficha) {
                 // de que el resto de la ficha este completa.
                 if (!desplegado && hayMasQueLeer(cuerpo)) {
                     item {
-                        Texto(
-                            texto = Textos.t("ficha.leerMas"),
-                            estilo = Letra.enlace,
-                            color = Tono.tinta,
-                            modifier = Modifier
-                                .padding(horizontal = Medida.margen)
-                                .clickable { desplegado = true }
-                                .padding(vertical = 6.dp),
-                        )
+                        Box(Modifier.fillMaxWidth().background(Tono.fondo)) {
+                            Texto(
+                                texto = Textos.t("ficha.leerMas"),
+                                estilo = Letra.enlace,
+                                color = Tono.tinta,
+                                modifier = Modifier
+                                    .padding(horizontal = Medida.margen)
+                                    .clickable { desplegado = true }
+                                    .padding(vertical = 6.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -270,17 +311,19 @@ private fun Contenido(ficha: Ficha) {
                 item {
                     // Los datos van juntos en una tarjeta y no sueltos sobre el
                     // fondo: son un bloque que se lee de una, no cinco cosas.
-                    Tarjeta(Modifier.fillMaxWidth().padding(horizontal = Medida.margen)) {
-                        Column(Modifier.padding(vertical = 6.dp)) {
-                            practicos.forEachIndexed { indice, (clave, valor) ->
-                                if (indice > 0) {
-                                    Hairline(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = Medida.dentroTarjeta),
-                                    )
+                    Box(Modifier.fillMaxWidth().background(Tono.fondo)) {
+                        Tarjeta(Modifier.fillMaxWidth().padding(horizontal = Medida.margen)) {
+                            Column(Modifier.padding(vertical = 6.dp)) {
+                                practicos.forEachIndexed { indice, (clave, valor) ->
+                                    if (indice > 0) {
+                                        Hairline(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = Medida.dentroTarjeta),
+                                        )
+                                    }
+                                    Dato(Textos.t(clave), valor)
                                 }
-                                Dato(Textos.t(clave), valor)
                             }
                         }
                     }
@@ -290,17 +333,19 @@ private fun Contenido(ficha: Ficha) {
             if (ficha.galeria.isNotEmpty()) {
                 item { Seccion(Textos.t("ficha.galeria")) }
                 item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = Medida.margen),
-                        horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-                    ) {
-                        items(ficha.galeria) { imagen ->
-                            Foto(
-                                imagen = imagen,
-                                descripcion = ficha.titulo,
-                                modifier = Modifier.width(260.dp).height(190.dp),
-                                radio = Radio.tarjeta,
-                            )
+                    Box(Modifier.fillMaxWidth().background(Tono.fondo)) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = Medida.margen),
+                            horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+                        ) {
+                            items(ficha.galeria) { imagen ->
+                                Foto(
+                                    imagen = imagen,
+                                    descripcion = ficha.titulo,
+                                    modifier = Modifier.width(260.dp).height(190.dp),
+                                    radio = Radio.tarjeta,
+                                )
+                            }
                         }
                     }
                 }
@@ -319,14 +364,22 @@ private fun Contenido(ficha: Ficha) {
                         texto = ficha.fuentes,
                         estilo = Letra.descripcion,
                         color = Tono.tintaSuave,
-                        modifier = Modifier.padding(horizontal = Medida.margen),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Tono.fondo)
+                            .padding(horizontal = Medida.margen),
                     )
                 }
             }
 
-            ficha.autor?.let { autor ->
-                item {
-                    Column(Modifier.padding(Medida.margen)) {
+            item {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(Tono.fondo)
+                        .padding(Medida.margen),
+                ) {
+                    ficha.autor?.let { autor ->
                         Hairline(Modifier.fillMaxWidth())
                         Row(
                             Modifier.padding(top = 14.dp),
@@ -352,38 +405,6 @@ private fun Contenido(ficha: Ficha) {
 }
 
 /**
- * La foto de cabecera: a sangre hasta arriba de todo, redondeada solo abajo
- * contra el contenido. El corazon flota en la esquina, que es donde la
- * referencia lo pone y donde no tapa nada de la imagen.
- */
-@Composable
-private fun Cabecera(ficha: Ficha) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .aspectRatio(4f / 3f)
-            .clip(RoundedCornerShape(bottomStart = Radio.hoja, bottomEnd = Radio.hoja)),
-    ) {
-        Foto(ficha.portada, ficha.titulo, Modifier.fillMaxSize(), radio = Radio.ninguno)
-        Corazon(
-            marcado = { Guardado.esFavorito(ficha.id) },
-            alTocar = { Guardado.alternarFavorito(ficha.id) },
-            descripcion = ficha.titulo,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(Medida.entreTarjetas),
-        )
-        if (ficha.fechas?.enCurso == true) {
-            Badge(
-                texto = Textos.t("evento.enCurso"),
-                modifier = Modifier.align(Alignment.BottomStart).padding(Medida.margen),
-            )
-        }
-    }
-}
-
-/**
  * Si el cuerpo plegado esconde algo.
  *
  * Con mas de un bloque, seguro. Con uno solo hay que estimarlo por largo: saber
@@ -392,18 +413,13 @@ private fun Cabecera(ficha: Ficha) {
  */
 private fun hayMasQueLeer(cuerpo: List<HtmlSencillo.Bloque>): Boolean {
     if (cuerpo.size > 1) return true
-    val unico = cuerpo.firstOrNull() ?: return false
-    return when (unico) {
+    return when (val unico = cuerpo.firstOrNull()) {
         is HtmlSencillo.Bloque.Parrafo -> unico.texto.length > LARGO_DE_CUATRO_LINEAS
-        is HtmlSencillo.Bloque.Subtitulo -> false
         is HtmlSencillo.Bloque.Punto -> unico.texto.length > LARGO_DE_CUATRO_LINEAS
         is HtmlSencillo.Bloque.Cita -> unico.texto.length > LARGO_DE_CUATRO_LINEAS
-        is HtmlSencillo.Bloque.Figura -> false
+        else -> false
     }
 }
-
-/** Cuatro lineas de descripcion a lo ancho de un telefono, aproximado. */
-private const val LARGO_DE_CUATRO_LINEAS = 220
 
 /** Los metadatos que tienen algo que decir, en el orden en que se preguntan. */
 private fun metadatosDe(ficha: Ficha): List<String> = buildList {
@@ -426,15 +442,17 @@ private fun datosPracticos(ficha: Ficha): List<Pair<String, String>> = buildList
 
 @Composable
 private fun Seccion(titulo: String) {
-    Texto(
-        texto = titulo,
-        estilo = Letra.tituloSeccion,
-        color = Tono.tinta,
-        modifier = Modifier.padding(
-            start = Medida.margen, end = Medida.margen,
-            top = Medida.entreSecciones, bottom = 12.dp,
-        ),
-    )
+    Box(Modifier.fillMaxWidth().background(Tono.fondo)) {
+        Texto(
+            texto = titulo,
+            estilo = Letra.tituloSeccion,
+            color = Tono.tinta,
+            modifier = Modifier.padding(
+                start = Medida.margen, end = Medida.margen,
+                top = Medida.entreSecciones, bottom = 12.dp,
+            ),
+        )
+    }
 }
 
 @Composable
@@ -451,14 +469,16 @@ private fun Dato(etiqueta: String, valor: String) {
 
 @Composable
 private fun FilaRelacionado(articulo: ResumenArticulo) {
-    FilaCompacta(
-        imagen = articulo.portada,
-        titulo = articulo.titulo,
-        detalle = articulo.entradilla.ifBlank { null },
-        modifier = Modifier.padding(horizontal = Medida.margen, vertical = 5.dp),
-        // Todavia no lleva a ningun lado: abrir un articulo desde una ficha
-        // cruza dos secciones y esa navegacion no existe. Antes la fila se
-        // dejaba tocable sin hacer nada, que es peor que no ofrecerlo.
-        alTocar = null,
-    )
+    Box(Modifier.fillMaxWidth().background(Tono.fondo)) {
+        FilaCompacta(
+            imagen = articulo.portada,
+            titulo = articulo.titulo,
+            detalle = articulo.entradilla.ifBlank { null },
+            modifier = Modifier.padding(horizontal = Medida.margen, vertical = 5.dp),
+            // Todavia no lleva a ningun lado: abrir un articulo desde una ficha
+            // cruza dos secciones y esa navegacion no existe. Dejar la fila
+            // tocable sin hacer nada seria peor que no ofrecerlo.
+            alTocar = null,
+        )
+    }
 }

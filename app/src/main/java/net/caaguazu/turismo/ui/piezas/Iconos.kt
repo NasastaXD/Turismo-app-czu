@@ -159,6 +159,20 @@ object Icono {
         )
     }
 
+    /** Embudo de filtros. */
+    val filtros: ImageVector by lazy {
+        trazo("filtros", "M3.5 5.5 H20.5 L14 13 V19.5 L10 17.5 V13 Z")
+    }
+
+    /** Capas: el interruptor a la vista de mapa. */
+    val capas: ImageVector by lazy {
+        trazo(
+            "capas",
+            "M12 3.5 L21 8.2 L12 12.9 L3 8.2 Z M3 12.4 L12 17.1 L21 12.4 " +
+                "M3 16.3 L12 21 L21 16.3",
+        )
+    }
+
     /** Pin de ubicacion: donde queda esto. */
     val pin: ImageVector by lazy {
         trazo(

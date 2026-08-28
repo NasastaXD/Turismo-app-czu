@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -208,6 +209,10 @@ fun CabeceraPantalla(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            // La cabecera se hace cargo del hueco de la barra de estado. Antes
+            // lo ponia el armazon para todas las pantallas por igual, y eso
+            // impedia que el mapa llegara hasta arriba de todo.
+            .statusBarsPadding()
             .padding(horizontal = Medida.margen)
             .padding(top = 8.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically,

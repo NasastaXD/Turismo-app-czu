@@ -29,10 +29,10 @@ import net.caaguazu.turismo.datos.Recorrido
 import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Cargador
-import net.caaguazu.turismo.ui.piezas.ChipFiltro
 import net.caaguazu.turismo.ui.piezas.FilaCompacta
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.PildoraMeta
+import net.caaguazu.turismo.ui.piezas.SegmentoPildora
 import net.caaguazu.turismo.ui.piezas.TileEtiquetado
 import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
 import net.caaguazu.turismo.ui.piezas.Texto
@@ -99,21 +99,16 @@ fun Recorridos(
 
 @Composable
 private fun Pestanas(pila: PilaRecorridos) {
-    Row(
+    // Segmento y no chips: un chip dice "esto se puede apagar", y aca siempre
+    // hay una de las dos elegida.
+    SegmentoPildora(
+        opciones = Pestana.entries.map { Textos.t(it.clave) },
+        elegida = Pestana.entries.indexOf(pila.pestana),
+        alElegir = { indice -> pila.pestana = Pestana.entries[indice] },
         modifier = Modifier
-            .fillMaxWidth()
             .padding(horizontal = Medida.margen)
             .padding(bottom = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Pestana.entries.forEach { pestana ->
-            ChipFiltro(
-                texto = Textos.t(pestana.clave),
-                activo = pila.pestana == pestana,
-                alTocar = { pila.pestana = pestana },
-            )
-        }
-    }
+    )
 }
 
 /**
