@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import net.caaguazu.turismo.datos.Articulo
 import net.caaguazu.turismo.datos.Categoria
 import net.caaguazu.turismo.datos.Delta
+import net.caaguazu.turismo.datos.Etiqueta
 import net.caaguazu.turismo.datos.Evento
 import net.caaguazu.turismo.datos.Ficha
 import net.caaguazu.turismo.datos.ItemInventario
@@ -53,9 +54,13 @@ class ContratoTest {
         assertTrue("sin categorias", categorias.isNotEmpty())
         assertTrue("una categoria sin color", categorias.all { it.color.isNotBlank() })
 
+        val etiquetas = mock("etiquetas.json", ListSerializer(Etiqueta.serializer()))
+        assertTrue("sin etiquetas", etiquetas.isNotEmpty())
+
         val inventario = mock("inventario.json", Pagina.serializer(ItemInventario.serializer()))
         assertEquals("el total no coincide con los items", inventario.items.size, inventario.total)
         assertTrue("una ficha sin coordenadas", inventario.items.all { it.coordenadas != null })
+        assertTrue("un item de inventario sin etiquetas", inventario.items.any { it.etiquetas.isNotEmpty() })
 
         val fichas = mock("fichas.json", ListSerializer(Ficha.serializer()))
         assertTrue("hay fichas de mas o de menos", fichas.size == inventario.items.size)
@@ -66,7 +71,8 @@ class ContratoTest {
         assertTrue("faltan marcadores", marcadores.size >= inventario.items.size)
 
         mock("eventos.json", Pagina.serializer(Evento.serializer()))
-        mock("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+        val articulos = mock("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+        assertTrue("un articulo sin etiquetas", articulos.items.any { it.etiquetas.isNotEmpty() })
         mock("articulos-detalle.json", ListSerializer(Articulo.serializer()))
         mock("recorridos.json", Pagina.serializer(Recorrido.serializer()))
         mock("media-manifest.json", MapSerializer(String.serializer(), Medio.serializer()))

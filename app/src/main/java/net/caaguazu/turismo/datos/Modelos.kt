@@ -71,6 +71,22 @@ data class Categoria(
     val total: Int = 0,
 )
 
+/**
+ * Una etiqueta del catalogo de `/etiquetas`.
+ *
+ * Solo trae las que ya etiquetan algo (`hide_empty`): a diferencia de
+ * Categoria, que muestra todo, una etiqueta sin uso es ruido en un selector
+ * de chips y no parte de la estructura.
+ */
+@Immutable
+@Serializable
+data class Etiqueta(
+    val id: Int,
+    val slug: String = "",
+    val nombre: String = "",
+    val total: Int = 0,
+)
+
 @Immutable
 @Serializable
 data class Coordenadas(val lat: Double, val lng: Double)
@@ -83,6 +99,7 @@ data class ItemInventario(
     val tipo: String = "destino",
     val titulo: String = "",
     val categoria: Termino? = null,
+    val etiquetas: List<Termino> = emptyList(),
     val coordenadas: Coordenadas? = null,
     val portada: Imagen? = null,
     @SerialName("rango_precio") val rangoPrecio: Int? = null,
@@ -123,6 +140,7 @@ data class ResumenArticulo(
     val portada: Imagen? = null,
     val autor: Autor? = null,
     val publicado: String? = null,
+    val etiquetas: List<Termino> = emptyList(),
 )
 
 @Immutable

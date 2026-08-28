@@ -15,7 +15,14 @@
         "id": 7,
         "nombre": "‹Promotor›"
       },
-      "publicado": "2026-08-10T12:00:00+00:00"
+      "publicado": "2026-08-10T12:00:00+00:00",
+      "etiquetas": [
+        {
+          "id": 91,
+          "slug": "gratis",
+          "nombre": "‹Gratis›"
+        }
+      ]
     },
     {
       "id": 202,

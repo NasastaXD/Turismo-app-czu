@@ -36,8 +36,12 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun categorias() =
         leer("categorias.json", ListSerializer(Categoria.serializer()))
 
+    override suspend fun etiquetas() =
+        leer("etiquetas.json", ListSerializer(Etiqueta.serializer()))
+
     override suspend fun inventario(
         categoria: Int?,
+        etiqueta: Int?,
         buscar: String?,
         pagina: Int,
         porPagina: Int,
@@ -49,6 +53,7 @@ class ApiMock(private val assets: AssetManager) : Contrato {
         // no contra una lista que siempre devuelve lo mismo.
         val filtrados = todo.valor.items.filter { item ->
             (categoria == null || item.categoria?.id == categoria) &&
+                (etiqueta == null || item.etiquetas.any { it.id == etiqueta }) &&
                 (buscar.isNullOrBlank() || item.titulo.contains(buscar, ignoreCase = true))
         }
 
@@ -81,12 +86,21 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun recorrido(id: Int): Resultado<Recorrido> =
         unoDe("recorridos-detalle.json", ListSerializer(Recorrido.serializer())) { it.id == id }
 
-    override suspend fun articulos(pagina: Int, categoria: Int?, buscar: String?): Resultado<Pagina<ResumenArticulo>> {
+    override suspend fun articulos(
+        pagina: Int,
+        categoria: Int?,
+        etiqueta: Int?,
+        buscar: String?,
+    ): Resultado<Pagina<ResumenArticulo>> {
         val todo = leer("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
-        if (todo !is Resultado.Bien || buscar.isNullOrBlank()) return todo
+        if (todo !is Resultado.Bien) return todo
+        if (etiqueta == null && buscar.isNullOrBlank()) return todo
 
-        val filtrados = todo.valor.items.filter {
-            it.titulo.contains(buscar, ignoreCase = true) || it.bajada.contains(buscar, ignoreCase = true)
+        val filtrados = todo.valor.items.filter { item ->
+            (etiqueta == null || item.etiquetas.any { it.id == etiqueta }) &&
+                (buscar.isNullOrBlank() ||
+                    item.titulo.contains(buscar, ignoreCase = true) ||
+                    item.bajada.contains(buscar, ignoreCase = true))
         }
         return Resultado.Bien(todo.valor.copy(items = filtrados, total = filtrados.size))
     }

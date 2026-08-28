@@ -16,8 +16,11 @@ interface Contrato {
 
     suspend fun categorias(): Resultado<List<Categoria>>
 
+    suspend fun etiquetas(): Resultado<List<Etiqueta>>
+
     suspend fun inventario(
         categoria: Int? = null,
+        etiqueta: Int? = null,
         buscar: String? = null,
         pagina: Int = 1,
         porPagina: Int = 20,
@@ -39,6 +42,7 @@ interface Contrato {
     suspend fun articulos(
         pagina: Int = 1,
         categoria: Int? = null,
+        etiqueta: Int? = null,
         buscar: String? = null,
     ): Resultado<Pagina<ResumenArticulo>>
 

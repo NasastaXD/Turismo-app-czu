@@ -306,6 +306,32 @@ fun Hairline(modifier: Modifier = Modifier) {
 }
 
 /**
+ * Chip de filtro exacto: pildora que se rellena de negro cuando esta activo.
+ *
+ * A diferencia del campo de busqueda, esto es una seleccion (un id conocido de
+ * antemano, un tap) y no tipeo libre, asi que no necesita espera antes de
+ * pedirle a la API.
+ */
+@Composable
+fun ChipFiltro(
+    texto: String,
+    activo: Boolean,
+    alTocar: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(Radio.completo))
+            .background(if (activo) Tono.negro else Tono.banda)
+            .clickable(onClick = alTocar)
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Texto(texto, Letra.chip, if (activo) Color.White else Tono.tinta, maxLineas = 1)
+    }
+}
+
+/**
  * Campo de busqueda: pildora de radio completo sobre banda, con el glifo de
  * lupa a la izquierda y el marcador reemplazando al texto cuando esta vacio.
  *

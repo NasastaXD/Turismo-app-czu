@@ -29,7 +29,14 @@
       },
       "rango_precio": 0,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "etiquetas": [
+        {
+          "id": 90,
+          "slug": "con-ninos",
+          "nombre": "‹Con niños›"
+        }
+      ]
     },
     {
       "id": 102,

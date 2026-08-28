@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -37,6 +39,8 @@ import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
 import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.ChipFiltro
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Cruce
 import net.caaguazu.turismo.ui.piezas.cedeAlTocar
 import net.caaguazu.turismo.ui.piezas.recordarInteraccion
@@ -82,9 +86,16 @@ fun PantallaLista(
         delay(ESPERA_BUSQUEDA_MS)
         buscarPor = busqueda
     }
+    var etiquetaElegida by remember { mutableStateOf<Int?>(null) }
+    val (estadoEtiquetas, _) = cargar { Datos.api.etiquetas() }
 
-    val (estado, reintentar) = cargar(categoria?.id, buscarPor) {
-        Datos.api.inventario(categoria = categoria?.id, buscar = buscarPor.ifBlank { null }, porPagina = 50)
+    val (estado, reintentar) = cargar(categoria?.id, buscarPor, etiquetaElegida) {
+        Datos.api.inventario(
+            categoria = categoria?.id,
+            etiqueta = etiquetaElegida,
+            buscar = buscarPor.ifBlank { null },
+            porPagina = 50,
+        )
     }
     val titulo = categoria?.nombre ?: Textos.t("nav.inventario")
 
@@ -108,8 +119,27 @@ fun PantallaLista(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Medida.margen)
-                .padding(bottom = 16.dp),
+                .padding(bottom = 12.dp),
         )
+
+        val etiquetas = (estadoEtiquetas.value as? Estado.Listo)?.valor.orEmpty()
+        if (etiquetas.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = Medida.margen),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
+            ) {
+                items(etiquetas, key = { it.id }) { etiqueta ->
+                    ChipFiltro(
+                        texto = etiqueta.nombre,
+                        activo = etiquetaElegida == etiqueta.id,
+                        alTocar = {
+                            etiquetaElegida = if (etiquetaElegida == etiqueta.id) null else etiqueta.id
+                        },
+                    )
+                }
+            }
+        }
 
         Row(
             modifier = Modifier

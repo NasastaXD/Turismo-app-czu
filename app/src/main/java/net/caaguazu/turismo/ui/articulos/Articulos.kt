@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,8 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
 import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.ChipFiltro
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Texto
@@ -72,9 +75,11 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
         delay(ESPERA_BUSQUEDA_MS)
         buscarPor = busqueda
     }
+    var etiquetaElegida by remember { mutableStateOf<Int?>(null) }
+    val (estadoEtiquetas, _) = cargar { Datos.api.etiquetas() }
 
-    val (estado, reintentar) = cargar(buscarPor) {
-        Datos.api.articulos(buscar = buscarPor.ifBlank { null })
+    val (estado, reintentar) = cargar(buscarPor, etiquetaElegida) {
+        Datos.api.articulos(etiqueta = etiquetaElegida, buscar = buscarPor.ifBlank { null })
     }
 
     Column(modifier.fillMaxSize().background(Tono.papel)) {
@@ -87,6 +92,24 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
                 .padding(horizontal = Medida.margen)
                 .padding(top = Medida.margen, bottom = 12.dp),
         )
+        val etiquetas = (estadoEtiquetas.value as? Estado.Listo)?.valor.orEmpty()
+        if (etiquetas.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = Medida.margen),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 12.dp),
+            ) {
+                items(etiquetas, key = { it.id }) { etiqueta ->
+                    ChipFiltro(
+                        texto = etiqueta.nombre,
+                        activo = etiquetaElegida == etiqueta.id,
+                        alTocar = {
+                            etiquetaElegida = if (etiquetaElegida == etiqueta.id) null else etiqueta.id
+                        },
+                    )
+                }
+            }
+        }
         Cargador(
             estado = estado.value,
             reintentar = reintentar,
