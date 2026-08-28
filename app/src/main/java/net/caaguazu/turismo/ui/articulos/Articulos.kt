@@ -11,18 +11,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.AutorArticulo
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
+import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.ChipFiltro
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
@@ -30,6 +37,9 @@ import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
 import net.caaguazu.turismo.ui.tema.Tono
+
+/** Cuanto se espera despues de la ultima letra antes de pedirle a la API. */
+private const val ESPERA_BUSQUEDA_MS = 350L
 
 /** Pila propia de la seccion: lista y articulo abierto. */
 class PilaArticulos {
@@ -59,20 +69,64 @@ fun Articulos(pila: PilaArticulos, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val (estado, reintentar) = cargar { Datos.api.articulos() }
+    var busqueda by remember { mutableStateOf("") }
+    var buscarPor by remember { mutableStateOf("") }
+    LaunchedEffect(busqueda) {
+        delay(ESPERA_BUSQUEDA_MS)
+        buscarPor = busqueda
+    }
+    var etiquetaElegida by remember { mutableStateOf<Int?>(null) }
+    val (estadoEtiquetas, _) = cargar { Datos.api.etiquetas() }
 
-    Cargador(
-        estado = estado.value,
-        reintentar = reintentar,
-        vacio = { it.items.isEmpty() },
-        modifier = modifier.fillMaxSize().background(Tono.fondo),
-    ) { pagina ->
-        LazyColumn(
-            contentPadding = PaddingValues(Medida.margen),
-            verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-        ) {
-            items(pagina.items, key = { it.id }) { articulo ->
-                TarjetaArticulo(articulo) { alAbrir(articulo.id) }
+    val (estado, reintentar) = cargar(buscarPor, etiquetaElegida) {
+        Datos.api.articulos(etiqueta = etiquetaElegida, buscar = buscarPor.ifBlank { null })
+    }
+
+    Column(modifier.fillMaxSize().background(Tono.fondo)) {
+        CampoBusqueda(
+            valor = busqueda,
+            alCambiar = { busqueda = it },
+            marcador = Textos.t("barra.buscar"),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Medida.margen)
+                .padding(top = Medida.margen, bottom = 12.dp),
+        )
+        val etiquetas = (estadoEtiquetas.value as? Estado.Listo)?.valor.orEmpty()
+        if (etiquetas.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = Medida.margen),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 12.dp),
+            ) {
+                items(etiquetas, key = { it.id }) { etiqueta ->
+                    ChipFiltro(
+                        texto = etiqueta.nombre,
+                        activo = etiquetaElegida == etiqueta.id,
+                        alTocar = {
+                            etiquetaElegida = if (etiquetaElegida == etiqueta.id) null else etiqueta.id
+                        },
+                    )
+                }
+            }
+        }
+        Cargador(
+            estado = estado.value,
+            reintentar = reintentar,
+            vacio = { it.items.isEmpty() },
+            modifier = Modifier.fillMaxSize(),
+        ) { pagina ->
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = Medida.margen,
+                    end = Medida.margen,
+                    bottom = Medida.margen,
+                ),
+                verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+            ) {
+                items(pagina.items, key = { it.id }) { articulo ->
+                    TarjetaArticulo(articulo) { alAbrir(articulo.id) }
+                }
             }
         }
     }

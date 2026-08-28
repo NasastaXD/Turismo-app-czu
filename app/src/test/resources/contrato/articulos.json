@@ -19,7 +19,14 @@
         }
       ],
       "antetitulo": "‹antetítulo, opcional›",
-      "subtitulo": ""
+      "subtitulo": "",
+      "etiquetas": [
+        {
+          "id": 91,
+          "slug": "gratis",
+          "nombre": "‹Gratis›"
+        }
+      ]
     },
     {
       "id": 202,

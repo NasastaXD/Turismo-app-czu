@@ -30,7 +30,14 @@
       "horario_resumen": "",
       "actualizado": "2026-08-20T14:00:00+00:00",
       "tipo_item": "sitio",
-      "google_maps": "https://maps.google.com/?q=-25.483951,-56.055669"
+      "google_maps": "https://maps.google.com/?q=-25.483951,-56.055669",
+      "etiquetas": [
+        {
+          "id": 90,
+          "slug": "con-ninos",
+          "nombre": "‹Con niños›"
+        }
+      ]
     },
     {
       "id": 102,
