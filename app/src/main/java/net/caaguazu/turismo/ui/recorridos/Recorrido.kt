@@ -90,8 +90,13 @@ fun PantallaRecorrido(
                             Texto(recorrido.titulo, Letra.tituloPagina, Tono.tinta)
                             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                                 Texto(recorrido.duracionEstimada, Letra.chip, Tono.acento, maxLineas = 1)
-                                recorrido.costoTotal?.let {
-                                    Texto(it, Letra.chip, Tono.tintaSuave, maxLineas = 1)
+                                recorrido.costoTotal?.takeIf { it.hayPago }?.let { costo ->
+                                    Texto(
+                                        costo.detalle.joinToString(" · "),
+                                        Letra.chip,
+                                        Tono.tintaSuave,
+                                        maxLineas = 1,
+                                    )
                                 }
                             }
                             if (recorrido.resumen.isNotBlank()) {
@@ -182,8 +187,8 @@ private fun FilaParadaPrehecha(parada: Parada, alTocar: () -> Unit) {
                 color = if (parada.disponible) Tono.tinta else Tono.tintaSuave,
                 maxLineas = 2,
             )
-            if (parada.nota.isNotBlank()) {
-                Texto(parada.nota, Letra.descripcion, Tono.tintaSuave, maxLineas = 2)
+            if (parada.texto.isNotBlank()) {
+                Texto(parada.texto, Letra.descripcion, Tono.tintaSuave, maxLineas = 2)
             }
         }
     }

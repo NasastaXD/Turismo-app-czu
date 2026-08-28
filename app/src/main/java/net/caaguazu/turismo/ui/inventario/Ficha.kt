@@ -78,7 +78,7 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
 
     // Interpretar el HTML es trabajo real: se hace una vez por ficha, no en cada
     // recomposicion del scroll.
-    val parrafos = remember(ficha.id) { HtmlSencillo.bloques(ficha.descripcion) }
+    val parrafos = remember(ficha.id) { HtmlSencillo.bloques(ficha.articuloHtml) }
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
@@ -98,26 +98,53 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                             color = Color.White,
                             maxLineas = 3,
                         )
-                        RangoPrecio(ficha.practicos.rangoPrecio)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            ficha.zona?.let {
+                                Texto(it.nombre, Letra.chip, Color.White.copy(alpha = 0.85f), maxLineas = 1)
+                            }
+                            RangoPrecio(ficha.practicos.rangoPrecio)
+                        }
                     }
                 }
             }
 
             // Salir al mapa: arriba, como en la referencia.
             item {
+                val enlaceMapa = ficha.googleMaps
                 val coordenadas = ficha.coordenadas
-                if (coordenadas != null) {
+                if (enlaceMapa != null || coordenadas != null) {
                     PildoraContorno(
                         texto = Textos.t("ficha.mapa"),
                         icono = Icono.inventario,
                         alTocar = {
-                            MapasExternos.abrirPunto(
-                                contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
-                            )
+                            // El enlace del panel puede ser uno pegado a mano, mas
+                            // preciso que un pin armado solo con lat/lng: se prefiere
+                            // siempre que venga.
+                            if (enlaceMapa != null) {
+                                MapasExternos.abrirEnlace(contexto, enlaceMapa)
+                            } else if (coordenadas != null) {
+                                MapasExternos.abrirPunto(
+                                    contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
+                                )
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(Medida.margen),
+                    )
+                }
+            }
+
+            if (ficha.gancho.isNotBlank()) {
+                item {
+                    Texto(
+                        texto = ficha.gancho,
+                        estilo = Letra.descripcion,
+                        color = Tono.tintaSuave,
+                        modifier = Modifier.padding(horizontal = Medida.margen, vertical = 4.dp),
                     )
                 }
             }
@@ -216,12 +243,9 @@ private fun datosPracticos(ficha: Ficha): List<Pair<String, String>> = buildList
     }
     mas("ficha.horario", ficha.practicos.horario)
     mas("ficha.costo", ficha.practicos.costo)
-    mas("ficha.duracion", ficha.practicos.duracion)
-    mas("ficha.servicios", ficha.practicos.servicios)
-    mas("ficha.temporada", ficha.practicos.temporada)
     mas("ficha.contacto", ficha.practicos.contacto)
-    mas("ficha.llegar", ficha.acceso.comoLlegar)
     mas("ficha.camino", ficha.acceso.estadoCamino)
+    mas("ficha.acceso", ficha.acceso.accesibilidad)
 }
 
 @Composable

@@ -30,17 +30,24 @@ class ApiHttp(
     override suspend fun etiquetas() =
         pedirLista("etiquetas", Etiqueta.serializer())
 
+    override suspend fun zonas() =
+        pedirLista("zonas", Zona.serializer())
+
     override suspend fun inventario(
         categoria: Int?,
+        zona: Int?,
         etiqueta: Int?,
         buscar: String?,
+        tipoItem: String?,
         pagina: Int,
         porPagina: Int,
     ) = pedirPagina(
         ruta("inventario") {
             si("categoria", categoria)
+            si("zona", zona)
             si("etiqueta", etiqueta)
             si("buscar", buscar)
+            si("tipo_item", tipoItem)
             si("pagina", pagina)
             si("por_pagina", porPagina)
         },

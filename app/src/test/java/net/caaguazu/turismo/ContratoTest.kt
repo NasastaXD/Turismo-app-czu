@@ -17,6 +17,7 @@ import net.caaguazu.turismo.datos.Medio
 import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.datos.Recorrido
 import net.caaguazu.turismo.datos.ResumenArticulo
+import net.caaguazu.turismo.datos.Zona
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -57,15 +58,25 @@ class ContratoTest {
         val etiquetas = mock("etiquetas.json", ListSerializer(Etiqueta.serializer()))
         assertTrue("sin etiquetas", etiquetas.isNotEmpty())
 
+        assertTrue(mock("zonas.json", ListSerializer(Zona.serializer())).isNotEmpty())
+
         val inventario = mock("inventario.json", Pagina.serializer(ItemInventario.serializer()))
         assertEquals("el total no coincide con los items", inventario.items.size, inventario.total)
         assertTrue("una ficha sin coordenadas", inventario.items.all { it.coordenadas != null })
         assertTrue("un item de inventario sin etiquetas", inventario.items.any { it.etiquetas.isNotEmpty() })
 
+        val eventos = inventario.items.filter { it.tipoItem == "evento" }
+        assertTrue("los mocks deberian incluir al menos un evento", eventos.isNotEmpty())
+        assertTrue("un evento sin fecha de inicio", eventos.all { it.fechas?.inicio != null })
+        assertTrue(
+            "el filtro de proximos deberia dejar afuera al menos uno ya terminado",
+            eventos.any { it.fechas?.terminado == true },
+        )
+
         val fichas = mock("fichas.json", ListSerializer(Ficha.serializer()))
         assertTrue("hay fichas de mas o de menos", fichas.size == inventario.items.size)
         assertNotNull("la ficha no trae autor", fichas.first().autor)
-        assertTrue("la ficha no trae descripcion", fichas.all { it.descripcion.isNotBlank() })
+        assertTrue("la ficha no trae cuerpo", fichas.all { it.articuloHtml.isNotBlank() })
 
         val marcadores = mock("markers.json", ListSerializer(Marcador.serializer()))
         assertTrue("faltan marcadores", marcadores.size >= inventario.items.size)
@@ -95,6 +106,26 @@ class ContratoTest {
 
         assertTrue("los mocks deberian incluir una parada colgada", colgadas.isNotEmpty())
         assertTrue("una parada colgada no deberia traer titulo", colgadas.all { it.titulo.isBlank() })
+    }
+
+    /**
+     * `costo_total` paso de string a objeto (`hay_pago` + `detalle[]`). Antes
+     * de este cambio de modelo, esto tumbaba la decodificacion entera del
+     * recorrido en vez de quedar en un campo vacio.
+     */
+    @Test
+    fun `el costo total del recorrido decodifica como objeto`() {
+        val recorridos = mock("recorridos-detalle.json", ListSerializer(Recorrido.serializer()))
+
+        assertTrue("los mocks deberian traer costo_total", recorridos.all { it.costoTotal != null })
+        assertTrue(
+            "hay_pago en true deberia traer detalle",
+            recorridos.all { r -> r.costoTotal?.let { !it.hayPago || it.detalle.isNotEmpty() } ?: true },
+        )
+
+        val paradas = recorridos.flatMap { it.paradas }.filter { it.disponible }
+        assertTrue("una parada disponible sin texto", paradas.any { it.texto.isNotBlank() })
+        assertTrue("falta el audio/video de alguna parada", paradas.any { it.medio != null })
     }
 
     /** Un campo que el servidor agregue manana no puede tumbar una app publicada. */

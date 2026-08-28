@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.caaguazu.turismo.core.Textos
+import net.caaguazu.turismo.datos.AutorArticulo
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
 import net.caaguazu.turismo.ui.piezas.CampoBusqueda
@@ -147,9 +148,9 @@ private fun TarjetaArticulo(articulo: ResumenArticulo, alTocar: () -> Unit) {
             color = Tono.tinta,
             maxLineas = 3,
         )
-        if (articulo.bajada.isNotBlank()) {
+        if (articulo.entradilla.isNotBlank()) {
             Texto(
-                texto = articulo.bajada,
+                texto = articulo.entradilla,
                 estilo = Letra.descripcion,
                 color = Tono.tintaSuave,
                 maxLineas = 3,
@@ -160,9 +161,13 @@ private fun TarjetaArticulo(articulo: ResumenArticulo, alTocar: () -> Unit) {
             descripcion = articulo.titulo,
             modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
         )
-        Firma(articulo.autor?.nombre, articulo.publicado)
+        Firma(nombreAutores(articulo.autores), articulo.publicado)
     }
 }
+
+/** Una nota puede llevar mas de una firma; se muestran juntas, separadas por coma. */
+internal fun nombreAutores(autores: List<AutorArticulo>): String? =
+    autores.joinToString(", ") { it.nombre }.ifBlank { null }
 
 @Composable
 internal fun Firma(autor: String?, publicado: String?) {

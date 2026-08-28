@@ -87,14 +87,14 @@ private fun Cuerpo(articulo: Articulo) {
                     estilo = Letra.titularArticulo,
                     color = Tono.tinta,
                 )
-                if (articulo.bajada.isNotBlank()) {
+                if (articulo.entradilla.isNotBlank()) {
                     Texto(
-                        texto = articulo.bajada,
+                        texto = articulo.entradilla,
                         estilo = Letra.bajadaArticulo,
                         color = Tono.tintaSuave,
                     )
                 }
-                Firma(articulo.autor?.nombre, articulo.publicado)
+                Firma(nombreAutores(articulo.autores), articulo.publicado)
             }
         }
 
@@ -105,9 +105,10 @@ private fun Cuerpo(articulo: Articulo) {
                     descripcion = articulo.titulo,
                     modifier = Modifier.fillMaxWidth().aspectRatio(3f / 2f),
                 )
-                if (articulo.piePortada.isNotBlank()) {
+                val credito = articulo.portada?.credito
+                if (!credito.isNullOrBlank()) {
                     Texto(
-                        texto = articulo.piePortada,
+                        texto = credito,
                         estilo = Letra.etiquetaNav,
                         color = Tono.tintaSuave,
                         modifier = Modifier.padding(horizontal = Medida.margen, vertical = 8.dp),

@@ -39,7 +39,13 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": "‹nota de la parada›"
+        "texto": "‹nota de la parada›",
+        "google_maps": "https://maps.google.com/?q=-25.483951,-56.055669",
+        "medio": {
+          "tipo": "audio",
+          "url": "https://…/parada.mp3",
+          "titulo": "‹audio de la parada›"
+        }
       },
       {
         "orden": 2,
@@ -66,7 +72,8 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.462689,-56.063119"
       },
       {
         "orden": 3,
@@ -93,10 +100,18 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.470168,-56.03526"
       }
     ],
-    "costo_total": "‹costo total›",
+    "costo_total": {
+      "hay_pago": true,
+      "detalle": [
+        "‹costo de la parada 1›",
+        "‹costo de la parada 2›",
+        "‹costo de la parada 3›"
+      ]
+    },
     "historia": {
       "introduccion": "‹introducción de la historia›",
       "correlacion": "‹correlación›",
@@ -106,7 +121,32 @@
         201
       ]
     },
-    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>",
+    "fechas": {
+      "compatible": true,
+      "conflictos": []
+    },
+    "google_maps": "https://maps.google.com/?q=-25.5,-56.0",
+    "medios": [
+      {
+        "tipo": "audio",
+        "url": "https://…/audio.mp3",
+        "titulo": "‹la leyenda del lugar›"
+      }
+    ],
+    "articulos": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ]
   },
   {
     "id": 402,
@@ -148,7 +188,13 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": "‹nota de la parada›"
+        "texto": "‹nota de la parada›",
+        "google_maps": "https://maps.google.com/?q=-25.470168,-56.03526",
+        "medio": {
+          "tipo": "audio",
+          "url": "https://…/parada.mp3",
+          "titulo": "‹audio de la parada›"
+        }
       },
       {
         "orden": 2,
@@ -175,7 +221,8 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.50123,-56.021794"
       },
       {
         "orden": 3,
@@ -202,7 +249,8 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.502563,-56.028804"
       },
       {
         "orden": 4,
@@ -229,10 +277,19 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.500459,-56.061382"
       }
     ],
-    "costo_total": "‹costo total›",
+    "costo_total": {
+      "hay_pago": true,
+      "detalle": [
+        "‹costo de la parada 1›",
+        "‹costo de la parada 2›",
+        "‹costo de la parada 3›",
+        "‹costo de la parada 4›"
+      ]
+    },
     "historia": {
       "introduccion": "‹introducción de la historia›",
       "correlacion": "‹correlación›",
@@ -242,7 +299,32 @@
         201
       ]
     },
-    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>",
+    "fechas": {
+      "compatible": true,
+      "conflictos": []
+    },
+    "google_maps": "https://maps.google.com/?q=-25.5,-56.0",
+    "medios": [
+      {
+        "tipo": "audio",
+        "url": "https://…/audio.mp3",
+        "titulo": "‹la leyenda del lugar›"
+      }
+    ],
+    "articulos": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ]
   },
   {
     "id": 403,
@@ -284,7 +366,13 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": "‹nota de la parada›"
+        "texto": "‹nota de la parada›",
+        "google_maps": "https://maps.google.com/?q=-25.502563,-56.028804",
+        "medio": {
+          "tipo": "audio",
+          "url": "https://…/parada.mp3",
+          "titulo": "‹audio de la parada›"
+        }
       },
       {
         "orden": 2,
@@ -311,7 +399,8 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.500459,-56.061382"
       },
       {
         "orden": 3,
@@ -338,7 +427,8 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.477406,-55.991449"
       },
       {
         "orden": 4,
@@ -365,17 +455,27 @@
         },
         "costo": "‹costo›",
         "horario": "‹horario›",
-        "nota": ""
+        "texto": "",
+        "google_maps": "https://maps.google.com/?q=-25.496953,-56.048792"
       },
       {
         "orden": 5,
         "ref_tipo": "destino",
         "ref_id": 109,
         "disponible": false,
-        "nota": ""
+        "texto": "",
+        "google_maps": null
       }
     ],
-    "costo_total": "‹costo total›",
+    "costo_total": {
+      "hay_pago": true,
+      "detalle": [
+        "‹costo de la parada 1›",
+        "‹costo de la parada 2›",
+        "‹costo de la parada 3›",
+        "‹costo de la parada 4›"
+      ]
+    },
     "historia": {
       "introduccion": "‹introducción de la historia›",
       "correlacion": "‹correlación›",
@@ -385,6 +485,31 @@
         201
       ]
     },
-    "articulo_html": "<p>‹cuerpo del recorrido›</p>"
+    "articulo_html": "<p>‹cuerpo del recorrido›</p>",
+    "fechas": {
+      "compatible": true,
+      "conflictos": []
+    },
+    "google_maps": "https://maps.google.com/?q=-25.5,-56.0",
+    "medios": [
+      {
+        "tipo": "audio",
+        "url": "https://…/audio.mp3",
+        "titulo": "‹la leyenda del lugar›"
+      }
+    ],
+    "articulos": [
+      {
+        "id": 201,
+        "titulo": "‹Artículo relacionado 1›",
+        "portada": {
+          "url": "file:///android_asset/mocks/img/1.png",
+          "w": 900,
+          "h": 900,
+          "credito": "‹crédito de foto›",
+          "alt": ""
+        }
+      }
+    ]
   }
 ]
