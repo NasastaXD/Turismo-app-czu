@@ -23,15 +23,19 @@ import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
- * Barra superior: marca a la izquierda, buscador al centro y perfil a la derecha.
+ * Barra superior: marca a la izquierda, buscador al centro y ajustes a la derecha.
  *
- * El perfil vive aca y no en la barra inferior, que queda entera para las secciones
- * que el turista usa todo el tiempo.
+ * Los ajustes viven aca y no en la barra inferior, que queda entera para las
+ * secciones que el turista usa todo el tiempo. El icono de la derecha es
+ * contextual: abre ajustes desde el resto de la app, y vuelve cuando ya se
+ * esta adentro de ajustes o de diagnostico — es el unico boton de esa esquina,
+ * asi que no puede quedarse pegado a una sola accion.
  */
 @Composable
 fun BarraSuperior(
     titulo: () -> String,
-    alTocarPerfil: () -> Unit,
+    mostrarVolver: Boolean,
+    alTocarAccion: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxWidth().background(Tono.papel)) {
@@ -62,13 +66,13 @@ fun BarraSuperior(
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = alTocarPerfil,
+                            onClick = alTocarAccion,
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Glifo(
-                        icono = Icono.perfil,
-                        descripcion = Textos.t("barra.perfil"),
+                        icono = if (mostrarVolver) Icono.volver else Icono.ajustes,
+                        descripcion = Textos.t(if (mostrarVolver) "accion.volver" else "barra.ajustes"),
                         color = Tono.tinta,
                         modifier = Modifier.size(21.dp),
                     )

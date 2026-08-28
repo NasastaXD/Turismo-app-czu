@@ -58,9 +58,16 @@ fun Aplicacion() {
         val conBarra = !navegador.enFicha()
 
         if (conBarra) {
+            val enAjustes = navegador.perfilAbierto || navegador.diagnosticoAbierto
+            val alTocarAccion: () -> Unit = if (enAjustes) {
+                { navegador.volver() }
+            } else {
+                navegador::abrirPerfil
+            }
             BarraSuperior(
                 titulo = { Textos.t("app.nombre") },
-                alTocarPerfil = navegador::abrirPerfil,
+                mostrarVolver = enAjustes,
+                alTocarAccion = alTocarAccion,
             )
         }
 

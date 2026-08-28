@@ -79,12 +79,13 @@ object Icono {
         )
     }
 
-    /** Perfil: cabeza y hombros. */
-    val perfil: ImageVector by lazy {
+    /** Ajustes: tres controles deslizantes con su perilla. */
+    val ajustes: ImageVector by lazy {
         trazo(
-            "perfil",
-            "M12 8.2 m-3.6 0 a3.6 3.6 0 1 0 7.2 0 a3.6 3.6 0 1 0 -7.2 0 " +
-                "M4.8 20 C4.8 16 8 14.2 12 14.2 C16 14.2 19.2 16 19.2 20",
+            "ajustes",
+            "M4 7 H20 M8 7 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 " +
+                "M4 12.5 H20 M15 12.5 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0 " +
+                "M4 18 H20 M10 18 m-2.2 0 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0",
         )
     }
 
