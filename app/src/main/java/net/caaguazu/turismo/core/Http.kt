@@ -1,6 +1,7 @@
 package net.caaguazu.turismo.core
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -25,6 +26,9 @@ class Http(private val cache: Cache) {
         const val ETIQUETA = "Http"
         const val ESPERA_CONEXION = 10_000
         const val ESPERA_LECTURA = 20_000
+
+        /** Un corte breve de senal no deberia tumbar la pantalla si un segundo intento la resuelve. */
+        const val ESPERA_REINTENTO_MS = 600L
     }
 
     /**
@@ -36,7 +40,15 @@ class Http(private val cache: Cache) {
     suspend fun obtener(url: String): Resultado<Cuerpo> = withContext(Dispatchers.IO) {
         val guardado = cache.leer(url)
 
-        val intento = pedir(url, guardado?.etag)
+        var intento = pedir(url, guardado?.etag)
+        if (intento is Resultado.Mal) {
+            // La mayoria de los fallos que se ven en el telefono son un corte
+            // breve, no estar realmente sin senal. Un segundo intento corto es
+            // mas barato que mostrar un error que un segundo mas tarde se hubiera
+            // resuelto solo.
+            delay(ESPERA_REINTENTO_MS)
+            intento = pedir(url, guardado?.etag)
+        }
 
         when (intento) {
             is Resultado.Bien -> {

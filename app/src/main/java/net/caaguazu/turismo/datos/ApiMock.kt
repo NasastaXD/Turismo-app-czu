@@ -36,12 +36,16 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun categorias() =
         leer("categorias.json", ListSerializer(Categoria.serializer()))
 
+    override suspend fun etiquetas() =
+        leer("etiquetas.json", ListSerializer(Etiqueta.serializer()))
+
     override suspend fun zonas() =
         leer("zonas.json", ListSerializer(Zona.serializer()))
 
     override suspend fun inventario(
         categoria: Int?,
         zona: Int?,
+        etiqueta: Int?,
         buscar: String?,
         tipoItem: String?,
         pagina: Int,
@@ -55,6 +59,7 @@ class ApiMock(private val assets: AssetManager) : Contrato {
         val filtrados = todo.valor.items.filter { item ->
             (categoria == null || item.categoria?.id == categoria) &&
                 (zona == null || item.zona?.id == zona) &&
+                (etiqueta == null || item.etiquetas.any { it.id == etiqueta }) &&
                 (tipoItem == null || item.tipoItem == tipoItem) &&
                 (buscar.isNullOrBlank() || item.titulo.contains(buscar, ignoreCase = true))
         }
@@ -88,8 +93,24 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun recorrido(id: Int): Resultado<Recorrido> =
         unoDe("recorridos-detalle.json", ListSerializer(Recorrido.serializer())) { it.id == id }
 
-    override suspend fun articulos(pagina: Int, categoria: Int?) =
-        leer("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+    override suspend fun articulos(
+        pagina: Int,
+        categoria: Int?,
+        etiqueta: Int?,
+        buscar: String?,
+    ): Resultado<Pagina<ResumenArticulo>> {
+        val todo = leer("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+        if (todo !is Resultado.Bien) return todo
+        if (etiqueta == null && buscar.isNullOrBlank()) return todo
+
+        val filtrados = todo.valor.items.filter { item ->
+            (etiqueta == null || item.etiquetas.any { it.id == etiqueta }) &&
+                (buscar.isNullOrBlank() ||
+                    item.titulo.contains(buscar, ignoreCase = true) ||
+                    item.entradilla.contains(buscar, ignoreCase = true))
+        }
+        return Resultado.Bien(todo.valor.copy(items = filtrados, total = filtrados.size))
+    }
 
     override suspend fun articulo(id: Int): Resultado<Articulo> =
         unoDe("articulos-detalle.json", ListSerializer(Articulo.serializer())) { it.id == id }

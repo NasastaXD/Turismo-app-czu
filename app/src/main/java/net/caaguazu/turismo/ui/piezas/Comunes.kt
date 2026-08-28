@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +32,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -215,6 +218,45 @@ fun PildoraContorno(
             Glifo(icono, texto, Tono.tinta, Modifier.size(18.dp))
         }
         Texto(texto = texto, estilo = Letra.chip, color = Tono.tinta, maxLineas = 1)
+    }
+}
+
+/**
+ * Buscador en línea: lupa, marcador y campo, sobre la banda del sistema.
+ *
+ * Es un campo, no un botón que abre otra pantalla: la búsqueda vive en la
+ * misma lista que filtra, para no perder el contexto de categoría o etiqueta
+ * ya elegida al escribir.
+ */
+@Composable
+fun CampoBusqueda(
+    valor: String,
+    alCambiar: (String) -> Unit,
+    marcador: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(Radio.completo))
+            .background(Tono.banda)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Glifo(Icono.buscar, marcador, Tono.tintaSuave, Modifier.size(18.dp))
+        Box(Modifier.weight(1f)) {
+            if (valor.isEmpty()) {
+                Texto(marcador, Letra.chip, Tono.tintaSuave, maxLineas = 1)
+            }
+            BasicTextField(
+                value = valor,
+                onValueChange = alCambiar,
+                textStyle = Letra.chip.copy(color = Tono.tinta),
+                singleLine = true,
+                cursorBrush = SolidColor(Tono.tinta),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

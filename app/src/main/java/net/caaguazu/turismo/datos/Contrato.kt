@@ -16,11 +16,14 @@ interface Contrato {
 
     suspend fun categorias(): Resultado<List<Categoria>>
 
+    suspend fun etiquetas(): Resultado<List<Etiqueta>>
+
     suspend fun zonas(): Resultado<List<Zona>>
 
     suspend fun inventario(
         categoria: Int? = null,
         zona: Int? = null,
+        etiqueta: Int? = null,
         buscar: String? = null,
         /** "sitio" o "evento". Es como se arma la agenda sin depender de `/eventos`. */
         tipoItem: String? = null,
@@ -47,7 +50,12 @@ interface Contrato {
 
     suspend fun recorrido(id: Int): Resultado<Recorrido>
 
-    suspend fun articulos(pagina: Int = 1, categoria: Int? = null): Resultado<Pagina<ResumenArticulo>>
+    suspend fun articulos(
+        pagina: Int = 1,
+        categoria: Int? = null,
+        etiqueta: Int? = null,
+        buscar: String? = null,
+    ): Resultado<Pagina<ResumenArticulo>>
 
     suspend fun articulo(id: Int): Resultado<Articulo>
 

@@ -197,8 +197,15 @@ El analizador de JSON **ignora campos desconocidos a propósito**: el panel pued
 ampliar el contrato en cualquier momento y una app ya publicada no debe empezar
 a fallar porque el servidor mandó un campo de más.
 
+**Un elemento roto no tumba la lista entera.** Las listas y páginas se
+decodifican elemento por elemento con `DecodificadorTolerante`: un solo campo
+fuera de tipo en un solo sitio de mil no puede convertirse en una pantalla vacía
+para todos. El elemento se omite y queda registrado.
+
 **Sin señal se sirve la copia guardada** en lugar de una pantalla de error. En un
-distrito de 942 km² eso es la situación normal, no la excepción.
+distrito de 942 km² eso es la situación normal, no la excepción. Antes de
+resignarse a la copia guardada, `Http` reintenta una vez tras una espera corta:
+la mayoría de los cortes que se ven en el teléfono son momentáneos.
 
 ### El registro
 

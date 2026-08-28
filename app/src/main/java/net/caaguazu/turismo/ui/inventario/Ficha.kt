@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Calendario
 import net.caaguazu.turismo.core.Guardado
+import net.caaguazu.turismo.core.HtmlSencillo
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
@@ -79,6 +82,10 @@ fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) 
 private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
     val contexto = LocalContext.current
     val enRecorrido = Guardado.enRecorrido(ficha.id)
+
+    // Interpretar el HTML es trabajo real: se hace una vez por ficha y no en
+    // cada recomposicion del scroll.
+    val cuerpo = remember(ficha.id) { HtmlSencillo.bloques(ficha.articuloHtml) }
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
@@ -172,6 +179,23 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                         texto = ficha.gancho,
                         estilo = Letra.descripcion,
                         color = Tono.tintaSuave,
+                        modifier = Modifier.padding(horizontal = Medida.margen, vertical = 4.dp),
+                    )
+                }
+            }
+
+            items(cuerpo) { bloque ->
+                val texto = when (bloque) {
+                    is HtmlSencillo.Bloque.Parrafo -> bloque.texto
+                    is HtmlSencillo.Bloque.Subtitulo -> bloque.texto
+                    is HtmlSencillo.Bloque.Punto -> bloque.texto
+                    is HtmlSencillo.Bloque.Cita -> bloque.texto
+                    is HtmlSencillo.Bloque.Figura -> null
+                }
+                if (texto != null) {
+                    BasicText(
+                        text = texto,
+                        style = Letra.descripcion.copy(color = Tono.tintaSuave),
                         modifier = Modifier.padding(horizontal = Medida.margen, vertical = 4.dp),
                     )
                 }

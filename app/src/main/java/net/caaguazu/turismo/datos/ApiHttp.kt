@@ -5,6 +5,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import net.caaguazu.turismo.core.Analizador
+import net.caaguazu.turismo.core.DecodificadorTolerante
 import net.caaguazu.turismo.core.Falla
 import net.caaguazu.turismo.core.Http
 import net.caaguazu.turismo.core.Registro
@@ -25,59 +26,66 @@ class ApiHttp(
     private companion object { const val ETIQUETA = "Api" }
 
     override suspend fun categorias() =
-        pedir("categorias", ListSerializer(Categoria.serializer()))
+        pedirLista("categorias", Categoria.serializer())
+
+    override suspend fun etiquetas() =
+        pedirLista("etiquetas", Etiqueta.serializer())
 
     override suspend fun zonas() =
-        pedir("zonas", ListSerializer(Zona.serializer()))
+        pedirLista("zonas", Zona.serializer())
 
     override suspend fun inventario(
         categoria: Int?,
         zona: Int?,
+        etiqueta: Int?,
         buscar: String?,
         tipoItem: String?,
         pagina: Int,
         porPagina: Int,
-    ) = pedir(
+    ) = pedirPagina(
         ruta("inventario") {
             si("categoria", categoria)
             si("zona", zona)
+            si("etiqueta", etiqueta)
             si("buscar", buscar)
             si("tipo_item", tipoItem)
             si("pagina", pagina)
             si("por_pagina", porPagina)
         },
-        Pagina.serializer(ItemInventario.serializer()),
+        ItemInventario.serializer(),
     )
 
     override suspend fun ficha(id: Int) =
         pedir("inventario/$id", Ficha.serializer())
 
     override suspend fun marcadores() =
-        pedir("mapa/markers", ListSerializer(Marcador.serializer()))
+        pedirLista("mapa/markers", Marcador.serializer())
 
-    override suspend fun eventos(desde: String?, hasta: String?) = pedir(
+    override suspend fun eventos(desde: String?, hasta: String?) = pedirPagina(
         ruta("eventos") {
             si("desde", desde)
             si("hasta", hasta)
         },
-        Pagina.serializer(Evento.serializer()),
+        Evento.serializer(),
     )
 
     override suspend fun evento(id: Int) =
         pedir("eventos/$id", Evento.serializer())
 
     override suspend fun recorridos() =
-        pedir("recorridos", Pagina.serializer(Recorrido.serializer()))
+        pedirPagina("recorridos", Recorrido.serializer())
 
     override suspend fun recorrido(id: Int) =
         pedir("recorridos/$id", Recorrido.serializer())
 
-    override suspend fun articulos(pagina: Int, categoria: Int?) = pedir(
+    override suspend fun articulos(pagina: Int, categoria: Int?, etiqueta: Int?, buscar: String?) = pedirPagina(
         ruta("articulos") {
             si("pagina", pagina)
             si("categoria", categoria)
+            si("etiqueta", etiqueta)
+            si("buscar", buscar)
         },
-        Pagina.serializer(ResumenArticulo.serializer()),
+        ResumenArticulo.serializer(),
     )
 
     override suspend fun articulo(id: Int) =
@@ -99,19 +107,41 @@ class ApiHttp(
     private suspend fun <T> pedir(ruta: String, serializador: KSerializer<T>): Resultado<T> =
         when (val respuesta = http.obtener(urlBase + ruta)) {
             is Resultado.Mal -> respuesta
-            is Resultado.Bien -> interpretar(respuesta.valor.texto, ruta, serializador)
+            is Resultado.Bien -> interpretar(ruta) {
+                Analizador.decodeFromString(serializador, respuesta.valor.texto)
+            }
+        }
+
+    /**
+     * Version tolerante para lo que trae muchos elementos: un solo campo fuera de
+     * tipo en un elemento no puede tumbar toda la pagina o la lista completa, asi
+     * que el elemento roto se omite y se registra en vez de fallar entero.
+     */
+    private suspend fun <T> pedirLista(ruta: String, elemento: KSerializer<T>): Resultado<List<T>> =
+        when (val respuesta = http.obtener(urlBase + ruta)) {
+            is Resultado.Mal -> respuesta
+            is Resultado.Bien -> interpretar(ruta) {
+                DecodificadorTolerante.lista(respuesta.valor.texto, ruta, elemento)
+            }
+        }
+
+    private suspend fun <T> pedirPagina(ruta: String, elemento: KSerializer<T>): Resultado<Pagina<T>> =
+        when (val respuesta = http.obtener(urlBase + ruta)) {
+            is Resultado.Mal -> respuesta
+            is Resultado.Bien -> interpretar(ruta) {
+                DecodificadorTolerante.pagina(respuesta.valor.texto, ruta, elemento)
+            }
         }
 
     /**
      * Un JSON que no encaja con el modelo es un fallo de datos, no una caida.
-     * Queda registrado con el fragmento para poder rastrearlo desde el log que
-     * mande el usuario.
+     * Queda registrado para poder rastrearlo desde el log que mande el usuario.
      */
-    private fun <T> interpretar(texto: String, ruta: String, serializador: KSerializer<T>): Resultado<T> =
+    private fun <T> interpretar(ruta: String, decodificar: () -> T): Resultado<T> =
         try {
-            Resultado.Bien(Analizador.decodeFromString(serializador, texto))
+            Resultado.Bien(decodificar())
         } catch (e: Throwable) {
-            Registro.fallo(ETIQUETA, "respuesta ilegible en $ruta: ${texto.take(180)}", e)
+            Registro.fallo(ETIQUETA, "respuesta ilegible en $ruta", e)
             Resultado.Mal(Falla.DATOS_INVALIDOS)
         }
 
