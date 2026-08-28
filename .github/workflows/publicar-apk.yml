@@ -55,16 +55,20 @@ jobs:
       - name: Preparar la clave de firma
         # Si el secreto todavia no existe, no se escribe nada: build.gradle.kts
         # cae a la firma de depuracion sola, como hacia antes de esto.
-        if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
         run: |
-          mkdir -p "$RUNNER_TEMP/keystore"
-          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/keystore/release.keystore"
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p "$RUNNER_TEMP/keystore"
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/keystore/release.keystore"
+          fi
 
       - name: Compilar release
         env:
-          RELEASE_KEYSTORE_PATH: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' && format('{0}/keystore/release.keystore', runner.temp) || '' }}
+          # Si el paso anterior no escribio el archivo (secreto ausente), esta
+          # ruta simplemente no existe: build.gradle.kts ya contempla eso y cae
+          # a la firma de depuracion sola.
+          RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/keystore/release.keystore
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
