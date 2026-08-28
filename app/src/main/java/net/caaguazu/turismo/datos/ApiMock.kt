@@ -43,6 +43,7 @@ class ApiMock(private val assets: AssetManager) : Contrato {
         categoria: Int?,
         zona: Int?,
         buscar: String?,
+        tipoItem: String?,
         pagina: Int,
         porPagina: Int,
     ): Resultado<Pagina<ItemInventario>> {
@@ -54,6 +55,7 @@ class ApiMock(private val assets: AssetManager) : Contrato {
         val filtrados = todo.valor.items.filter { item ->
             (categoria == null || item.categoria?.id == categoria) &&
                 (zona == null || item.zona?.id == zona) &&
+                (tipoItem == null || item.tipoItem == tipoItem) &&
                 (buscar.isNullOrBlank() || item.titulo.contains(buscar, ignoreCase = true))
         }
 

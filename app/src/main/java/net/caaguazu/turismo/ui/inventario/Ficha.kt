@@ -107,15 +107,23 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
 
             // Salir al mapa: arriba, como en la referencia.
             item {
+                val enlaceMapa = ficha.googleMaps
                 val coordenadas = ficha.coordenadas
-                if (coordenadas != null) {
+                if (enlaceMapa != null || coordenadas != null) {
                     PildoraContorno(
                         texto = Textos.t("ficha.mapa"),
                         icono = Icono.inventario,
                         alTocar = {
-                            MapasExternos.abrirPunto(
-                                contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
-                            )
+                            // El enlace del panel puede ser uno pegado a mano, mas
+                            // preciso que un pin armado solo con lat/lng: se prefiere
+                            // siempre que venga.
+                            if (enlaceMapa != null) {
+                                MapasExternos.abrirEnlace(contexto, enlaceMapa)
+                            } else if (coordenadas != null) {
+                                MapasExternos.abrirPunto(
+                                    contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
+                                )
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -210,11 +218,7 @@ private fun datosPracticos(ficha: Ficha): List<Pair<String, String>> = buildList
     }
     mas("ficha.horario", ficha.practicos.horario)
     mas("ficha.costo", ficha.practicos.costo)
-    mas("ficha.duracion", ficha.practicos.duracion)
-    mas("ficha.servicios", ficha.practicos.servicios)
-    mas("ficha.temporada", ficha.practicos.temporada)
     mas("ficha.contacto", ficha.practicos.contacto)
-    mas("ficha.llegar", ficha.acceso.comoLlegar)
     mas("ficha.camino", ficha.acceso.estadoCamino)
     mas("ficha.acceso", ficha.acceso.accesibilidad)
 }

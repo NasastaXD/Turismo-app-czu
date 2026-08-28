@@ -22,6 +22,8 @@ interface Contrato {
         categoria: Int? = null,
         zona: Int? = null,
         buscar: String? = null,
+        /** "sitio" o "evento". Es como se arma la agenda sin depender de `/eventos`. */
+        tipoItem: String? = null,
         pagina: Int = 1,
         porPagina: Int = 20,
     ): Resultado<Pagina<ItemInventario>>
@@ -31,8 +33,14 @@ interface Contrato {
     /** Todos los pines de una sola vez: el mapa no pagina. */
     suspend fun marcadores(): Resultado<List<Marcador>>
 
+    /**
+     * La agenda mezclada del panel: fichas con `tipoItem == "evento"` y el CPT
+     * legado. Para el modo sin conexion no alcanza — ver `inventario(tipoItem
+     * = "evento")`, que es lo que arma la agenda local.
+     */
     suspend fun eventos(desde: String? = null, hasta: String? = null): Resultado<Pagina<Evento>>
 
+    /** Solo para el detalle de un `evento_legado`; una ficha usa `ficha(id)`. */
     suspend fun evento(id: Int): Resultado<Evento>
 
     suspend fun recorridos(): Resultado<Pagina<Recorrido>>

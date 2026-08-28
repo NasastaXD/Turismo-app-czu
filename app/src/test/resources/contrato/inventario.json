@@ -2,7 +2,6 @@
   "items": [
     {
       "id": 101,
-      "tipo": "destino",
       "titulo": "‹Atractivo 1 con un nombre bastante más largo que ocupa dos líneas›",
       "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
       "categoria": {
@@ -29,11 +28,12 @@
       },
       "rango_precio": 0,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio",
+      "google_maps": "https://maps.google.com/?q=-25.483951,-56.055669"
     },
     {
       "id": 102,
-      "tipo": "destino",
       "titulo": "‹Atractivo 2›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -60,11 +60,11 @@
       },
       "rango_precio": 1,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 103,
-      "tipo": "destino",
       "titulo": "‹Atractivo 3›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -91,11 +91,11 @@
       },
       "rango_precio": 2,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 104,
-      "tipo": "destino",
       "titulo": "‹Atractivo 4›",
       "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
       "categoria": {
@@ -122,11 +122,11 @@
       },
       "rango_precio": 3,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 105,
-      "tipo": "destino",
       "titulo": "‹Atractivo 5 con un nombre bastante más largo que ocupa dos líneas›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -153,11 +153,11 @@
       },
       "rango_precio": 4,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 106,
-      "tipo": "destino",
       "titulo": "‹Atractivo 6›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -184,11 +184,18 @@
       },
       "rango_precio": 0,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "evento",
+      "fechas": {
+        "inicio": "2026-09-10T22:00:00+00:00",
+        "fin": "2026-09-10T02:00:00+00:00",
+        "en_curso": false,
+        "terminado": false
+      },
+      "google_maps": "https://maps.google.com/?q=-25.500459,-56.061382"
     },
     {
       "id": 107,
-      "tipo": "destino",
       "titulo": "‹Atractivo 7›",
       "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
       "categoria": {
@@ -215,11 +222,11 @@
       },
       "rango_precio": 1,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 108,
-      "tipo": "destino",
       "titulo": "‹Atractivo 8›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -246,11 +253,11 @@
       },
       "rango_precio": 2,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 109,
-      "tipo": "destino",
       "titulo": "‹Atractivo 9 con un nombre bastante más largo que ocupa dos líneas›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -277,11 +284,11 @@
       },
       "rango_precio": 3,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 110,
-      "tipo": "destino",
       "titulo": "‹Atractivo 10›",
       "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
       "categoria": {
@@ -308,11 +315,11 @@
       },
       "rango_precio": 4,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 111,
-      "tipo": "destino",
       "titulo": "‹Atractivo 11›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -339,11 +346,11 @@
       },
       "rango_precio": 0,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 112,
-      "tipo": "destino",
       "titulo": "‹Atractivo 12›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -370,11 +377,17 @@
       },
       "rango_precio": 1,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "evento",
+      "fechas": {
+        "inicio": "2026-08-01T22:00:00+00:00",
+        "fin": "2026-08-01T23:59:00+00:00",
+        "en_curso": false,
+        "terminado": true
+      }
     },
     {
       "id": 113,
-      "tipo": "destino",
       "titulo": "‹Atractivo 13 con un nombre bastante más largo que ocupa dos líneas›",
       "gancho": "‹gancho: una frase algo más larga para ver cómo se comporta la tarjeta cuando el texto ocupa dos renglones completos›",
       "categoria": {
@@ -401,11 +414,11 @@
       },
       "rango_precio": 2,
       "horario_resumen": "",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     },
     {
       "id": 114,
-      "tipo": "destino",
       "titulo": "‹Atractivo 14›",
       "gancho": "‹gancho: una línea corta›",
       "categoria": {
@@ -432,7 +445,8 @@
       },
       "rango_precio": 3,
       "horario_resumen": "‹horario›",
-      "actualizado": "2026-08-20T14:00:00+00:00"
+      "actualizado": "2026-08-20T14:00:00+00:00",
+      "tipo_item": "sitio"
     }
   ],
   "total": 14,

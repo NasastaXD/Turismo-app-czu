@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
+import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.Estado
@@ -56,7 +57,10 @@ fun Principal(
     modifier: Modifier = Modifier,
 ) {
     val (inventario, _) = cargar { Datos.api.inventario(porPagina = 12) }
-    val (eventos, _) = cargar { Datos.api.eventos() }
+    // La agenda sale de clonar el inventario y filtrar del lado del telefono,
+    // no de /eventos: es lo que permite que funcione sin conexion, y evita
+    // arrastrar la forma distinta de un evento legado a esta pantalla.
+    val (eventos, _) = cargar { Datos.api.inventario(tipoItem = "evento", porPagina = 20) }
     val (articulos, _) = cargar { Datos.api.articulos() }
     val (recorridos, _) = cargar { Datos.api.recorridos() }
 
@@ -78,11 +82,11 @@ fun Principal(
 
         item {
             Banda(Tono.banda, Textos.t("principal.eventos"), alVerInventario) { ancho ->
-                Carrusel(eventos.value) { evento ->
+                Carrusel(eventos.value, ordenar = ::proximosEventos) { evento ->
                     TarjetaCarrusel(
                         ancho = ancho,
                         imagen = evento.portada,
-                        encima = fechaCorta(evento.inicio),
+                        encima = fechaCorta(evento.fechas?.inicio),
                         titulo = evento.titulo,
                         alTocar = alVerInventario,
                     )
@@ -179,8 +183,12 @@ private fun Banda(
  * funcionando, que es mejor que una pantalla entera rota por una seccion.
  */
 @Composable
-private fun <T> Carrusel(estado: Estado<Pagina<T>>, tarjeta: @Composable (T) -> Unit) {
-    val elementos = (estado as? Estado.Listo)?.valor?.items.orEmpty()
+private fun <T> Carrusel(
+    estado: Estado<Pagina<T>>,
+    ordenar: (List<T>) -> List<T> = { it },
+    tarjeta: @Composable (T) -> Unit,
+) {
+    val elementos = ordenar((estado as? Estado.Listo)?.valor?.items.orEmpty())
     if (elementos.isEmpty()) return
 
     LazyRow(
@@ -234,3 +242,7 @@ private fun TarjetaCarrusel(
 
 /** Cabe la fecha y tres lineas de titulo con el aire de abajo del sistema. */
 private val ALTO_BLOQUE = 140.dp
+
+/** Los que no terminaron todavia, del mas cercano al mas lejano. */
+private fun proximosEventos(items: List<ItemInventario>): List<ItemInventario> =
+    items.filter { it.fechas?.terminado != true }.sortedBy { it.fechas?.inicio ?: "" }

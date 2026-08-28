@@ -30,6 +30,13 @@ object MapasExternos {
     }
 
     /**
+     * El enlace que ya viene calculado del panel (`google_maps`). Preferirlo
+     * sobre armar uno propio importa: puede ser el que pego el promotor a
+     * mano, mas preciso que un pin armado solo con lat/lng.
+     */
+    fun abrirEnlace(contexto: Context, url: String): Boolean = abrir(contexto, Uri.parse(url))
+
+    /**
      * Un recorrido completo. Devuelve false si no cabe: quien llama decide si
      * lo parte en tramos.
      */
