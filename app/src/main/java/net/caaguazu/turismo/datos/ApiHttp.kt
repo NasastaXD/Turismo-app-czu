@@ -21,27 +21,28 @@ import java.net.URLEncoder
 class ApiHttp(
     private val http: Http,
     private val urlBase: String,
-) : Contrato {
+) {
 
     private companion object { const val ETIQUETA = "Api" }
 
-    override suspend fun categorias() =
+    suspend fun categorias() =
         pedirLista("categorias", Categoria.serializer())
 
-    override suspend fun etiquetas() =
+    suspend fun etiquetas() =
         pedirLista("etiquetas", Etiqueta.serializer())
 
-    override suspend fun zonas() =
+    suspend fun zonas() =
         pedirLista("zonas", Zona.serializer())
 
-    override suspend fun inventario(
-        categoria: Int?,
-        zona: Int?,
-        etiqueta: Int?,
-        buscar: String?,
-        tipoItem: String?,
-        pagina: Int,
-        porPagina: Int,
+    suspend fun inventario(
+        categoria: Int? = null,
+        zona: Int? = null,
+        etiqueta: Int? = null,
+        buscar: String? = null,
+        /** "sitio" o "evento". Es como se arma la agenda sin depender de `/eventos`. */
+        tipoItem: String? = null,
+        pagina: Int = 1,
+        porPagina: Int = 20,
     ) = pedirPagina(
         ruta("inventario") {
             si("categoria", categoria)
@@ -55,13 +56,13 @@ class ApiHttp(
         ItemInventario.serializer(),
     )
 
-    override suspend fun ficha(id: Int) =
+    suspend fun ficha(id: Int) =
         pedir("inventario/$id", Ficha.serializer())
 
-    override suspend fun marcadores() =
+    suspend fun marcadores() =
         pedirLista("mapa/markers", Marcador.serializer())
 
-    override suspend fun eventos(desde: String?, hasta: String?) = pedirPagina(
+    suspend fun eventos(desde: String? = null, hasta: String? = null) = pedirPagina(
         ruta("eventos") {
             si("desde", desde)
             si("hasta", hasta)
@@ -69,16 +70,21 @@ class ApiHttp(
         Evento.serializer(),
     )
 
-    override suspend fun evento(id: Int) =
+    suspend fun evento(id: Int) =
         pedir("eventos/$id", Evento.serializer())
 
-    override suspend fun recorridos() =
+    suspend fun recorridos() =
         pedirPagina("recorridos", Recorrido.serializer())
 
-    override suspend fun recorrido(id: Int) =
+    suspend fun recorrido(id: Int) =
         pedir("recorridos/$id", Recorrido.serializer())
 
-    override suspend fun articulos(pagina: Int, categoria: Int?, etiqueta: Int?, buscar: String?) = pedirPagina(
+    suspend fun articulos(
+        pagina: Int = 1,
+        categoria: Int? = null,
+        etiqueta: Int? = null,
+        buscar: String? = null,
+    ) = pedirPagina(
         ruta("articulos") {
             si("pagina", pagina)
             si("categoria", categoria)
@@ -88,16 +94,16 @@ class ApiHttp(
         ResumenArticulo.serializer(),
     )
 
-    override suspend fun articulo(id: Int) =
+    suspend fun articulo(id: Int) =
         pedir("articulos/$id", Articulo.serializer())
 
-    override suspend fun textos(idioma: String) =
+    suspend fun textos(idioma: String) =
         pedir("strings/$idioma", MapSerializer(String.serializer(), String.serializer()))
 
-    override suspend fun medios() =
+    suspend fun medios() =
         pedir("media-manifest", MapSerializer(String.serializer(), Medio.serializer()))
 
-    override suspend fun delta(desde: String?) = pedir(
+    suspend fun delta(desde: String?) = pedir(
         ruta("sync") { si("since", desde) },
         Delta.serializer(),
     )

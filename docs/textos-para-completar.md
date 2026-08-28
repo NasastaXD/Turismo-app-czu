@@ -23,11 +23,10 @@ No hace falta completarlas todas de una: una clave sin texto se muestra entre
 | `accion.volver` | artículos · lectura, inventario · ficha, recorridos · detalle | **no se ve**: descripción para lectores de pantalla |
 | `banda.verTodo` | inicio | dos palabras — comparte línea con el título de sección |
 | `barra.buscar` | barra superior | **no se ve**: descripción para lectores de pantalla |
-| `barra.perfil` | barra superior | **no se ve**: descripción para lectores de pantalla |
+| `barra.ajustes` | barra superior | **no se ve**: descripción para lectores de pantalla |
 | `diag.borrar` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
 | `diag.cache` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
 | `diag.compartir` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.origen` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
 | `diag.vaciar` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
 | `diag.vacio` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
 | `diag.version` | diagnóstico, perfil | una o dos palabras — pantalla técnica, la ve poca gente |

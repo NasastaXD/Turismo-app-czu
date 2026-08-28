@@ -2,7 +2,6 @@ package net.caaguazu.turismo.datos
 
 import android.content.Context
 import net.caaguazu.turismo.BuildConfig
-import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Cache
 import net.caaguazu.turismo.core.Http
 import net.caaguazu.turismo.core.Registro
@@ -21,27 +20,15 @@ object Datos {
 
     private const val ETIQUETA = "Datos"
 
-    lateinit var api: Contrato
+    lateinit var api: ApiHttp
         private set
 
     lateinit var cache: Cache
         private set
 
-    /** De donde salen los datos ahora mismo. Se muestra en la pantalla de diagnostico. */
-    var origen: String = ""
-        private set
-
     fun iniciar(contexto: Context) {
         cache = Cache(File(contexto.cacheDir, "api"))
-
-        val elegido = Ajustes.origen
-        api = when (elegido) {
-            Ajustes.Origen.MOCKS -> ApiMock(contexto.assets)
-            Ajustes.Origen.PANEL -> ApiHttp(Http(cache), BuildConfig.URL_BASE)
-        }
-        origen = Ajustes.nombre(elegido)
-
-        Registro.info(ETIQUETA, "origen de datos: $origen")
+        api = ApiHttp(Http(cache), BuildConfig.URL_BASE)
     }
 
     /**
