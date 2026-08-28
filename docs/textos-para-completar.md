@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**9 claves esperando texto.** 62 ya están escritas.
+**0 claves esperando texto.** Las 71 están escritas.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -18,20 +18,8 @@ No hace falta completarlas todas de una: una clave sin texto se muestra entre
 
 ## Faltan
 
-Ocho de las nueve son de la hoja de filtros, que es pantalla nueva. Son palabras
-sueltas y con eso la pantalla queda terminada.
-
-| Clave | Dónde aparece | Qué escribir |
-|---|---|---|
-| `filtro.titulo` | buscar · hoja de filtros | una palabra — el título de la hoja |
-| `filtro.aplicar` | buscar · hoja de filtros | una o dos palabras — el botón verde que cierra la hoja |
-| `filtro.limpiar` | buscar · hoja de filtros | una palabra — quita todos los filtros puestos |
-| `filtro.categoria` | buscar · hoja de filtros | una palabra — título del grupo |
-| `filtro.zona` | buscar · hoja de filtros | una palabra — título del grupo |
-| `filtro.etiqueta` | buscar · hoja de filtros | una palabra — título del grupo |
-| `filtro.precio` | buscar · hoja de filtros | una palabra — título del grupo |
-| `ficha.leerMas` | buscar · ficha | dos o tres palabras — abre el resto del texto, que arranca plegado |
-| `perfil.avisosDetalle` | perfil | una frase corta bajo el interruptor de avisos — qué avisa y cada cuánto |
+Nada por ahora. Las nueve claves que abrió el rework anterior —ocho de la hoja
+de filtros y `ficha.leerMas`— ya tienen texto.
 
 ---
 
