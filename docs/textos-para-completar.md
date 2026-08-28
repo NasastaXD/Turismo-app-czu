@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**50 claves esperando texto.** 8 ya están escritas.
+**46 claves esperando texto.** 8 ya están escritas.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -43,17 +43,13 @@ No hace falta completarlas todas de una: una clave sin texto se muestra entre
 | `ficha.camino` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.contacto` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.costo` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.duracion` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.fuentes` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.galeria` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.horario` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.info` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.llegar` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.mapa` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.quitar` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `ficha.relacionados` | artículos · lectura, inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.servicios` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.temporada` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
 | `inv.lista` | piezas comunes | una o dos palabras |
 | `inv.mapa` | piezas comunes | una o dos palabras |
 | `inv.resultados` | inventario · lista | una o dos palabras |
