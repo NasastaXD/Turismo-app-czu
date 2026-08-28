@@ -150,4 +150,17 @@ object Icono {
     val lista: ImageVector by lazy {
         trazo("lista", "M4 6.5 H6 M9 6.5 H20 M4 12 H6 M9 12 H20 M4 17.5 H6 M9 17.5 H20")
     }
+
+    /** Calendario: hoja del mes con las dos anillas y la linea de cabecera. */
+    val calendario: ImageVector by lazy {
+        trazo(
+            "calendario",
+            "M4 6 H20 V20 H4 Z M4 10 H20 M8.5 3.5 V7 M15.5 3.5 V7",
+        )
+    }
+
+    /** Chevron a la derecha: "esta fila lleva a otro lado". */
+    val chevron: ImageVector by lazy {
+        trazo("chevron", "M9.5 5 L16.5 12 L9.5 19")
+    }
 }

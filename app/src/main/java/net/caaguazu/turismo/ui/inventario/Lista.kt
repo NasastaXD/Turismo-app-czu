@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,10 +27,10 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
+import net.caaguazu.turismo.ui.articulos.fechaCorta
+import net.caaguazu.turismo.ui.piezas.Badge
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Cruce
-import net.caaguazu.turismo.ui.piezas.cedeAlTocar
-import net.caaguazu.turismo.ui.piezas.recordarInteraccion
 import net.caaguazu.turismo.ui.piezas.Corazon
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Glifo
@@ -40,6 +38,7 @@ import net.caaguazu.turismo.ui.piezas.IconoAccion
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.InterruptorListaMapa
 import net.caaguazu.turismo.ui.piezas.RangoPrecio
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -71,7 +70,7 @@ fun PantallaLista(
     }
     val titulo = categoria?.nombre ?: Textos.t("nav.inventario")
 
-    Column(modifier.fillMaxSize().background(Tono.papel)) {
+    Column(modifier.fillMaxSize().background(Tono.fondo)) {
         Breadcrumb(seccion = titulo, alVolver = alVolver)
 
         Texto(
@@ -120,8 +119,8 @@ fun PantallaLista(
                     ),
                     verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
                 ) {
-                    itemsIndexed(pagina.items, key = { _, item -> item.id }) { indice, item ->
-                        TarjetaLista(item, indice) { alAbrir(item.id) }
+                    items(pagina.items, key = { item -> item.id }) { item ->
+                        TarjetaLista(item) { alAbrir(item.id) }
                     }
                 }
             }
@@ -176,79 +175,87 @@ private fun RangoResultados(estado: net.caaguazu.turismo.ui.piezas.Estado<*>) {
  * Tarjeta de lista.
  *
  * Media cuadrada arriba a la izquierda, iconos de accion a su derecha alineados
- * arriba, y debajo el texto a todo el ancho. El fondo alterna papel y banda por
- * indice, que es lo que separa una tarjeta de la siguiente sin dibujar una
+ * arriba, y debajo el texto a todo el ancho. Lo que separa una tarjeta de la
+ * siguiente es su propia sombra: no hace falta alternar el fondo ni dibujar una
  * linea entre ellas.
  */
 @Composable
-private fun TarjetaLista(item: ItemInventario, indice: Int, alTocar: () -> Unit) {
+private fun TarjetaLista(item: ItemInventario, alTocar: () -> Unit) {
     val contexto = LocalContext.current
     val coordenadas = item.coordenadas
-    val interaccion = recordarInteraccion()
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .cedeAlTocar(interaccion)
-            .clip(RoundedCornerShape(Radio.lista))
-            .background(if (indice % 2 == 0) Tono.papel else Tono.banda)
-            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar)
-            .padding(Medida.dentroTarjeta),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    Tarjeta(
+        modifier = Modifier.fillMaxWidth(),
+        radio = Radio.lista,
+        alTocar = alTocar,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(Medida.dentroTarjeta),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(Modifier.size(LADO_MEDIA)) {
-                Foto(item.portada, item.titulo, Modifier.fillMaxSize())
-                Corazon(
-                    // Lectura diferida: el estado se lee dentro del corazon, no
-                    // en el cuerpo de la tarjeta. Marcar un favorito redibuja un
-                    // corazon, no la lista entera.
-                    marcado = { Guardado.esFavorito(item.id) },
-                    alTocar = { Guardado.alternarFavorito(item.id) },
-                    descripcion = item.titulo,
-                    modifier = Modifier.align(Alignment.TopStart),
-                )
-            }
-
-            // Solo los iconos disponibles. Sin coordenadas no hay adonde ir, y
-            // el bloque no reserva el hueco de un boton que no existe.
-            if (coordenadas != null) {
-                IconoAccion(
-                    icono = Icono.inventario,
-                    descripcion = item.titulo,
-                    alTocar = {
-                        MapasExternos.abrirPunto(
-                            contexto, coordenadas.lat, coordenadas.lng, item.titulo,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Box(Modifier.size(LADO_MEDIA)) {
+                    Foto(item.portada, item.titulo, Modifier.fillMaxSize())
+                    Corazon(
+                        // Lectura diferida: el estado se lee dentro del corazon,
+                        // no en el cuerpo de la tarjeta. Marcar un favorito
+                        // redibuja un corazon, no la lista entera.
+                        marcado = { Guardado.esFavorito(item.id) },
+                        alTocar = { Guardado.alternarFavorito(item.id) },
+                        descripcion = item.titulo,
+                        modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+                    )
+                    // Un evento que esta pasando ahora es la unica cosa de la
+                    // lista que cambia sola. Por eso lleva el unico badge.
+                    if (item.fechas?.enCurso == true) {
+                        Badge(
+                            texto = Textos.t("evento.enCurso"),
+                            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
                         )
-                    },
+                    }
+                }
+
+                // Solo los iconos disponibles. Sin coordenadas no hay adonde ir,
+                // y el bloque no reserva el hueco de un boton que no existe.
+                if (coordenadas != null) {
+                    IconoAccion(
+                        icono = Icono.inventario,
+                        descripcion = item.titulo,
+                        alTocar = {
+                            MapasExternos.abrirPunto(
+                                contexto, coordenadas.lat, coordenadas.lng, item.titulo,
+                            )
+                        },
+                    )
+                }
+            }
+
+            Texto(item.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                RangoPrecio(item.rangoPrecio)
+                val cuando = fechaCorta(item.fechas?.inicio) ?: item.horarioResumen
+                if (cuando.isNotBlank()) {
+                    Texto(cuando, Letra.fecha, Tono.acento, maxLineas = 1)
+                }
+            }
+
+            if (item.gancho.isNotBlank()) {
+                Texto(
+                    texto = item.gancho,
+                    estilo = Letra.descripcion,
+                    color = Tono.tintaSuave,
+                    maxLineas = 3,
+                    // La descripcion termina sin puntos suspensivos.
+                    conPuntosSuspensivos = false,
                 )
             }
-        }
-
-        Texto(item.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            RangoPrecio(item.rangoPrecio)
-            if (item.horarioResumen.isNotBlank()) {
-                Texto(item.horarioResumen, Letra.fecha, Tono.acento, maxLineas = 1)
-            }
-        }
-
-        if (item.gancho.isNotBlank()) {
-            Texto(
-                texto = item.gancho,
-                estilo = Letra.descripcion,
-                color = Tono.tintaSuave,
-                maxLineas = 3,
-                // El sistema pide que la descripcion termine sin puntos suspensivos.
-                conPuntosSuspensivos = false,
-            )
         }
     }
 }

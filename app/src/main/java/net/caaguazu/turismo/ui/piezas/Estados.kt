@@ -116,7 +116,7 @@ private fun AvisoConReintento(falla: Falla, reintentar: () -> Unit, modifier: Mo
                 color = Tono.tinta,
                 alinear = TextAlign.Center,
             )
-            PildoraNegra(texto = Textos.t("estado.reintentar"), alTocar = reintentar)
+            PildoraPrimaria(texto = Textos.t("estado.reintentar"), alTocar = reintentar)
         }
     }
 }

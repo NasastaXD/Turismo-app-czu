@@ -55,7 +55,7 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
         Registro.leerTodo().lines().filter { it.isNotBlank() }.asReversed()
     }
 
-    Column(modifier.fillMaxSize().background(Tono.papel)) {
+    Column(modifier.fillMaxSize().background(Tono.fondo)) {
 
         Column(Modifier.padding(Medida.margen)) {
             Dato(Textos.t("diag.origen"), Datos.origen)

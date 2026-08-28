@@ -1,7 +1,6 @@
 package net.caaguazu.turismo.ui.articulos
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,7 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.Hairline
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -66,12 +65,14 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
         estado = estado.value,
         reintentar = reintentar,
         vacio = { it.items.isEmpty() },
-        modifier = modifier.fillMaxSize().background(Tono.papel),
+        modifier = modifier.fillMaxSize().background(Tono.fondo),
     ) { pagina ->
-        LazyColumn(contentPadding = PaddingValues(vertical = Medida.margen)) {
+        LazyColumn(
+            contentPadding = PaddingValues(Medida.margen),
+            verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+        ) {
             items(pagina.items, key = { it.id }) { articulo ->
                 TarjetaArticulo(articulo) { alAbrir(articulo.id) }
-                Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.margen))
             }
         }
     }
@@ -85,33 +86,40 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
  */
 @Composable
 private fun TarjetaArticulo(articulo: ResumenArticulo, alTocar: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = alTocar)
-            .padding(Medida.margen),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Texto(
-            texto = articulo.titulo,
-            estilo = Letra.titularTarjeta,
-            color = Tono.tinta,
-            maxLineas = 3,
-        )
-        if (articulo.entradilla.isNotBlank()) {
+    Tarjeta(modifier = Modifier.fillMaxWidth(), alTocar = alTocar) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(Medida.dentroTarjeta),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (articulo.antetitulo.isNotBlank()) {
+                Texto(
+                    texto = articulo.antetitulo.uppercase(),
+                    estilo = Letra.etiquetaNav,
+                    color = Tono.acento,
+                    maxLineas = 1,
+                )
+            }
             Texto(
-                texto = articulo.entradilla,
-                estilo = Letra.descripcion,
-                color = Tono.tintaSuave,
+                texto = articulo.titulo,
+                estilo = Letra.titularTarjeta,
+                color = Tono.tinta,
                 maxLineas = 3,
             )
+            if (articulo.entradilla.isNotBlank()) {
+                Texto(
+                    texto = articulo.entradilla,
+                    estilo = Letra.descripcion,
+                    color = Tono.tintaSuave,
+                    maxLineas = 3,
+                )
+            }
+            Foto(
+                imagen = articulo.portada,
+                descripcion = articulo.titulo,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+            )
+            Firma(nombreAutores(articulo.autores), articulo.publicado)
         }
-        Foto(
-            imagen = articulo.portada,
-            descripcion = articulo.titulo,
-            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
-        )
-        Firma(nombreAutores(articulo.autores), articulo.publicado)
     }
 }
 

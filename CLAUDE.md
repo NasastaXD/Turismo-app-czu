@@ -62,33 +62,55 @@ son marcadores evidentemente sintéticos.
 
 ---
 
-## 3. El sistema visual — "Alpine Editorial"
+## 3. El sistema visual
 
-Referencia: la app de Crans-Montana. La definición en una línea: **contenedores
-rectangulares de esquina viva sobre bandas alternadas de blanco y gris cálido,
-con toda la interacción encapsulada en píldoras de radio completo.** La tensión
-entre esquina 0 y radio 999 es la firma, y no se rompe.
+La definición en una línea: **tarjetas redondeadas que flotan sobre el fondo con
+una sombra suave, con toda la interacción encapsulada en píldoras de radio
+completo.** La unidad es la tarjeta: todo bloque de contenido es una, y lo que
+separa una tarjeta de la siguiente es su propia sombra, no una línea ni un
+cambio de fondo.
+
+La app sigue el **modo claro u oscuro del teléfono**. No hay un interruptor
+propio: quien ya eligió en su sistema no tiene que volver a elegir acá.
 
 ### Paleta
 
 Vive entera en `Tono`. Ningún color se escribe suelto en una pantalla.
 
-| Token | Uso |
-|---|---|
-| `papel` #FFFFFF | fondo base y tarjeta de lista |
-| `banda` #F4F3F1 | banda de sección alterna, gris cálido |
-| `superficie` #F5F5F5 | cuerpo de texto de tarjeta de carrusel |
-| `tinta` #1D1D1F | títulos y texto principal |
-| `tintaSuave` #55555A | descripciones y texto secundario |
-| `linea` #E6E4E1 | hairlines de 1px |
-| `acento` #E9503F | coral |
-| `negro` #000000 | navegación, botón central, filtros, toggles |
-| `velo` 45% negro | scrim sobre foto en tiles de menú |
+Tres colores de marca, **iguales en los dos modos** — una identidad que cambia
+de color según la hora del día deja de serlo:
 
-**El acento tiene una regla estrecha:** solo va en fechas y metadatos de
-cuándo/dónde/contacto, badges, bordes de iconos circulares y breadcrumb. Nunca
-como fondo de superficie grande. Negro y acento no compiten en el mismo
-componente: el negro es control, el acento es metadato.
+| Token | Color | Regla de uso |
+|---|---|---|
+| `primario` | Eton Blue #96C8A2 | la acción principal. Como mucho una por pantalla |
+| `sobrePrimario` | #1E3A28 | la tinta sobre el verde |
+| `acento` | Bittersweet #FF6F61 | favoritos, fechas y metadatos de cuándo/dónde |
+| `destacado` | Mango #FFC300 | lo que está pasando **ahora**. Hoy, solo el badge de evento en curso |
+
+Y las superficies, que **sí** cambian con el modo:
+
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `fondo` | #F7F7F5 | #0F0F10 | fondo de página |
+| `papel` | #FFFFFF | #1B1B1D | la tarjeta |
+| `banda` | #F2F1EF | #151517 | banda de sección alterna |
+| `tinta` | #333333 | #F2F2F2 | títulos y texto principal |
+| `tintaSuave` | #6E6E73 | #9A9AA0 | descripciones y texto secundario |
+| `linea` | #E8E6E3 | #2C2C2E | hairlines de 1px |
+| `contraste` | #1F1F21 | #F2F2F2 | control de máximo contraste: botón central, segmento activo |
+| `sobreContraste` | #FFFFFF | #1F1F21 | lo que se escribe encima |
+| `sombra` | 10% gris | negro | color de toda sombra |
+| `velo` | 45% negro | igual | scrim sobre foto |
+
+**Cada color de marca tiene un rol y no sale de él.** Tres colores sin regla son
+ruido. En particular: el verde es acción, nunca decoración; el mango no se usa
+para nada que no esté ocurriendo en este momento.
+
+**El texto sobre el verde va en verde oscuro, no en blanco.** La referencia usa
+blanco, que sobre ese verde da 1,9:1 — ilegible al sol y muy por debajo del
+mínimo accesible. Con la tinta oscura la pieza se ve igual y el contraste sube a
+7:1. Para un público que en buena parte es gente mayor leyendo en la calle, eso
+no es un detalle.
 
 ### Tipografía
 
@@ -100,18 +122,26 @@ interfaz, y porque la referencia del proyecto para artículos es un diario.
 Los títulos de tarjeta truncan con puntos suspensivos; **las descripciones
 cortan sin ellos**.
 
-### Radios y sombras
+### Radios y elevación
 
-Radio 0 en toda superficie de contenido. Radio 999 en todo control. Radio 8 en
-tarjetas de lista. No hay una cuarta opción.
+Todo radio sale de `Radio`: `tarjeta` 16, `media` y `lista` 12, `hoja` 24,
+`completo` 999 para cualquier control, y `ninguno` 0 —que es solo para el medio
+que va a sangre dentro de una tarjeta, porque el contenedor ya recorta y
+redondear de nuevo dejaría una esquina doble.
 
-**Una sola sombra en toda la app**, la del botón central de la barra inferior.
+La elevación tiene **dos alturas** y salen de `Elevacion`: `tarjeta` 6 para lo
+que apenas se despega del fondo, `flotante` 12 para lo que tiene que despegarse
+de una foto o un mapa. Toda sombra lleva `Tono.sombra` como `ambientColor` y
+`spotColor`: sin eso sale del negro por omisión y en modo oscuro pinta un halo
+sucio alrededor de cada tarjeta.
 
 ### Verificado, no documentado
 
-`SistemaDeDisenoTest` falla la compilación si aparece una segunda sombra, un
-radio que no salga de `Radio.*`, o un color que no salga de `Tono`. Es la única
-forma de que estas reglas sigan siendo ciertas dentro de tres meses.
+`SistemaDeDisenoTest` falla la compilación si un radio no sale de `Radio.*`, si
+una elevación no sale de `Elevacion.*`, si una sombra no lleva `Tono.sombra`, si
+un color se escribe suelto en una pantalla, o si un token de `Tono` define su
+valor en un solo modo. Es la única forma de que estas reglas sigan siendo
+ciertas dentro de tres meses.
 
 ### Movimiento
 
@@ -142,9 +172,14 @@ ninguna pantalla; arrastrarlo solo sumaría peso.
 
 ### Dependencias
 
-Doce en total, y solo tres fuera de AndroidX/Compose: **MapLibre** para el mapa,
+Trece en total, y solo tres fuera de AndroidX/Compose: **MapLibre** para el mapa,
 **kotlinx.serialization** y **Coil** para imágenes. Sin cliente HTTP externo:
 `HttpURLConnection` alcanza para GET y POST de JSON con ETag.
+
+**WorkManager** es la decimotercera y entró por los avisos. Es la única forma de
+que Android deje correr una revisión periódica sobreviviendo a Doze y al
+reinicio del teléfono. Sin ella la alternativa era Firebase, que es justo lo que
+el proyecto evita.
 
 Menos servicios externos es un objetivo explícito del proyecto, no una
 consecuencia.
@@ -212,7 +247,49 @@ incompleto sin que nadie se entere.
 
 ---
 
-## 6. Cómo se trabaja
+## 6. Avisos y calendario
+
+Las dos cosas siguen el mismo criterio que el mapa: **se delega en lo que el
+teléfono ya tiene, en vez de construirlo de nuevo.**
+
+### Agendar un evento
+
+`CalendarContract.ACTION_INSERT` abre el calendario de la persona con el
+formulario ya completado, y ella confirma. **No se pide ningún permiso**: la app
+nunca lee ni escribe en el calendario, solo propone. Pedir acceso a la agenda
+entera de alguien para esto sería pedir mucho a cambio de nada.
+
+El botón solo aparece cuando la ficha es un evento y su fecha se pudo
+interpretar. Un botón que no puede hacer nada no se dibuja.
+
+### Avisos
+
+**No hay push.** No hay Firebase, no hay token de dispositivo, no hay servidor
+de notificaciones. La app pregunta cada seis horas con los endpoints que ya sabe
+pedir, y decide en el teléfono. Eso deja al proyecto sin un servicio externo más
+—que es un objetivo explícito— y de paso sin que nadie del otro lado sepa quién
+tiene la app instalada.
+
+Seis horas es deliberado: un inventario turístico cambia por semana, no por
+minuto, y revisar más seguido solo gastaría batería para encontrar lo mismo.
+
+Cuatro reglas que evitan que los avisos se vuelvan insoportables:
+
+- **Arrancan apagados.** Notificar sin que nadie lo haya pedido termina con la
+  app silenciada entera.
+- **La primera revisión no avisa nada**, solo toma nota de lo que ya existe.
+  Avisar del histórico completo al encender sería inutilizable.
+- **Cinco avisos por vuelta como máximo.** Pasado ese punto no informa, molesta.
+- **Un evento se avisa una sola vez**, cuando entra en la ventana de dos días.
+  Avisar al publicarse sería inútil —puede faltar un mes— y avisar todos los
+  días hasta que ocurra, insoportable.
+
+Dos canales separados, artículos y eventos, porque Android deja apagar uno sin
+el otro y eso solo funciona si están separados desde el principio.
+
+---
+
+## 7. Cómo se trabaja
 
 Las correcciones se acumulan como commits en la rama de trabajo hasta que se
 pida **"Release!"**. Cada release compila en Actions y publica los tres APK más
@@ -224,13 +301,14 @@ APK. Decir "listo" sobre algo que no se vio dibujado sería mentir.
 
 ---
 
-## 7. Lo que no se hace
+## 8. Lo que no se hace
 
 - Escribir contenido de producto.
 - Usar imágenes de archivo.
 - Meter un texto o un color directamente en una pantalla.
 - Agregar una dependencia que se pueda evitar.
-- Redondear una superficie de contenido, o poner una segunda sombra.
-- Usar el acento fuera de su regla.
+- Inventar un radio o una elevación fuera de `Radio` y `Elevacion`.
+- Usar un color de marca fuera de su rol.
+- Definir un color de `Tono` en un solo modo.
 - Construir de nuevo algo que el panel ya resuelve.
 - Dar por bueno lo que no se comprobó.

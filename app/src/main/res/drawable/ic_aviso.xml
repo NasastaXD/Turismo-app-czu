@@ -1,0 +1,18 @@
+<!--
+  Icono de la barra de estado. Android lo dibuja como silueta de un solo color,
+  asi que va relleno y sin detalle fino: un trazo de 2px se pierde a 24dp en la
+  barra. Es la misma campana del icono de avisos, en version solida.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFFFF">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3C8.7,3 6.6,5.5 6.6,8.9C6.6,13.4 4.5,15.1 4.5,15.1L4.5,16.3L19.5,16.3L19.5,15.1C19.5,15.1 17.4,13.4 17.4,8.9C17.4,5.5 15.3,3 12,3Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M9.8,18C10.2,19.6 11,20.5 12,20.5C13,20.5 13.8,19.6 14.2,18Z" />
+</vector>
