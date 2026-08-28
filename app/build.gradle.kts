@@ -29,6 +29,23 @@ android {
         buildConfigField("boolean", "USAR_MOCKS", "false")
     }
 
+    // La clave de release vive fuera del repo. CI la escribe a disco a partir de
+    // un secreto y pasa la ruta y las contraseñas por variable de entorno; un
+    // build local sin esas variables simplemente no arma este signingConfig.
+    val rutaKeystoreRelease = System.getenv("RELEASE_KEYSTORE_PATH")
+    val hayKeystoreRelease = rutaKeystoreRelease != null && file(rutaKeystoreRelease).exists()
+
+    signingConfigs {
+        if (hayKeystoreRelease) {
+            create("release") {
+                storeFile = file(rutaKeystoreRelease!!)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // Sin minificar: las trazas tienen que leerse durante el desarrollo.
@@ -39,8 +56,15 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Firma de depuracion por ahora: el keystore propio esta pendiente de decision.
-            signingConfig = signingConfigs.getByName("debug")
+            // Con la clave propia disponible, cada release queda firmada igual
+            // que la anterior y una actualizacion se instala encima. Sin ella
+            // (un build local, o CI antes de que exista el secreto) cae a la de
+            // depuracion, que es la que habia antes de esto.
+            signingConfig = if (hayKeystoreRelease) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
