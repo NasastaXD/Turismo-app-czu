@@ -18,6 +18,4 @@ El mapa funciona **sin conexión**: viaja dentro del APK.
 
 ## Advertencias
 
-Está firmada con clave de depuración, así que **una versión nueva puede no instalarse encima de la anterior**: en ese caso hay que desinstalar primero. Se arregla en cuanto exista el keystore del proyecto.
-
 El archivo `mapping-….txt` sirve para traducir los registros de error de esta compilación. Sin él, un log de fallo es ilegible.
