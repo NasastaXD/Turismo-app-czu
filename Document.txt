@@ -1,0 +1,48 @@
+Keystore de release — Caaguazú Turismo
+========================================
+
+Esto reemplaza la firma de depuración al azar que usó cada release hasta
+ahora. Es la causa de que la v1.1.0 no se viera aunque desinstalaras y
+reinstalaras: cada build de Actions generaba una clave nueva, y Android no
+deja instalar una actualización si la firma no coincide con la anterior.
+
+Con esto en su lugar, todas las releases futuras quedan firmadas igual
+entre sí — instalar una encima de la otra va a funcionar normal.
+
+GUARDÁ este archivo y "release.keystore" en un lugar seguro y con respaldo
+(un gestor de contraseñas, un drive privado). Si se pierden, no hay forma
+de recuperarlos, y ninguna actualización futura va a poder instalarse sobre
+lo que la gente ya tenga — solo quedaría reinstalar desde cero perdiendo
+favoritos y recorridos guardados. Esto NO va al repositorio ni a ningún
+lado público.
+
+Datos del keystore
+------------------
+Archivo:        release.keystore (formato PKCS12)
+Alias:          caaguazu
+Contraseña:     JkeUt96e50NjvmNzkCzZtuJT5aSadEJ5
+(mismo valor para el store y para la clave — PKCS12 no admite que sean distintas)
+
+Válido hasta:   13 de enero de 2054
+
+Cómo cargarlo en GitHub Actions
+--------------------------------
+1. En el repo: Settings → Secrets and variables → Actions → New repository secret.
+2. Creá estos cuatro secretos:
+
+   RELEASE_KEYSTORE_BASE64   → contenido de release.keystore.b64 (una sola línea, pegala entera)
+   RELEASE_KEYSTORE_PASSWORD → JkeUt96e50NjvmNzkCzZtuJT5aSadEJ5
+   RELEASE_KEY_ALIAS         → caaguazu
+   RELEASE_KEY_PASSWORD      → JkeUt96e50NjvmNzkCzZtuJT5aSadEJ5
+
+3. Nada más que hacer: el workflow ya está preparado (PR #10) para leer esos
+   cuatro secretos y usarlos al compilar. Si por algún motivo no cargás
+   los secretos, todo sigue funcionando como antes (cae a la firma de
+   depuración), así que esto no puede romper una release.
+
+Sobre esta primera vez
+-----------------------
+Como todas las releases anteriores (hasta la 1.1.0) quedaron firmadas con
+claves distintas entre sí, y esta es una clave nueva más, quien tenga
+instalada cualquier versión anterior va a tener que desinstalarla una
+última vez antes de instalar la próxima release. De ahí en adelante, ya no.
