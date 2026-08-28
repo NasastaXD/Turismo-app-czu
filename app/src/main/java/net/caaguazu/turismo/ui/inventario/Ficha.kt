@@ -25,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
 import net.caaguazu.turismo.core.Guardado
+import net.caaguazu.turismo.core.HtmlSencillo
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
@@ -74,6 +76,10 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
     val contexto = LocalContext.current
     val enRecorrido = Guardado.enRecorrido(ficha.id)
 
+    // Interpretar el HTML es trabajo real: se hace una vez por ficha, no en cada
+    // recomposicion del scroll.
+    val parrafos = remember(ficha.id) { HtmlSencillo.bloques(ficha.descripcion) }
+
     Box(Modifier.fillMaxSize()) {
         LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
 
@@ -92,15 +98,7 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                             color = Color.White,
                             maxLineas = 3,
                         )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            ficha.zona?.let {
-                                Texto(it.nombre, Letra.chip, Color.White.copy(alpha = 0.85f), maxLineas = 1)
-                            }
-                            RangoPrecio(ficha.practicos.rangoPrecio)
-                        }
+                        RangoPrecio(ficha.practicos.rangoPrecio)
                     }
                 }
             }
@@ -124,14 +122,22 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 }
             }
 
-            if (ficha.gancho.isNotBlank()) {
-                item {
-                    Texto(
-                        texto = ficha.gancho,
-                        estilo = Letra.descripcion,
-                        color = Tono.tintaSuave,
-                        modifier = Modifier.padding(horizontal = Medida.margen, vertical = 4.dp),
-                    )
+            if (parrafos.isNotEmpty()) {
+                items(parrafos) { bloque ->
+                    val texto = when (bloque) {
+                        is HtmlSencillo.Bloque.Parrafo -> bloque.texto
+                        is HtmlSencillo.Bloque.Subtitulo -> bloque.texto
+                        is HtmlSencillo.Bloque.Punto -> bloque.texto
+                        is HtmlSencillo.Bloque.Cita -> bloque.texto
+                        is HtmlSencillo.Bloque.Figura -> null
+                    }
+                    if (texto != null) {
+                        androidx.compose.foundation.text.BasicText(
+                            text = texto,
+                            style = Letra.descripcion.copy(color = Tono.tintaSuave),
+                            modifier = Modifier.padding(horizontal = Medida.margen, vertical = 4.dp),
+                        )
+                    }
                 }
             }
 
@@ -216,7 +222,6 @@ private fun datosPracticos(ficha: Ficha): List<Pair<String, String>> = buildList
     mas("ficha.contacto", ficha.practicos.contacto)
     mas("ficha.llegar", ficha.acceso.comoLlegar)
     mas("ficha.camino", ficha.acceso.estadoCamino)
-    mas("ficha.acceso", ficha.acceso.accesibilidad)
 }
 
 @Composable

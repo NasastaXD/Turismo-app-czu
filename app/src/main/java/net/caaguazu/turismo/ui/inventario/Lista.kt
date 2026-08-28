@@ -15,12 +15,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
@@ -29,6 +35,7 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
+import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Cruce
 import net.caaguazu.turismo.ui.piezas.cedeAlTocar
@@ -46,6 +53,9 @@ import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
 import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
+
+/** Cuanto se espera despues de la ultima letra antes de pedirle a la API. */
+private const val ESPERA_BUSQUEDA_MS = 350L
 
 /** Media cuadrada de la tarjeta de lista, en la medida que fija el sistema. */
 private val LADO_MEDIA = 180.dp
@@ -66,8 +76,15 @@ fun PantallaLista(
     alVolver: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val (estado, reintentar) = cargar(categoria?.id) {
-        Datos.api.inventario(categoria = categoria?.id, porPagina = 50)
+    var busqueda by remember { mutableStateOf("") }
+    var buscarPor by remember { mutableStateOf("") }
+    LaunchedEffect(busqueda) {
+        delay(ESPERA_BUSQUEDA_MS)
+        buscarPor = busqueda
+    }
+
+    val (estado, reintentar) = cargar(categoria?.id, buscarPor) {
+        Datos.api.inventario(categoria = categoria?.id, buscar = buscarPor.ifBlank { null }, porPagina = 50)
     }
     val titulo = categoria?.nombre ?: Textos.t("nav.inventario")
 
@@ -82,6 +99,16 @@ fun PantallaLista(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Medida.margen, vertical = 20.dp),
+        )
+
+        CampoBusqueda(
+            valor = busqueda,
+            alCambiar = { busqueda = it },
+            marcador = Textos.t("barra.buscar"),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Medida.margen)
+                .padding(bottom = 16.dp),
         )
 
         Row(
@@ -238,17 +265,6 @@ private fun TarjetaLista(item: ItemInventario, indice: Int, alTocar: () -> Unit)
             if (item.horarioResumen.isNotBlank()) {
                 Texto(item.horarioResumen, Letra.fecha, Tono.acento, maxLineas = 1)
             }
-        }
-
-        if (item.gancho.isNotBlank()) {
-            Texto(
-                texto = item.gancho,
-                estilo = Letra.descripcion,
-                color = Tono.tintaSuave,
-                maxLineas = 3,
-                // El sistema pide que la descripcion termine sin puntos suspensivos.
-                conPuntosSuspensivos = false,
-            )
         }
     }
 }

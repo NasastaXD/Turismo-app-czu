@@ -66,7 +66,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -164,7 +164,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -239,7 +239,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -337,7 +337,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -412,7 +412,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -510,7 +510,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -585,7 +585,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -683,7 +683,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -758,7 +758,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -856,7 +856,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -931,7 +931,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -1029,7 +1029,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {
@@ -1104,7 +1104,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [
       {
         "id": 201,
@@ -1202,7 +1202,7 @@
       "estado_camino": "asfalto",
       "accesibilidad": "‹accesibilidad›"
     },
-    "articulo_html": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
+    "descripcion": "<p>‹cuerpo del artículo de la ficha, escrito por una persona›</p>",
     "articulos_relacionados": [],
     "fuentes": "‹fuentes›",
     "autor": {

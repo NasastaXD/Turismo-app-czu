@@ -16,11 +16,8 @@ interface Contrato {
 
     suspend fun categorias(): Resultado<List<Categoria>>
 
-    suspend fun zonas(): Resultado<List<Zona>>
-
     suspend fun inventario(
         categoria: Int? = null,
-        zona: Int? = null,
         buscar: String? = null,
         pagina: Int = 1,
         porPagina: Int = 20,
@@ -39,7 +36,11 @@ interface Contrato {
 
     suspend fun recorrido(id: Int): Resultado<Recorrido>
 
-    suspend fun articulos(pagina: Int = 1, categoria: Int? = null): Resultado<Pagina<ResumenArticulo>>
+    suspend fun articulos(
+        pagina: Int = 1,
+        categoria: Int? = null,
+        buscar: String? = null,
+    ): Resultado<Pagina<ResumenArticulo>>
 
     suspend fun articulo(id: Int): Resultado<Articulo>
 

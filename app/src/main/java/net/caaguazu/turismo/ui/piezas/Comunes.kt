@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +26,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -300,4 +303,43 @@ fun Corazon(
 @Composable
 fun Hairline(modifier: Modifier = Modifier) {
     Box(modifier.height(1.dp).background(Tono.linea))
+}
+
+/**
+ * Campo de busqueda: pildora de radio completo sobre banda, con el glifo de
+ * lupa a la izquierda y el marcador reemplazando al texto cuando esta vacio.
+ *
+ * Quien llama es responsable de esperar antes de usar el valor para pedir a la
+ * API: escribir letra por letra no tiene que disparar un pedido por letra.
+ */
+@Composable
+fun CampoBusqueda(
+    valor: String,
+    alCambiar: (String) -> Unit,
+    marcador: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(Radio.completo))
+            .background(Tono.banda)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Glifo(Icono.buscar, marcador, Tono.tintaSuave, Modifier.size(18.dp))
+        Box(Modifier.weight(1f)) {
+            if (valor.isEmpty()) {
+                Texto(marcador, Letra.chip, Tono.tintaSuave, maxLineas = 1)
+            }
+            BasicTextField(
+                value = valor,
+                onValueChange = alCambiar,
+                textStyle = Letra.chip.copy(color = Tono.tinta),
+                singleLine = true,
+                cursorBrush = SolidColor(Tono.tinta),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
 }

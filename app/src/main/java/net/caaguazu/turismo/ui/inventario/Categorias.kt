@@ -21,7 +21,6 @@ import net.caaguazu.turismo.datos.Categoria
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.ui.piezas.Cargador
-import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.FotoConVelo
 import net.caaguazu.turismo.ui.piezas.cedeAlTocar
 import net.caaguazu.turismo.ui.piezas.recordarInteraccion
@@ -44,16 +43,6 @@ fun PantallaCategorias(
 ) {
     val (estado, reintentar) = cargar { Datos.api.categorias() }
 
-    // El contrato todavia no trae foto de categoria. Mientras tanto se toma la
-    // del primer atractivo de cada una: es contenido real del propio destino,
-    // no una imagen de archivo.
-    val (respaldo, _) = cargar { Datos.api.inventario(porPagina = 100) }
-    val fotoPorCategoria = (respaldo.value as? Estado.Listo)?.valor?.items
-        ?.mapNotNull { item -> item.categoria?.id?.let { it to item.portada } }
-        ?.filter { it.second != null }
-        ?.toMap()
-        .orEmpty()
-
     Cargador(
         estado = estado.value,
         reintentar = reintentar,
@@ -70,7 +59,7 @@ fun PantallaCategorias(
             items(categorias, key = { it.id }) { categoria ->
                 TileCategoria(
                     categoria = categoria,
-                    fondo = categoria.portada ?: fotoPorCategoria[categoria.id],
+                    fondo = categoria.portada,
                     alTocar = { alElegir(categoria) },
                 )
             }

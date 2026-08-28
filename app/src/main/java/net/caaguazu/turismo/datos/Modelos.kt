@@ -73,16 +73,6 @@ data class Categoria(
 
 @Immutable
 @Serializable
-data class Zona(
-    val id: Int,
-    val slug: String = "",
-    val nombre: String = "",
-    val padre: Int? = null,
-    val total: Int = 0,
-)
-
-@Immutable
-@Serializable
 data class Coordenadas(val lat: Double, val lng: Double)
 
 /** Elemento de lista: solo lo que pinta una tarjeta. */
@@ -92,9 +82,7 @@ data class ItemInventario(
     val id: Int,
     val tipo: String = "destino",
     val titulo: String = "",
-    val gancho: String = "",
     val categoria: Termino? = null,
-    val zona: Termino? = null,
     val coordenadas: Coordenadas? = null,
     val portada: Imagen? = null,
     @SerialName("rango_precio") val rangoPrecio: Int? = null,
@@ -120,7 +108,6 @@ data class Acceso(
     @SerialName("como_llegar") val comoLlegar: String = "",
     val referencia: String = "",
     @SerialName("estado_camino") val estadoCamino: String = "",
-    val accesibilidad: String = "",
 )
 
 @Immutable
@@ -144,9 +131,7 @@ data class Ficha(
     val id: Int,
     val tipo: String = "destino",
     val titulo: String = "",
-    val gancho: String = "",
     val categoria: Termino? = null,
-    val zona: Termino? = null,
     val etiquetas: List<Termino> = emptyList(),
     val coordenadas: Coordenadas? = null,
     val portada: Imagen? = null,
@@ -154,7 +139,7 @@ data class Ficha(
     val video: String? = null,
     val practicos: Practicos = Practicos(),
     val acceso: Acceso = Acceso(),
-    @SerialName("articulo_html") val articuloHtml: String = "",
+    val descripcion: String = "",
     @SerialName("articulos_relacionados") val articulosRelacionados: List<ResumenArticulo> = emptyList(),
     val fuentes: String = "",
     val autor: Autor? = null,

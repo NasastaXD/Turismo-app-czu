@@ -16,7 +16,6 @@ import net.caaguazu.turismo.datos.Medio
 import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.datos.Recorrido
 import net.caaguazu.turismo.datos.ResumenArticulo
-import net.caaguazu.turismo.datos.Zona
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -54,8 +53,6 @@ class ContratoTest {
         assertTrue("sin categorias", categorias.isNotEmpty())
         assertTrue("una categoria sin color", categorias.all { it.color.isNotBlank() })
 
-        assertTrue(mock("zonas.json", ListSerializer(Zona.serializer())).isNotEmpty())
-
         val inventario = mock("inventario.json", Pagina.serializer(ItemInventario.serializer()))
         assertEquals("el total no coincide con los items", inventario.items.size, inventario.total)
         assertTrue("una ficha sin coordenadas", inventario.items.all { it.coordenadas != null })
@@ -63,6 +60,7 @@ class ContratoTest {
         val fichas = mock("fichas.json", ListSerializer(Ficha.serializer()))
         assertTrue("hay fichas de mas o de menos", fichas.size == inventario.items.size)
         assertNotNull("la ficha no trae autor", fichas.first().autor)
+        assertTrue("la ficha no trae descripcion", fichas.all { it.descripcion.isNotBlank() })
 
         val marcadores = mock("markers.json", ListSerializer(Marcador.serializer()))
         assertTrue("faltan marcadores", marcadores.size >= inventario.items.size)

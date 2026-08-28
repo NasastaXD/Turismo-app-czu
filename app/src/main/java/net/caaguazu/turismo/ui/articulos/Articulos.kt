@@ -14,14 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
+import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Hairline
@@ -30,6 +34,9 @@ import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
 import net.caaguazu.turismo.ui.tema.Tono
+
+/** Cuanto se espera despues de la ultima letra antes de pedirle a la API. */
+private const val ESPERA_BUSQUEDA_MS = 350L
 
 /** Pila propia de la seccion: lista y articulo abierto. */
 class PilaArticulos {
@@ -59,18 +66,38 @@ fun Articulos(pila: PilaArticulos, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val (estado, reintentar) = cargar { Datos.api.articulos() }
+    var busqueda by remember { mutableStateOf("") }
+    var buscarPor by remember { mutableStateOf("") }
+    LaunchedEffect(busqueda) {
+        delay(ESPERA_BUSQUEDA_MS)
+        buscarPor = busqueda
+    }
 
-    Cargador(
-        estado = estado.value,
-        reintentar = reintentar,
-        vacio = { it.items.isEmpty() },
-        modifier = modifier.fillMaxSize().background(Tono.papel),
-    ) { pagina ->
-        LazyColumn(contentPadding = PaddingValues(vertical = Medida.margen)) {
-            items(pagina.items, key = { it.id }) { articulo ->
-                TarjetaArticulo(articulo) { alAbrir(articulo.id) }
-                Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.margen))
+    val (estado, reintentar) = cargar(buscarPor) {
+        Datos.api.articulos(buscar = buscarPor.ifBlank { null })
+    }
+
+    Column(modifier.fillMaxSize().background(Tono.papel)) {
+        CampoBusqueda(
+            valor = busqueda,
+            alCambiar = { busqueda = it },
+            marcador = Textos.t("barra.buscar"),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Medida.margen)
+                .padding(top = Medida.margen, bottom = 12.dp),
+        )
+        Cargador(
+            estado = estado.value,
+            reintentar = reintentar,
+            vacio = { it.items.isEmpty() },
+            modifier = Modifier.fillMaxSize(),
+        ) { pagina ->
+            LazyColumn(contentPadding = PaddingValues(bottom = Medida.margen)) {
+                items(pagina.items, key = { it.id }) { articulo ->
+                    TarjetaArticulo(articulo) { alAbrir(articulo.id) }
+                    Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.margen))
+                }
             }
         }
     }

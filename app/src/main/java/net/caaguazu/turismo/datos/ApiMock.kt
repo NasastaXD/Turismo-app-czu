@@ -36,12 +36,8 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun categorias() =
         leer("categorias.json", ListSerializer(Categoria.serializer()))
 
-    override suspend fun zonas() =
-        leer("zonas.json", ListSerializer(Zona.serializer()))
-
     override suspend fun inventario(
         categoria: Int?,
-        zona: Int?,
         buscar: String?,
         pagina: Int,
         porPagina: Int,
@@ -53,7 +49,6 @@ class ApiMock(private val assets: AssetManager) : Contrato {
         // no contra una lista que siempre devuelve lo mismo.
         val filtrados = todo.valor.items.filter { item ->
             (categoria == null || item.categoria?.id == categoria) &&
-                (zona == null || item.zona?.id == zona) &&
                 (buscar.isNullOrBlank() || item.titulo.contains(buscar, ignoreCase = true))
         }
 
@@ -86,8 +81,15 @@ class ApiMock(private val assets: AssetManager) : Contrato {
     override suspend fun recorrido(id: Int): Resultado<Recorrido> =
         unoDe("recorridos-detalle.json", ListSerializer(Recorrido.serializer())) { it.id == id }
 
-    override suspend fun articulos(pagina: Int, categoria: Int?) =
-        leer("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+    override suspend fun articulos(pagina: Int, categoria: Int?, buscar: String?): Resultado<Pagina<ResumenArticulo>> {
+        val todo = leer("articulos.json", Pagina.serializer(ResumenArticulo.serializer()))
+        if (todo !is Resultado.Bien || buscar.isNullOrBlank()) return todo
+
+        val filtrados = todo.valor.items.filter {
+            it.titulo.contains(buscar, ignoreCase = true) || it.bajada.contains(buscar, ignoreCase = true)
+        }
+        return Resultado.Bien(todo.valor.copy(items = filtrados, total = filtrados.size))
+    }
 
     override suspend fun articulo(id: Int): Resultado<Articulo> =
         unoDe("articulos-detalle.json", ListSerializer(Articulo.serializer())) { it.id == id }
