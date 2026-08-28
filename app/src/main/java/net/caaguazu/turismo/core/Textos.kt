@@ -27,6 +27,9 @@ object Textos {
     /** Leerlo desde una composicion la suscribe: al refrescar textos, la pantalla se redibuja. */
     private var mapa by mutableStateOf<Map<String, String>>(emptyMap())
 
+    /** El respaldo del APK. Es el piso: nunca se pierde, solo se pisa clave a clave. */
+    private var embebidos: Map<String, String> = emptyMap()
+
     var idioma: String = "es"
         private set
 
@@ -36,7 +39,10 @@ object Textos {
             contexto.assets.open(EMBEBIDO).bufferedReader().use { it.readText() }
         }
         when (leido) {
-            is Resultado.Bien -> aplicar(leido.valor, "embebido")
+            is Resultado.Bien -> {
+                aplicar(leido.valor, "embebido")
+                embebidos = mapa
+            }
             is Resultado.Mal -> Registro.fallo(ETIQUETA, "sin textos embebidos: la interfaz saldra marcada")
         }
     }
@@ -64,14 +70,28 @@ object Textos {
         }
     }
 
-    /** Aplica un mapa ya interpretado, como el que devuelve la API. */
+    /**
+     * Aplica un juego de textos del servidor sobre el respaldo embebido.
+     *
+     * Fusiona, no reemplaza, y la diferencia importa: el panel puede tener
+     * cargadas solo algunas claves, y reemplazar dejaria sin texto a todas las
+     * demas — incluida la atribucion de OpenStreetMap, que es obligatoria por
+     * licencia y no puede depender de que alguien se acuerde de cargarla.
+     *
+     * Un valor vacio tampoco pisa: una clave en blanco en el panel es un
+     * descuido, no la intencion de borrar el texto que ya habia.
+     */
     fun aplicarMapa(nuevos: Map<String, String>, origen: String) {
-        if (nuevos.isEmpty()) {
-            Registro.aviso(ETIQUETA, "textos de $origen vinieron vacios, se conserva lo anterior")
+        val utiles = nuevos.filterValues { it.isNotBlank() }
+        if (utiles.isEmpty()) {
+            Registro.aviso(ETIQUETA, "textos de $origen sin nada aprovechable, se conserva lo anterior")
             return
         }
-        mapa = nuevos
-        Registro.info(ETIQUETA, "cargados ${nuevos.size} textos de $origen")
+        mapa = embebidos + utiles
+        Registro.info(
+            ETIQUETA,
+            "${utiles.size} textos de $origen sobre ${embebidos.size} embebidos",
+        )
     }
 
     /** El unico camino por el que un texto llega a la pantalla. */

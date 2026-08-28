@@ -13,8 +13,8 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 6
+        versionName = "0.6.0"
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
         resourceConfigurations += setOf("es", "en", "gn")
@@ -22,10 +22,11 @@ android {
         // x86 solo sirve para emuladores. Cada ABI de mas son 12 MB de MapLibre.
         ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a") }
 
-        // La URL base nunca va quemada en el codigo. Mientras la API no este
-        // publicada, la app arranca contra los mocks que viajan en los assets.
+        // La URL base nunca va quemada en el codigo. La API ya esta publicada,
+        // asi que la app arranca contra el panel real; el interruptor de
+        // Ajustes sigue permitiendo caer a los mocks desde el telefono.
         buildConfigField("String", "URL_BASE", "\"https://caaguazu.net/wp-json/czu-app/v1/\"")
-        buildConfigField("boolean", "USAR_MOCKS", "true")
+        buildConfigField("boolean", "USAR_MOCKS", "false")
     }
 
     buildTypes {

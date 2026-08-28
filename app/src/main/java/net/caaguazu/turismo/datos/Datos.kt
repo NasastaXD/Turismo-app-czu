@@ -2,6 +2,7 @@ package net.caaguazu.turismo.datos
 
 import android.content.Context
 import net.caaguazu.turismo.BuildConfig
+import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Cache
 import net.caaguazu.turismo.core.Http
 import net.caaguazu.turismo.core.Registro
@@ -33,13 +34,12 @@ object Datos {
     fun iniciar(contexto: Context) {
         cache = Cache(File(contexto.cacheDir, "api"))
 
-        api = if (BuildConfig.USAR_MOCKS) {
-            origen = "mocks (assets)"
-            ApiMock(contexto.assets)
-        } else {
-            origen = BuildConfig.URL_BASE
-            ApiHttp(Http(cache), BuildConfig.URL_BASE)
+        val elegido = Ajustes.origen
+        api = when (elegido) {
+            Ajustes.Origen.MOCKS -> ApiMock(contexto.assets)
+            Ajustes.Origen.PANEL -> ApiHttp(Http(cache), BuildConfig.URL_BASE)
         }
+        origen = Ajustes.nombre(elegido)
 
         Registro.info(ETIQUETA, "origen de datos: $origen")
     }
