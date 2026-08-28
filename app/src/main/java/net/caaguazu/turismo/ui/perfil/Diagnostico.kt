@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -28,8 +27,11 @@ import net.caaguazu.turismo.BuildConfig
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
+import net.caaguazu.turismo.ui.piezas.BotonIcono
+import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Hairline
-import net.caaguazu.turismo.ui.piezas.PildoraContorno
+import net.caaguazu.turismo.ui.piezas.Icono
+import net.caaguazu.turismo.ui.piezas.PildoraSuave
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
@@ -46,7 +48,7 @@ import net.caaguazu.turismo.ui.tema.Tono
  * mapping.txt de esa misma compilacion, que se adjunta a cada publicacion.
  */
 @Composable
-fun PantallaDiagnostico(modifier: Modifier = Modifier) {
+fun PantallaDiagnostico(alVolver: () -> Unit, modifier: Modifier = Modifier) {
     val contexto = LocalContext.current
     var recarga by remember { mutableIntStateOf(0) }
     val lineas = remember(recarga) {
@@ -54,6 +56,13 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
     }
 
     Column(modifier.fillMaxSize().background(Tono.fondo)) {
+        CabeceraPantalla(Textos.t("diag.titulo")) {
+            BotonIcono(
+                icono = Icono.volver,
+                descripcion = Textos.t("accion.volver"),
+                alTocar = alVolver,
+            )
+        }
 
         Column(Modifier.padding(Medida.margen)) {
             Dato(Textos.t("diag.version"), "${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_TYPE})")
@@ -67,15 +76,15 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
                 .padding(horizontal = Medida.margen),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            PildoraContorno(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
-            PildoraContorno(
+            PildoraSuave(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
+            PildoraSuave(
                 texto = Textos.t("diag.vaciar"),
                 alTocar = {
                     Datos.cache.vaciar()
                     recarga++
                 },
             )
-            PildoraContorno(
+            PildoraSuave(
                 texto = Textos.t("diag.borrar"),
                 alTocar = {
                     Registro.borrar()

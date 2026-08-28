@@ -2,7 +2,6 @@ package net.caaguazu.turismo.ui.articulos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,11 +25,14 @@ import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.AutorArticulo
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ResumenArticulo
+import net.caaguazu.turismo.ui.piezas.BotonIcono
+import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.CampoBusqueda
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.ChipFiltro
 import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
+import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
@@ -58,17 +60,25 @@ class PilaArticulos {
 }
 
 @Composable
-fun Articulos(pila: PilaArticulos, modifier: Modifier = Modifier) {
+fun Articulos(
+    pila: PilaArticulos,
+    alAbrirPerfil: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val id = pila.abierto
     if (id == null) {
-        ListaArticulos(alAbrir = pila::abrir, modifier = modifier)
+        ListaArticulos(alAbrir = pila::abrir, alAbrirPerfil = alAbrirPerfil, modifier = modifier)
     } else {
         PantallaArticulo(id = id, alVolver = { pila.volver() }, modifier = modifier)
     }
 }
 
 @Composable
-private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier) {
+private fun ListaArticulos(
+    alAbrir: (Int) -> Unit,
+    alAbrirPerfil: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var busqueda by remember { mutableStateOf("") }
     var buscarPor by remember { mutableStateOf("") }
     LaunchedEffect(busqueda) {
@@ -83,6 +93,13 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
     }
 
     Column(modifier.fillMaxSize().background(Tono.fondo)) {
+        CabeceraPantalla(Textos.t("nav.articulos")) {
+            BotonIcono(
+                icono = Icono.ajustes,
+                descripcion = Textos.t("barra.ajustes"),
+                alTocar = alAbrirPerfil,
+            )
+        }
         CampoBusqueda(
             valor = busqueda,
             alCambiar = { busqueda = it },
@@ -90,7 +107,7 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Medida.margen)
-                .padding(top = Medida.margen, bottom = 12.dp),
+                .padding(bottom = 12.dp),
         )
         val etiquetas = (estadoEtiquetas.value as? Estado.Listo)?.valor.orEmpty()
         if (etiquetas.isNotEmpty()) {
@@ -120,7 +137,7 @@ private fun ListaArticulos(alAbrir: (Int) -> Unit, modifier: Modifier = Modifier
                 contentPadding = PaddingValues(
                     start = Medida.margen,
                     end = Medida.margen,
-                    bottom = Medida.margen,
+                    bottom = Medida.colaDeLista,
                 ),
                 verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
             ) {

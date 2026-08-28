@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**46 claves esperando texto.** 8 ya están escritas.
+**0 claves esperando texto.** Las 71 están escritas.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -18,80 +18,28 @@ No hace falta completarlas todas de una: una clave sin texto se muestra entre
 
 ## Faltan
 
-| Clave | Dónde aparece | Qué escribir |
-|---|---|---|
-| `accion.volver` | artículos · lectura, inventario · ficha, recorridos · detalle | **no se ve**: descripción para lectores de pantalla |
-| `banda.verTodo` | inicio | dos palabras — comparte línea con el título de sección |
-| `barra.buscar` | barra superior | **no se ve**: descripción para lectores de pantalla |
-| `barra.ajustes` | barra superior | **no se ve**: descripción para lectores de pantalla |
-| `diag.borrar` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.cache` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.compartir` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.vaciar` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.vacio` | diagnóstico | una o dos palabras — pantalla técnica, la ve poca gente |
-| `diag.version` | diagnóstico, perfil | una o dos palabras — pantalla técnica, la ve poca gente |
-| `estado.cargando` | estados de carga | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `estado.error` | estados de carga | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `estado.guardado` | estados de carga | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `estado.pendiente` | secciones pendientes | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `estado.reintentar` | estados de carga | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `estado.vacio` | estados de carga | una frase corta — es lo que se lee cuando algo carga, falla o está vacío |
-| `ficha.acceso` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.agregar` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.autor` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.camino` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.contacto` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.costo` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.fuentes` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.galeria` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.horario` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.info` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.mapa` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.quitar` | inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `ficha.relacionados` | artículos · lectura, inventario · ficha | una o dos palabras — etiqueta de campo o de botón |
-| `inv.lista` | piezas comunes | una o dos palabras |
-| `inv.mapa` | piezas comunes | una o dos palabras |
-| `inv.resultados` | inventario · lista | una o dos palabras |
-| `mapa.error.detalle` | mapa | frase corta. `mapa.atribucion` **no se toca** |
-| `mapa.error.titulo` | mapa | frase corta. `mapa.atribucion` **no se toca** |
-| `perfil.acerca` | perfil | una o dos palabras |
-| `perfil.idioma` | perfil | una o dos palabras |
-| `principal.eventos` | inicio | una o dos palabras — es un título de sección |
-| `rec.abrir` | recorridos, recorridos · detalle | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.demasiadas` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.mio` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.noDisponible` | recorridos · detalle | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.paradas` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.prehechos` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.quitar` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-| `rec.vacio` | recorridos | una o dos palabras; `rec.vacio` y `rec.demasiadas` son una frase corta |
-
-## Ya escritas
-
-| Clave | Texto | Dónde aparece |
-|---|---|---|
-| `app.nombre` | Caaguazú | armazón |
-| `mapa.atribucion` | © OpenStreetMap | mapa |
-| `nav.articulos` | Artículos Turísticos | barra inferior, inicio |
-| `nav.ia` | AI | barra inferior |
-| `nav.inventario` | Inventario Turístico | barra inferior, inicio, inventario · lista |
-| `nav.principal` | Principal | barra inferior, inventario · lista |
-| `nav.recorridos` | Recorridos | barra inferior, inicio |
-| `precio.gratis` | Gratis | piezas comunes |
+Nada por ahora. Las nueve claves que abrió el rework anterior —ocho de la hoja
+de filtros y `ficha.leerMas`— ya tienen texto.
 
 ---
 
-## Dos advertencias
+## Lo que cambió con el rediseño
 
-**`mapa.atribucion` no se toca.** Dice `© OpenStreetMap` y es obligatorio por la
-licencia de los datos del mapa. Si se cambia o se vacía, la app deja de cumplir.
+**Se fue una clave**: `estado.pendiente`. Era el texto de la pantalla "sección
+todavía sin construir", y ya no hay ninguna sección en ese estado. Si vuelve a
+hacer falta, el texto estaba escrito y está en el historial.
 
-**Las claves `barra.*` y `accion.*` no se ven en pantalla.** Son lo que lee un
-lector de pantalla para alguien que no ve la interfaz. Conviene que digan qué hace
-el control, no cómo se ve.
+**Tres claves cambiaron de lugar** sin cambiar de sentido:
 
----
+- `barra.buscar` es ahora también la etiqueta de la sección en la barra
+  inferior, además del marcador del campo de búsqueda.
+- `nav.inventario` pasó de ser la etiqueta de una pestaña a ser el título de la
+  pantalla de búsqueda.
+- `banda.verTodo` aparece ahora en varios encabezados de sección del inicio.
 
-Una prueba verifica en cada compilación que no falte ninguna clave que el código
-pida, y que no sobre ninguna que nadie muestre. Si se agrega una pantalla nueva
-con textos nuevos, la lista de arriba queda desactualizada pero la prueba avisa.
+Ninguna otra clave se tocó.
+
+Aparte del rework, `main` sacó el modo mocks y con él dos claves más:
+`barra.perfil` pasó a llamarse `barra.ajustes` (ya no es un perfil de cuenta,
+es la pantalla de ajustes del teléfono) y `diag.origen` desapareció entera —
+ya no hay un origen que elegir, sólo queda el panel.

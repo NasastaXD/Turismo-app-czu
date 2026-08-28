@@ -1,7 +1,6 @@
 package net.caaguazu.turismo.datos
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import net.caaguazu.turismo.core.Analizador

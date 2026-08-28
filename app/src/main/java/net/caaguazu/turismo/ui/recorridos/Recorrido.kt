@@ -1,7 +1,6 @@
 package net.caaguazu.turismo.ui.recorridos
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -29,11 +27,11 @@ import net.caaguazu.turismo.datos.Parada
 import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
 import net.caaguazu.turismo.ui.piezas.BotonFlotante
+import net.caaguazu.turismo.ui.piezas.BarraAccion
 import net.caaguazu.turismo.ui.piezas.Cargador
-import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.Hairline
+import net.caaguazu.turismo.ui.piezas.FilaCompacta
 import net.caaguazu.turismo.ui.piezas.Icono
-import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
+import net.caaguazu.turismo.ui.piezas.PildoraMeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -67,7 +65,20 @@ fun PantallaRecorrido(
                 LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 16.dp)) {
 
                     item {
-                        Box(Modifier.fillMaxWidth().aspectRatio(16f / 10f)) {
+                        // El mapa hace de cabecera: mismo lugar y misma forma
+                        // que la foto de una ficha, redondeado solo abajo
+                        // contra el contenido.
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 10f)
+                                .clip(
+                                    RoundedCornerShape(
+                                        bottomStart = Radio.hoja,
+                                        bottomEnd = Radio.hoja,
+                                    ),
+                                ),
+                        ) {
                             MapaCaaguazu(
                                 marcadores = disponibles.mapNotNull { parada ->
                                     parada.coordenadas?.let {
@@ -86,16 +97,20 @@ fun PantallaRecorrido(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Texto(recorrido.titulo, Letra.tituloPagina, Tono.tinta)
-                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Texto(recorrido.duracionEstimada, Letra.chip, Tono.acento, maxLineas = 1)
-                                recorrido.costoTotal?.takeIf { it.hayPago }?.let { costo ->
-                                    Texto(
-                                        costo.detalle.joinToString(" · "),
-                                        Letra.chip,
-                                        Tono.tintaSuave,
-                                        maxLineas = 1,
-                                    )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (recorrido.duracionEstimada.isNotBlank()) {
+                                    PildoraMeta(recorrido.duracionEstimada, tinta = Tono.acento)
                                 }
+                                PildoraMeta(
+                                    "${recorrido.cantidadParadas} " + Textos.t("rec.paradas"),
+                                )
+                            }
+                            recorrido.costoTotal?.takeIf { it.hayPago }?.let { costo ->
+                                Texto(
+                                    costo.detalle.joinToString(" · "),
+                                    Letra.fecha,
+                                    Tono.tintaSuave,
+                                )
                             }
                             if (recorrido.resumen.isNotBlank()) {
                                 Texto(recorrido.resumen, Letra.descripcion, Tono.tintaSuave)
@@ -117,19 +132,15 @@ fun PantallaRecorrido(
                     }
 
                     items(recorrido.paradas, key = { it.orden }) { parada ->
-                        FilaParadaPrehecha(parada) { if (parada.disponible) alAbrirFicha(parada.refId) }
-                        Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.margen))
+                        FilaParadaPrehecha(parada) { alAbrirFicha(parada.refId) }
                     }
                 }
 
                 if (puntos.size >= 2) {
-                    Box(Modifier.fillMaxWidth().background(Tono.papel).padding(Medida.margen)) {
-                        PildoraPrimaria(
-                            texto = Textos.t("rec.abrir"),
-                            alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                    BarraAccion(
+                        textoBoton = Textos.t("rec.abrir"),
+                        alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
+                    )
                 }
             }
         }
@@ -150,39 +161,17 @@ fun PantallaRecorrido(
  */
 @Composable
 private fun FilaParadaPrehecha(parada: Parada, alTocar: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().clickable(enabled = parada.disponible, onClick = alTocar)
-            .padding(Medida.margen),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier.size(28.dp).clip(RoundedCornerShape(Radio.completo))
-                .background(if (parada.disponible) Tono.contraste else Tono.linea),
-            contentAlignment = Alignment.Center,
-        ) {
-            Texto(
-                parada.orden.toString(),
-                Letra.etiquetaNav,
-                if (parada.disponible) Tono.sobreContraste else Tono.tintaSuave,
-                maxLineas = 1,
-            )
-        }
-
-        if (parada.disponible) {
-            Foto(parada.portada, parada.titulo, Modifier.size(56.dp))
-        }
-
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Texto(
-                texto = if (parada.disponible) parada.titulo else Textos.t("rec.noDisponible"),
-                estilo = Letra.tituloTarjeta,
-                color = if (parada.disponible) Tono.tinta else Tono.tintaSuave,
-                maxLineas = 2,
-            )
-            if (parada.texto.isNotBlank()) {
-                Texto(parada.texto, Letra.descripcion, Tono.tintaSuave, maxLineas = 2)
-            }
-        }
-    }
+    val disponible = parada.disponible
+    FilaCompacta(
+        imagen = if (disponible) parada.portada else null,
+        titulo = if (disponible) parada.titulo else Textos.t("rec.noDisponible"),
+        detalle = parada.texto.ifBlank { null },
+        meta = parada.orden.toString(),
+        colorMeta = if (disponible) Tono.acento else Tono.tintaSuave,
+        modifier = Modifier.padding(horizontal = Medida.margen, vertical = 5.dp),
+        // Una parada despublicada se muestra igual y apagada: que desapareciera
+        // sin avisar dejaria al usuario con un recorrido que cambio solo y sin
+        // saber por que. Apagada tampoco lleva a ningun lado.
+        alTocar = if (disponible) alTocar else null,
+    )
 }

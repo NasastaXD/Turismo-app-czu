@@ -1,5 +1,6 @@
 # Gradle y compilacion
 .gradle/
+.kotlin/
 build/
 app/build/
 local.properties
@@ -13,3 +14,7 @@ keystore.properties
 # Entornos
 .idea/
 .DS_Store
+
+# Credenciales de firma: nunca al repositorio
+Document.txt
+*.b64
