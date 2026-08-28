@@ -4,6 +4,7 @@ import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
@@ -16,6 +17,7 @@ class App : Application() {
 
         // El registro primero: si algo falla mas abajo, queda constancia.
         Registro.iniciar(this)
+        Ajustes.iniciar(this)
         Textos.cargarEmbebido(this)
         Datos.iniciar(this)
         Guardado.iniciar(this)

@@ -1,5 +1,6 @@
 package net.caaguazu.turismo.ui.perfil
 
+import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.caaguazu.turismo.BuildConfig
+import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
@@ -68,6 +70,17 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
                 .padding(horizontal = Medida.margen),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Cambiar de fuente y volver a arrancar la pantalla. El nombre del
+            // boton es el origen al que se va: es un dato, no texto de producto.
+            PildoraContorno(
+                texto = Ajustes.nombre(Ajustes.contraria()),
+                alTocar = {
+                    Ajustes.origen = Ajustes.contraria()
+                    Datos.iniciar(contexto.applicationContext)
+                    Datos.cache.vaciar()
+                    (contexto as? Activity)?.recreate()
+                },
+            )
             PildoraContorno(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
             PildoraContorno(
                 texto = Textos.t("diag.vaciar"),

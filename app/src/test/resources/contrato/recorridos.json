@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "id": 401,
+      "tipo": "prehecho",
+      "titulo": "‹Recorrido 1›",
+      "resumen": "‹resumen del recorrido›",
+      "portada": {
+        "url": "file:///android_asset/mocks/img/1.png",
+        "w": 900,
+        "h": 900,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      "duracion_estimada": "2h",
+      "cantidad_paradas": 3
+    },
+    {
+      "id": 402,
+      "tipo": "prehecho",
+      "titulo": "‹Recorrido 2›",
+      "resumen": "‹resumen del recorrido›",
+      "portada": {
+        "url": "file:///android_asset/mocks/img/2.png",
+        "w": 900,
+        "h": 900,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      "duracion_estimada": "3h",
+      "cantidad_paradas": 4
+    },
+    {
+      "id": 403,
+      "tipo": "prehecho",
+      "titulo": "‹Recorrido 3›",
+      "resumen": "‹resumen del recorrido›",
+      "portada": {
+        "url": "file:///android_asset/mocks/img/3.png",
+        "w": 900,
+        "h": 900,
+        "credito": "‹crédito de foto›",
+        "alt": ""
+      },
+      "duracion_estimada": "4h",
+      "cantidad_paradas": 5
+    }
+  ],
+  "total": 3,
+  "pagina": 1,
+  "por_pagina": 20
+}
