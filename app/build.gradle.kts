@@ -13,8 +13,8 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.0.0"
+        versionCode = 9
+        versionName = "1.1.0"
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
         resourceConfigurations += setOf("es", "en", "gn")
