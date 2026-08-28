@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.ui.Funciones
 import net.caaguazu.turismo.ui.Seccion
+import net.caaguazu.turismo.ui.tema.Elevacion
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Tono
 
@@ -101,19 +102,34 @@ private fun Boton(
             maxLineas = 1,
             alinear = TextAlign.Center,
         )
+        // El guion bajo la seccion activa. La opacidad sola no alcanza para
+        // decir donde esta uno: es una diferencia que se pierde a plena luz.
+        Box(
+            Modifier
+                .padding(top = 2.dp)
+                .size(width = 16.dp, height = 3.dp)
+                .background(
+                    if (activa) Tono.contraste else Color.Transparent,
+                    CircleShape,
+                ),
+        )
     }
 }
 
-/** Unica sombra de toda la app, por definicion del sistema. */
 @Composable
 private fun BotonCentral() {
     Box(
         modifier = Modifier
             .size(88.dp)
-            .shadow(16.dp, CircleShape)
-            .background(Tono.negro, CircleShape),
+            .shadow(
+                Elevacion.flotante,
+                CircleShape,
+                ambientColor = Tono.sombra,
+                spotColor = Tono.sombra,
+            )
+            .background(Tono.contraste, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Texto(texto = Textos.t("nav.ia"), estilo = Letra.chip, color = Color.White)
+        Texto(texto = Textos.t("nav.ia"), estilo = Letra.chip, color = Tono.sobreContraste)
     }
 }

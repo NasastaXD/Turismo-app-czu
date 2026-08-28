@@ -1,7 +1,6 @@
 package net.caaguazu.turismo.ui.articulos
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,23 +27,26 @@ import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Articulo
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
+import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
+import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
  * El articulo abierto.
  *
  * Composicion tomada de la referencia del diario: titular, bajada, firma y
- * despues el cuerpo. Fondo blanco y pulcro, sin modo oscuro — la app entera es
- * de modo claro por decision del proyecto.
+ * despues el cuerpo. El cuerpo va sobre la superficie de papel, que en modo
+ * oscuro es la tarjeta oscura: leer un texto largo pide un fondo parejo, no el
+ * fondo de la app.
  */
 @Composable
 fun PantallaArticulo(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) {
@@ -55,17 +56,12 @@ fun PantallaArticulo(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifie
         Cargador(estado = estado.value, reintentar = reintentar) { articulo ->
             Cuerpo(articulo)
         }
-        Box(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(12.dp)
-                .size(40.dp)
-                .background(Color.White.copy(alpha = 0.9f), CircleShape)
-                .clickable(onClick = alVolver),
-            contentAlignment = Alignment.Center,
-        ) {
-            Glifo(Icono.volver, Textos.t("accion.volver"), Tono.tinta, Modifier.size(22.dp))
-        }
+        BotonFlotante(
+            icono = Icono.volver,
+            descripcion = Textos.t("accion.volver"),
+            alTocar = alVolver,
+            modifier = Modifier.statusBarsPadding().padding(12.dp),
+        )
     }
 }
 
@@ -132,14 +128,23 @@ private fun Cuerpo(articulo: Articulo) {
                 }
             }
             items(articulo.relacionados) { relacionado ->
-                Row(
+                Tarjeta(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Medida.margen, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        .padding(horizontal = Medida.margen, vertical = 5.dp),
+                    radio = Radio.lista,
                 ) {
-                    Foto(relacionado.portada, relacionado.titulo, Modifier.width(96.dp).aspectRatio(1f))
-                    Texto(relacionado.titulo, Letra.titularTarjeta, Tono.tinta, maxLineas = 3)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Foto(
+                            relacionado.portada,
+                            relacionado.titulo,
+                            Modifier.width(96.dp).aspectRatio(1f),
+                        )
+                        Texto(relacionado.titulo, Letra.titularTarjeta, Tono.tinta, maxLineas = 3)
+                    }
                 }
             }
         }

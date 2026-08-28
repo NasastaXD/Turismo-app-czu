@@ -1,8 +1,6 @@
 package net.caaguazu.turismo.ui.recorridos
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Guardado
@@ -34,10 +30,11 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.datos.Recorrido
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.ChipFiltro
 import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.PildoraContorno
-import net.caaguazu.turismo.ui.piezas.PildoraNegra
+import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -80,7 +77,7 @@ fun Recorridos(pila: PilaRecorridos, alAbrirFicha: (Int) -> Unit, modifier: Modi
         return
     }
 
-    Column(modifier.fillMaxSize().background(Tono.papel)) {
+    Column(modifier.fillMaxSize().background(Tono.fondo)) {
         Pestanas(pila)
         when (pila.pestana) {
             Pestana.MIO -> MiRecorrido(alAbrirFicha)
@@ -98,30 +95,11 @@ private fun Pestanas(pila: PilaRecorridos) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Pestana.entries.forEach { pestana ->
-            val activa = pila.pestana == pestana
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(Radio.lista))
-                    .background(if (activa) Tono.papel else Tono.banda)
-                    // Activa: fondo blanco con borde de 1.5 en tinta.
-                    // Inactivas: fondo banda y sin borde.
-                    .then(
-                        if (activa) {
-                            Modifier.border(1.5.dp, Tono.tinta, RoundedCornerShape(Radio.lista))
-                        } else {
-                            Modifier
-                        },
-                    )
-                    .clickable { pila.pestana = pestana }
-                    .padding(horizontal = 18.dp, vertical = 10.dp),
-            ) {
-                Texto(
-                    texto = Textos.t(pestana.clave),
-                    estilo = Letra.chip,
-                    color = Tono.tinta,
-                    maxLineas = 1,
-                )
-            }
+            ChipFiltro(
+                texto = Textos.t(pestana.clave),
+                activo = pila.pestana == pestana,
+                alTocar = { pila.pestana = pestana },
+            )
         }
     }
 }
@@ -166,7 +144,6 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
                         alAbrir = { alAbrirFicha(parada.id) },
                         alQuitar = { Guardado.alternarEnRecorrido(parada.id) },
                     )
-                    Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.margen))
                 }
             }
 
@@ -180,7 +157,7 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
                 if (!entra && puntos.size > 2) {
                     Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.tinta)
                 }
-                PildoraNegra(
+                PildoraPrimaria(
                     texto = Textos.t("rec.abrir"),
                     alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
                     modifier = Modifier.fillMaxWidth(),
@@ -197,20 +174,37 @@ private fun FilaParada(
     alAbrir: () -> Unit,
     alQuitar: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = alAbrir).padding(Medida.margen),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Tarjeta(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Medida.margen, vertical = 5.dp),
+        radio = Radio.lista,
+        alTocar = alAbrir,
     ) {
-        Box(
-            modifier = Modifier.size(28.dp).clip(RoundedCornerShape(Radio.completo)).background(Tono.negro),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Texto(orden.toString(), Letra.etiquetaNav, Color.White, maxLineas = 1)
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(Radio.completo))
+                    .background(Tono.contraste),
+                contentAlignment = Alignment.Center,
+            ) {
+                Texto(orden.toString(), Letra.etiquetaNav, Tono.sobreContraste, maxLineas = 1)
+            }
+            Foto(item.portada, item.titulo, Modifier.size(56.dp))
+            Texto(
+                texto = item.titulo,
+                estilo = Letra.tituloTarjeta,
+                color = Tono.tinta,
+                maxLineas = 2,
+                modifier = Modifier.weight(1f),
+            )
+            PildoraContorno(texto = Textos.t("rec.quitar"), alTocar = alQuitar)
         }
-        Foto(item.portada, item.titulo, Modifier.size(56.dp))
-        Texto(item.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2, modifier = Modifier.weight(1f))
-        PildoraContorno(texto = Textos.t("rec.quitar"), alTocar = alQuitar)
     }
 }
 
@@ -234,27 +228,28 @@ private fun ListaPrehechos(alAbrir: (Int) -> Unit) {
 
 @Composable
 private fun TarjetaRecorrido(recorrido: Recorrido, alTocar: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = alTocar).padding(bottom = Medida.margen),
-    ) {
-        Foto(
-            imagen = recorrido.portada,
-            descripcion = recorrido.titulo,
-            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 10f),
-        )
-        Column(
-            modifier = Modifier.padding(horizontal = Medida.margen, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Texto(recorrido.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Texto(recorrido.duracionEstimada, Letra.chip, Tono.acento, maxLineas = 1)
-                Texto(
-                    texto = "${recorrido.cantidadParadas} " + Textos.t("rec.paradas"),
-                    estilo = Letra.chip,
-                    color = Tono.tintaSuave,
-                    maxLineas = 1,
-                )
+    Tarjeta(modifier = Modifier.fillMaxWidth(), alTocar = alTocar) {
+        Column {
+            Foto(
+                imagen = recorrido.portada,
+                descripcion = recorrido.titulo,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 10f),
+                radio = Radio.ninguno,
+            )
+            Column(
+                modifier = Modifier.padding(Medida.dentroTarjeta),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Texto(recorrido.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Texto(recorrido.duracionEstimada, Letra.chip, Tono.acento, maxLineas = 1)
+                    Texto(
+                        texto = "${recorrido.cantidadParadas} " + Textos.t("rec.paradas"),
+                        estilo = Letra.chip,
+                        color = Tono.tintaSuave,
+                        maxLineas = 1,
+                    )
+                }
             }
         }
     }

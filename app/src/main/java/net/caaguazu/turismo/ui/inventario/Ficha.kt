@@ -1,7 +1,6 @@
 package net.caaguazu.turismo.ui.inventario
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,32 +17,34 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import net.caaguazu.turismo.core.Calendario
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Ficha
 import net.caaguazu.turismo.datos.ResumenArticulo
+import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.FotoConVelo
-import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.PildoraContorno
-import net.caaguazu.turismo.ui.piezas.PildoraNegra
+import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
 import net.caaguazu.turismo.ui.piezas.RangoPrecio
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
+import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
@@ -59,13 +60,18 @@ import net.caaguazu.turismo.ui.tema.Tono
 fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) {
     val (estado, reintentar) = cargar(id) { Datos.api.ficha(id) }
 
-    Box(modifier.fillMaxSize().background(Tono.papel)) {
+    Box(modifier.fillMaxSize().background(Tono.fondo)) {
         Cargador(estado = estado.value, reintentar = reintentar) { ficha ->
             Contenido(ficha, alVolver)
         }
         // El boton de volver vive fuera del contenido: tiene que existir aunque
         // la ficha no haya cargado.
-        BotonFlotante(Icono.volver, Modifier.statusBarsPadding().padding(12.dp), alVolver)
+        BotonFlotante(
+            icono = Icono.volver,
+            descripcion = Textos.t("accion.volver"),
+            alTocar = alVolver,
+            modifier = Modifier.statusBarsPadding().padding(12.dp),
+        )
     }
 }
 
@@ -105,30 +111,58 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 }
             }
 
-            // Salir al mapa: arriba, como en la referencia.
+            // Salir al mapa y agendar: arriba, como en la referencia.
             item {
                 val enlaceMapa = ficha.googleMaps
                 val coordenadas = ficha.coordenadas
-                if (enlaceMapa != null || coordenadas != null) {
-                    PildoraContorno(
-                        texto = Textos.t("ficha.mapa"),
-                        icono = Icono.inventario,
-                        alTocar = {
-                            // El enlace del panel puede ser uno pegado a mano, mas
-                            // preciso que un pin armado solo con lat/lng: se prefiere
-                            // siempre que venga.
-                            if (enlaceMapa != null) {
-                                MapasExternos.abrirEnlace(contexto, enlaceMapa)
-                            } else if (coordenadas != null) {
-                                MapasExternos.abrirPunto(
-                                    contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(Medida.margen),
-                    )
+                val hayMapa = enlaceMapa != null || coordenadas != null
+                // Agendar solo tiene sentido en un evento con fecha legible. En
+                // un sitio no hay nada que poner en el calendario.
+                val seAgenda = ficha.tipoItem == "evento" &&
+                    Calendario.sePuedeAgendar(ficha.fechas?.inicio)
+
+                if (hayMapa || seAgenda) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(Medida.margen),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        if (hayMapa) {
+                            PildoraContorno(
+                                texto = Textos.t("ficha.mapa"),
+                                icono = Icono.inventario,
+                                alTocar = {
+                                    // El enlace del panel puede ser uno pegado a
+                                    // mano, mas preciso que un pin armado solo
+                                    // con lat/lng: se prefiere si viene.
+                                    if (enlaceMapa != null) {
+                                        MapasExternos.abrirEnlace(contexto, enlaceMapa)
+                                    } else if (coordenadas != null) {
+                                        MapasExternos.abrirPunto(
+                                            contexto, coordenadas.lat, coordenadas.lng, ficha.titulo,
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (seAgenda) {
+                            PildoraContorno(
+                                texto = Textos.t("ficha.agendar"),
+                                icono = Icono.calendario,
+                                alTocar = {
+                                    Calendario.agendar(
+                                        contexto = contexto,
+                                        titulo = ficha.titulo,
+                                        inicioIso = ficha.fechas?.inicio,
+                                        finIso = ficha.fechas?.fin,
+                                        lugar = ficha.zona?.nombre,
+                                        descripcion = ficha.gancho,
+                                    )
+                                },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
                 }
             }
 
@@ -143,8 +177,28 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 }
             }
 
-            item { Seccion(Textos.t("ficha.info")) }
-            items(datosPracticos(ficha)) { (clave, valor) -> Dato(Textos.t(clave), valor) }
+            val practicos = datosPracticos(ficha)
+            if (practicos.isNotEmpty()) {
+                item { Seccion(Textos.t("ficha.info")) }
+                item {
+                    // Los datos van juntos en una tarjeta y no sueltos sobre el
+                    // fondo: son un bloque que se lee de una, no cinco cosas.
+                    Tarjeta(Modifier.fillMaxWidth().padding(horizontal = Medida.margen)) {
+                        Column(Modifier.padding(vertical = 6.dp)) {
+                            practicos.forEachIndexed { indice, (clave, valor) ->
+                                if (indice > 0) {
+                                    Hairline(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = Medida.dentroTarjeta),
+                                    )
+                                }
+                                Dato(Textos.t(clave), valor)
+                            }
+                        }
+                    }
+                }
+            }
 
             if (ficha.galeria.isNotEmpty()) {
                 item { Seccion(Textos.t("ficha.galeria")) }
@@ -202,7 +256,7 @@ private fun Contenido(ficha: Ficha, alVolver: () -> Unit) {
                 .background(Tono.papel)
                 .padding(Medida.margen),
         ) {
-            PildoraNegra(
+            PildoraPrimaria(
                 texto = Textos.t(if (enRecorrido) "ficha.quitar" else "ficha.agregar"),
                 alTocar = { Guardado.alternarEnRecorrido(ficha.id) },
                 modifier = Modifier.fillMaxWidth(),
@@ -238,7 +292,11 @@ private fun Seccion(titulo: String) {
 
 @Composable
 private fun Dato(etiqueta: String, valor: String) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = Medida.margen, vertical = 7.dp)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Medida.dentroTarjeta, vertical = 10.dp),
+    ) {
         Texto(etiqueta, Letra.chip, Tono.tintaSuave, maxLineas = 1)
         Texto(valor, Letra.descripcion, Tono.tinta)
     }
@@ -246,31 +304,20 @@ private fun Dato(etiqueta: String, valor: String) {
 
 @Composable
 private fun FilaRelacionado(articulo: ResumenArticulo) {
-    Row(
+    Tarjeta(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Medida.margen, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = Medida.margen, vertical = 5.dp),
+        radio = Radio.lista,
     ) {
-        Foto(articulo.portada, articulo.titulo, Modifier.size(64.dp))
-        Texto(articulo.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Foto(articulo.portada, articulo.titulo, Modifier.size(64.dp))
+            Texto(articulo.titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 2)
+        }
     }
 }
 
-@Composable
-private fun BotonFlotante(
-    icono: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier,
-    alTocar: () -> Unit,
-) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .background(Color.White.copy(alpha = 0.9f), CircleShape)
-            .clickable(onClick = alTocar),
-        contentAlignment = Alignment.Center,
-    ) {
-        Glifo(icono, Textos.t("accion.volver"), Tono.tinta, Modifier.size(22.dp))
-    }
-}

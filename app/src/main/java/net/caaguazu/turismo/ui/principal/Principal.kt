@@ -31,17 +31,17 @@ import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.cedeAlTocar
-import net.caaguazu.turismo.ui.piezas.recordarInteraccion
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
+import net.caaguazu.turismo.ui.tema.Radio
 import net.caaguazu.turismo.ui.tema.Tono
 
 /**
- * La pantalla de inicio: una pila de bandas a sangre completa que alternan
- * papel y gris calido.
+ * La pantalla de inicio: una pila de bandas a sangre completa que alternan el
+ * fondo de pagina y el gris calido, con las tarjetas flotando encima.
  *
  * Cada banda es un carrusel que sangra hasta el borde derecho, con la tercera
  * tarjeta cortada. Ese corte es la unica señal de que hay mas: el sistema no
@@ -64,10 +64,10 @@ fun Principal(
     val (articulos, _) = cargar { Datos.api.articulos() }
     val (recorridos, _) = cargar { Datos.api.recorridos() }
 
-    LazyColumn(modifier.fillMaxSize().background(Tono.papel)) {
+    LazyColumn(modifier.fillMaxSize().background(Tono.fondo)) {
 
         item {
-            Banda(Tono.papel, Textos.t("nav.inventario"), alVerInventario) { ancho ->
+            Banda(Tono.fondo, Textos.t("nav.inventario"), alVerInventario) { ancho ->
                 Carrusel(inventario.value) { item ->
                     TarjetaCarrusel(
                         ancho = ancho,
@@ -95,7 +95,7 @@ fun Principal(
         }
 
         item {
-            Banda(Tono.papel, Textos.t("nav.articulos"), alVerArticulos) { ancho ->
+            Banda(Tono.fondo, Textos.t("nav.articulos"), alVerArticulos) { ancho ->
                 Carrusel(articulos.value) { articulo ->
                     TarjetaCarrusel(
                         ancho = ancho,
@@ -193,7 +193,9 @@ private fun <T> Carrusel(
 
     LazyRow(
         // Solo margen a la izquierda: el carrusel sangra hasta el borde derecho.
-        contentPadding = PaddingValues(start = Medida.margen),
+        // El aire vertical es para que la sombra de la tarjeta no quede cortada
+        // por el borde de la fila.
+        contentPadding = PaddingValues(start = Medida.margen, top = 4.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
     ) {
         items(elementos.size) { indice -> tarjeta(elementos[indice]) }
@@ -216,26 +218,27 @@ private fun TarjetaCarrusel(
     titulo: String,
     alTocar: () -> Unit,
 ) {
-    val interaccion = recordarInteraccion()
-    Column(
-        modifier = Modifier
-            .width(ancho)
-            .cedeAlTocar(interaccion)
-            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar),
-    ) {
-        Foto(imagen, titulo, Modifier.fillMaxWidth().aspectRatio(1f))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(ALTO_BLOQUE)
-                .background(Tono.superficie)
-                .padding(Medida.dentroTarjeta),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            if (!encima.isNullOrBlank()) {
-                Texto(encima, Letra.fecha, Tono.acento, maxLineas = 1)
+    Tarjeta(modifier = Modifier.width(ancho), alTocar = alTocar) {
+        Column {
+            // El medio va a sangre: lo recorta la tarjeta, no la foto.
+            Foto(
+                imagen = imagen,
+                descripcion = titulo,
+                modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                radio = Radio.ninguno,
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(ALTO_BLOQUE)
+                    .padding(Medida.dentroTarjeta),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                if (!encima.isNullOrBlank()) {
+                    Texto(encima, Letra.fecha, Tono.acento, maxLineas = 1)
+                }
+                Texto(titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 3)
             }
-            Texto(titulo, Letra.tituloTarjeta, Tono.tinta, maxLineas = 3)
         }
     }
 }

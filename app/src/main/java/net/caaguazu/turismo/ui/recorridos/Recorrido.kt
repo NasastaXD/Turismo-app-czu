@@ -15,13 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.MapasExternos
@@ -30,12 +28,12 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Parada
 import net.caaguazu.turismo.ui.mapa.MapaCaaguazu
 import net.caaguazu.turismo.ui.mapa.Pin
+import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Foto
-import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
-import net.caaguazu.turismo.ui.piezas.PildoraNegra
+import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cargar
 import net.caaguazu.turismo.ui.tema.Letra
@@ -60,7 +58,7 @@ fun PantallaRecorrido(
     val contexto = LocalContext.current
     val (estado, reintentar) = cargar(id) { Datos.api.recorrido(id) }
 
-    Box(modifier.fillMaxSize().background(Tono.papel)) {
+    Box(modifier.fillMaxSize().background(Tono.fondo)) {
         Cargador(estado = estado.value, reintentar = reintentar) { recorrido ->
             val disponibles = recorrido.paradas.filter { it.disponible }
             val puntos = disponibles.mapNotNull { it.coordenadas?.let { c -> c.lat to c.lng } }
@@ -126,7 +124,7 @@ fun PantallaRecorrido(
 
                 if (puntos.size >= 2) {
                     Box(Modifier.fillMaxWidth().background(Tono.papel).padding(Medida.margen)) {
-                        PildoraNegra(
+                        PildoraPrimaria(
                             texto = Textos.t("rec.abrir"),
                             alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
                             modifier = Modifier.fillMaxWidth(),
@@ -136,17 +134,12 @@ fun PantallaRecorrido(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(12.dp)
-                .size(40.dp)
-                .background(Color.White.copy(alpha = 0.9f), CircleShape)
-                .clickable(onClick = alVolver),
-            contentAlignment = Alignment.Center,
-        ) {
-            Glifo(Icono.volver, Textos.t("accion.volver"), Tono.tinta, Modifier.size(22.dp))
-        }
+        BotonFlotante(
+            icono = Icono.volver,
+            descripcion = Textos.t("accion.volver"),
+            alTocar = alVolver,
+            modifier = Modifier.statusBarsPadding().padding(12.dp),
+        )
     }
 }
 
@@ -165,13 +158,13 @@ private fun FilaParadaPrehecha(parada: Parada, alTocar: () -> Unit) {
     ) {
         Box(
             modifier = Modifier.size(28.dp).clip(RoundedCornerShape(Radio.completo))
-                .background(if (parada.disponible) Tono.negro else Tono.linea),
+                .background(if (parada.disponible) Tono.contraste else Tono.linea),
             contentAlignment = Alignment.Center,
         ) {
             Texto(
                 parada.orden.toString(),
                 Letra.etiquetaNav,
-                if (parada.disponible) Color.White else Tono.tintaSuave,
+                if (parada.disponible) Tono.sobreContraste else Tono.tintaSuave,
                 maxLineas = 1,
             )
         }

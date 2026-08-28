@@ -2,10 +2,12 @@ package net.caaguazu.turismo.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import net.caaguazu.turismo.core.Textos
@@ -33,10 +35,24 @@ import net.caaguazu.turismo.ui.tema.Tono
 fun Aplicacion() {
     val navegador = remember { Navegador() }
 
+    // La app sigue el ajuste del telefono.
+    //
+    // Va en SideEffect y no suelto en el cuerpo: esta composicion LEE colores de
+    // Tono, y escribir en composicion un estado que la misma composicion lee es
+    // una escritura hacia atras — Compose la invalida y vuelve a componer. El
+    // SideEffect corre despues de que la composicion cerro, que es cuando
+    // escribir es seguro.
+    //
+    // El valor inicial ya quedo puesto en App.onCreate, asi que esto solo actua
+    // cuando la persona cambia el modo con la app abierta y no hay un cuadro
+    // dibujado con el tema equivocado.
+    val oscuro = isSystemInDarkTheme()
+    SideEffect { Tono.oscuro = oscuro }
+
     BackHandler(enabled = true) { navegador.volver() }
 
     ConMovimientoDelSistema(recordarAnimacionesActivas()) {
-    Column(Modifier.fillMaxSize().background(Tono.papel)) {
+    Column(Modifier.fillMaxSize().background(Tono.fondo)) {
         // La ficha lleva su propia cabecera sobre la foto: la barra general
         // taparia el titulo justo donde tiene que leerse.
         val conBarra = !navegador.enFicha()

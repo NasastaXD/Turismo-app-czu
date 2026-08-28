@@ -101,6 +101,11 @@ dependencies {
     implementation(libs.maplibre)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+
+    // Para los avisos. Es la unica forma de que Android deje correr una revision
+    // periodica sobreviviendo a Doze y al reinicio del telefono, y no arrastra
+    // ningun servicio externo: sin ella, la alternativa seria Firebase.
+    implementation(libs.androidx.work)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
 

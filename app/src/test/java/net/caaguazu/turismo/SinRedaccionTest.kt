@@ -91,8 +91,12 @@ class SinRedaccionTest {
             .toList()
     }
 
+    /**
+     * Se revisa la app entera y no solo las pantallas: un aviso del sistema es
+     * texto que la persona lee igual que un titulo, y sale del mismo JSON.
+     */
     private fun fuentesDeInterfaz(): List<File> =
-        File("src/main/java/net/caaguazu/turismo/ui")
+        File("src/main/java/net/caaguazu/turismo")
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" && it.name !in exentos }
             .toList()
@@ -121,7 +125,9 @@ class ClavesDeTextoTest {
     }
 
     private val usadas: Set<String> by lazy {
-        java.io.File("src/main/java/net/caaguazu/turismo/ui")
+        // La app entera, no solo las pantallas: los avisos del sistema piden
+        // claves desde core y tambien tienen que estar declaradas.
+        java.io.File("src/main/java/net/caaguazu/turismo")
             .walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .flatMap { archivo ->
