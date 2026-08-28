@@ -242,9 +242,10 @@ interfaz ni fábrica ni inyección de dependencias. Un único modelo por entidad
 sin cadenas DTO → dominio → interfaz que solo copian campos. Sin procesadores de
 anotaciones: nada de Room ni Hilt.
 
-La **única abstracción con más de una implementación** en todo el proyecto es
-`Contrato`, y se justifica porque es el interruptor entre los mocks y la API
-real.
+**No hay modo mocks.** Existió mientras la API todavía no estaba publicada;
+ahora que lo está, `ApiHttp` es el único acceso a los datos, sin una interfaz
+`Contrato` de por medio — sería la abstracción con una sola implementación que
+la regla de arriba prohíbe.
 
 **Sin Material3.** El diseño es propio de punta a punta y su tema no se usa en
 ninguna pantalla; arrastrarlo solo sumaría peso.

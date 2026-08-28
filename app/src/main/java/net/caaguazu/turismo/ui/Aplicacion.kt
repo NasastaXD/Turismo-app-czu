@@ -56,8 +56,11 @@ fun Aplicacion() {
             Box(Modifier.weight(1f)) {
                 Cruce(navegador.caraActual()) { _ ->
                     when {
-                        navegador.diagnosticoAbierto -> PantallaDiagnostico()
-                        navegador.perfilAbierto -> PantallaPerfil(navegador::abrirDiagnostico)
+                        navegador.diagnosticoAbierto -> PantallaDiagnostico(alVolver = navegador::volver)
+                        navegador.perfilAbierto -> PantallaPerfil(
+                            alVolver = navegador::volver,
+                            alAbrirDiagnostico = navegador::abrirDiagnostico,
+                        )
                         else -> when (navegador.seccion) {
                             Seccion.INICIO -> Principal(
                                 alBuscar = { navegador.ir(Seccion.BUSCAR) },

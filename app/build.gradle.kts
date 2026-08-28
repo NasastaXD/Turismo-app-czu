@@ -22,11 +22,8 @@ android {
         // x86 solo sirve para emuladores. Cada ABI de mas son 12 MB de MapLibre.
         ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a") }
 
-        // La URL base nunca va quemada en el codigo. La API ya esta publicada,
-        // asi que la app arranca contra el panel real; el interruptor de
-        // Ajustes sigue permitiendo caer a los mocks desde el telefono.
+        // La URL base nunca va quemada en el codigo, aunque hoy solo exista una.
         buildConfigField("String", "URL_BASE", "\"https://caaguazu.net/wp-json/czu-app/v1/\"")
-        buildConfigField("boolean", "USAR_MOCKS", "false")
     }
 
     // La clave de release vive fuera del repo. CI la escribe a disco a partir de

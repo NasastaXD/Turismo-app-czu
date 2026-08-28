@@ -95,8 +95,8 @@ private fun ListaArticulos(
     Column(modifier.fillMaxSize().background(Tono.fondo)) {
         CabeceraPantalla(Textos.t("nav.articulos")) {
             BotonIcono(
-                icono = Icono.perfil,
-                descripcion = Textos.t("barra.perfil"),
+                icono = Icono.ajustes,
+                descripcion = Textos.t("barra.ajustes"),
                 alTocar = alAbrirPerfil,
             )
         }

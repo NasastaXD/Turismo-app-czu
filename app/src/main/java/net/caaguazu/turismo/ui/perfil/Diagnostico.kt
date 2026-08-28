@@ -1,6 +1,5 @@
 package net.caaguazu.turismo.ui.perfil
 
-import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,11 +24,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.caaguazu.turismo.BuildConfig
-import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
+import net.caaguazu.turismo.ui.piezas.BotonIcono
+import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Hairline
+import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.PildoraSuave
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.tema.Letra
@@ -47,7 +48,7 @@ import net.caaguazu.turismo.ui.tema.Tono
  * mapping.txt de esa misma compilacion, que se adjunta a cada publicacion.
  */
 @Composable
-fun PantallaDiagnostico(modifier: Modifier = Modifier) {
+fun PantallaDiagnostico(alVolver: () -> Unit, modifier: Modifier = Modifier) {
     val contexto = LocalContext.current
     var recarga by remember { mutableIntStateOf(0) }
     val lineas = remember(recarga) {
@@ -55,9 +56,15 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
     }
 
     Column(modifier.fillMaxSize().background(Tono.fondo)) {
+        CabeceraPantalla(Textos.t("diag.titulo")) {
+            BotonIcono(
+                icono = Icono.volver,
+                descripcion = Textos.t("accion.volver"),
+                alTocar = alVolver,
+            )
+        }
 
         Column(Modifier.padding(Medida.margen)) {
-            Dato(Textos.t("diag.origen"), Datos.origen)
             Dato(Textos.t("diag.version"), "${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_TYPE})")
             Dato(Textos.t("diag.cache"), "${Datos.cache.tamano() / 1024} KB")
         }
@@ -69,17 +76,6 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
                 .padding(horizontal = Medida.margen),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Cambiar de fuente y volver a arrancar la pantalla. El nombre del
-            // boton es el origen al que se va: es un dato, no texto de producto.
-            PildoraSuave(
-                texto = Ajustes.nombre(Ajustes.contraria()),
-                alTocar = {
-                    Ajustes.origen = Ajustes.contraria()
-                    Datos.iniciar(contexto.applicationContext)
-                    Datos.cache.vaciar()
-                    (contexto as? Activity)?.recreate()
-                },
-            )
             PildoraSuave(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
             PildoraSuave(
                 texto = Textos.t("diag.vaciar"),

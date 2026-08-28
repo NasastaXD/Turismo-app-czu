@@ -38,3 +38,8 @@ hacer falta, el texto estaba escrito y está en el historial.
 - `banda.verTodo` aparece ahora en varios encabezados de sección del inicio.
 
 Ninguna otra clave se tocó.
+
+Aparte del rework, `main` sacó el modo mocks y con él dos claves más:
+`barra.perfil` pasó a llamarse `barra.ajustes` (ya no es un perfil de cuenta,
+es la pantalla de ajustes del teléfono) y `diag.origen` desapareció entera —
+ya no hay un origen que elegir, sólo queda el panel.

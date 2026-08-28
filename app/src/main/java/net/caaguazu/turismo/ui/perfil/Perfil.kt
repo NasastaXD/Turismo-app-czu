@@ -30,6 +30,7 @@ import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
+import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Hairline
@@ -52,7 +53,11 @@ import net.caaguazu.turismo.ui.tema.Tono
  * falle en su telefono.
  */
 @Composable
-fun PantallaPerfil(alAbrirDiagnostico: () -> Unit, modifier: Modifier = Modifier) {
+fun PantallaPerfil(
+    alVolver: () -> Unit,
+    alAbrirDiagnostico: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var toques by remember { mutableIntStateOf(0) }
 
     Column(modifier.fillMaxSize().background(Tono.fondo)) {
@@ -60,7 +65,13 @@ fun PantallaPerfil(alAbrirDiagnostico: () -> Unit, modifier: Modifier = Modifier
         // margen lateral de la lista con un padding negativo, que Compose no
         // admite y que ademas seria una forma rara de decir "esto no es un
         // item mas".
-        CabeceraPantalla(Textos.t("barra.perfil"))
+        CabeceraPantalla(Textos.t("barra.ajustes")) {
+            BotonIcono(
+                icono = Icono.volver,
+                descripcion = Textos.t("accion.volver"),
+                alTocar = alVolver,
+            )
+        }
 
         LazyColumn(
             contentPadding = PaddingValues(

@@ -153,8 +153,8 @@ private fun VistaLista(
                 alTocar = { pila.enMapa = true },
             )
             BotonIcono(
-                icono = Icono.perfil,
-                descripcion = Textos.t("barra.perfil"),
+                icono = Icono.ajustes,
+                descripcion = Textos.t("barra.ajustes"),
                 alTocar = alAbrirPerfil,
             )
         }

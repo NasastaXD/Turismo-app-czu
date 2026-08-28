@@ -97,8 +97,8 @@ fun Principal(
         item {
             CabeceraPantalla(Textos.t("app.nombre")) {
                 BotonIcono(
-                    icono = Icono.perfil,
-                    descripcion = Textos.t("barra.perfil"),
+                    icono = Icono.ajustes,
+                    descripcion = Textos.t("barra.ajustes"),
                     alTocar = alAbrirPerfil,
                 )
             }

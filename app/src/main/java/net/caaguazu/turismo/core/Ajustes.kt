@@ -1,14 +1,12 @@
 package net.caaguazu.turismo.core
 
 import android.content.Context
-import net.caaguazu.turismo.BuildConfig
 
 /**
  * Ajustes que sobreviven al cierre de la app.
  *
- * Dos cosas viven aca: el origen de los datos —que existe porque durante la
- * prueba cerrada hace falta comparar mocks y panel sin compilar dos veces— y la
- * memoria de los avisos, que es lo que evita notificar dos veces lo mismo.
+ * Vive aca la memoria de los avisos, que es lo que evita notificar dos veces lo
+ * mismo.
  *
  * Todo con SharedPreferences y nada mas: son unas pocas claves y un conjunto de
  * enteros. Una base de datos para esto seria maquinaria de sobra.
@@ -17,7 +15,6 @@ object Ajustes {
 
     private const val ETIQUETA = "Ajustes"
     private const val ARCHIVO = "ajustes"
-    private const val CLAVE_ORIGEN = "origen"
     private const val CLAVE_AVISOS = "avisos"
     private const val CLAVE_ARTICULOS_VISTOS = "articulos_vistos"
     private const val CLAVE_EVENTOS_AVISADOS = "eventos_avisados"
@@ -32,34 +29,10 @@ object Ajustes {
      */
     private const val MAX_RECORDADOS = 300
 
-    enum class Origen { MOCKS, PANEL }
-
     private lateinit var preferencias: android.content.SharedPreferences
 
     fun iniciar(contexto: Context) {
         preferencias = contexto.getSharedPreferences(ARCHIVO, Context.MODE_PRIVATE)
-    }
-
-    /** De donde salen los datos. Por defecto, lo que decidio la compilacion. */
-    var origen: Origen
-        get() {
-            val guardado = runCatching { preferencias.getString(CLAVE_ORIGEN, null) }.getOrNull()
-            return runCatching { Origen.valueOf(guardado!!) }.getOrElse {
-                if (BuildConfig.USAR_MOCKS) Origen.MOCKS else Origen.PANEL
-            }
-        }
-        set(valor) {
-            runCatching { preferencias.edit().putString(CLAVE_ORIGEN, valor.name).apply() }
-            Registro.info(ETIQUETA, "origen de datos cambiado a $valor")
-        }
-
-    /** La otra opcion, que es lo que ofrece el boton de cambiar. */
-    fun contraria(): Origen = if (origen == Origen.MOCKS) Origen.PANEL else Origen.MOCKS
-
-    /** Como se llama cada origen. Es un dato tecnico, no texto de producto. */
-    fun nombre(o: Origen): String = when (o) {
-        Origen.MOCKS -> "mocks"
-        Origen.PANEL -> BuildConfig.URL_BASE
     }
 
     /* ---------------------------------------------------------------------
