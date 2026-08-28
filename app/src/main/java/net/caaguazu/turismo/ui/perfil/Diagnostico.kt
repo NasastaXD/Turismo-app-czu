@@ -31,7 +31,7 @@ import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.ui.piezas.Hairline
-import net.caaguazu.turismo.ui.piezas.PildoraContorno
+import net.caaguazu.turismo.ui.piezas.PildoraSuave
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
@@ -72,7 +72,7 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
         ) {
             // Cambiar de fuente y volver a arrancar la pantalla. El nombre del
             // boton es el origen al que se va: es un dato, no texto de producto.
-            PildoraContorno(
+            PildoraSuave(
                 texto = Ajustes.nombre(Ajustes.contraria()),
                 alTocar = {
                     Ajustes.origen = Ajustes.contraria()
@@ -81,15 +81,15 @@ fun PantallaDiagnostico(modifier: Modifier = Modifier) {
                     (contexto as? Activity)?.recreate()
                 },
             )
-            PildoraContorno(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
-            PildoraContorno(
+            PildoraSuave(Textos.t("diag.compartir"), alTocar = { compartir(contexto) })
+            PildoraSuave(
                 texto = Textos.t("diag.vaciar"),
                 alTocar = {
                     Datos.cache.vaciar()
                     recarga++
                 },
             )
-            PildoraContorno(
+            PildoraSuave(
                 texto = Textos.t("diag.borrar"),
                 alTocar = {
                     Registro.borrar()

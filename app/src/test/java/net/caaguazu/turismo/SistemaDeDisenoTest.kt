@@ -43,10 +43,19 @@ class SistemaDeDisenoTest {
             // en quien la llama; volver a exigirlo aca seria pedirlo dos veces.
             "radio",
         )
+        // Una forma puede redondear esquina por esquina —la cabecera de una
+        // ficha va redondeada solo abajo—, asi que se revisa cada argumento por
+        // separado en vez de la llamada entera. La regla no cambia: todo valor
+        // sale de Radio.*.
         val sueltos = fuentes.flatMap { archivo ->
             Regex("""RoundedCornerShape\(([^)]+)\)""")
                 .findAll(archivo.readText())
-                .map { it.groupValues[1].trim() }
+                .flatMap { encontrado ->
+                    encontrado.groupValues[1]
+                        .split(",")
+                        .map { it.substringAfter("=").trim() }
+                        .filter { it.isNotEmpty() }
+                }
                 .filterNot { it in permitidos }
                 .map { "${archivo.name} → RoundedCornerShape($it)" }
         }

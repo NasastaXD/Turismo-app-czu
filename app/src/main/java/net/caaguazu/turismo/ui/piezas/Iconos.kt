@@ -159,6 +159,21 @@ object Icono {
         )
     }
 
+    /** Pin de ubicacion: donde queda esto. */
+    val pin: ImageVector by lazy {
+        trazo(
+            "pin",
+            "M12 21 C12 21 5 14.6 5 10 C5 6.1 8.1 3 12 3 C15.9 3 19 6.1 19 10 " +
+                "C19 14.6 12 21 12 21 Z " +
+                "M12 10 m-2.4 0 a2.4 2.4 0 1 0 4.8 0 a2.4 2.4 0 1 0 -4.8 0",
+        )
+    }
+
+    /** Aspa: quitar esto de aca. No es cerrar ni es volver. */
+    val quitar: ImageVector by lazy {
+        trazo("quitar", "M6.5 6.5 L17.5 17.5 M17.5 6.5 L6.5 17.5")
+    }
+
     /** Chevron a la derecha: "esta fila lleva a otro lado". */
     val chevron: ImageVector by lazy {
         trazo("chevron", "M9.5 5 L16.5 12 L9.5 19")

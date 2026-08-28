@@ -64,11 +64,21 @@ son marcadores evidentemente sintéticos.
 
 ## 3. El sistema visual
 
-La definición en una línea: **tarjetas redondeadas que flotan sobre el fondo con
-una sombra suave, con toda la interacción encapsulada en píldoras de radio
-completo.** La unidad es la tarjeta: todo bloque de contenido es una, y lo que
-separa una tarjeta de la siguiente es su propia sombra, no una línea ni un
+La definición en una línea: **fotos y tarjetas muy redondeadas que flotan sobre
+un fondo claro con una sombra ancha y suave, con toda la interacción encapsulada
+en píldoras de radio completo sobre relleno liso.** Lo que separa un bloque del
+siguiente es su propia sombra o el aire entre ellos: nunca una línea, nunca un
 cambio de fondo.
+
+**El sistema separa por superficie, no por contorno.** Un control en reposo es
+un relleno claro (`campo`); elegido, es ese mismo relleno en `contraste`. No hay
+bordes de 1px alrededor de chips ni de botones secundarios: llenaban la pantalla
+de rectángulos y competían con el único botón que sí tiene que verse.
+
+**La foto es el contenido y no lleva marco.** En el inicio y en las grillas, las
+fotos van sueltas sobre el fondo con su radio, y el texto va debajo. Encerrar una
+foto en una tarjeta blanca deja un borde de papel entre la foto y el ojo que no
+dice nada.
 
 La app sigue el **modo claro u oscuro del teléfono**. No hay un interruptor
 propio: quien ya eligió en su sistema no tiene que volver a elegir acá.
@@ -85,7 +95,8 @@ de color según la hora del día deja de serlo:
 | `primario` | Eton Blue #96C8A2 | la acción principal. Como mucho una por pantalla |
 | `sobrePrimario` | #1E3A28 | la tinta sobre el verde |
 | `acento` | Bittersweet #FF6F61 | favoritos, fechas y metadatos de cuándo/dónde |
-| `destacado` | Mango #FFC300 | lo que está pasando **ahora**. Hoy, solo el badge de evento en curso |
+| `destacado` | Mango #FFC300 | lo que está pasando **ahora**. Hoy, solo el evento en curso |
+| `sobreFoto` | #FFFFFF | la tinta sobre una foto, siempre con velo debajo |
 
 Y las superficies, que **sí** cambian con el modo:
 
@@ -93,14 +104,16 @@ Y las superficies, que **sí** cambian con el modo:
 |---|---|---|---|
 | `fondo` | #F7F7F5 | #0F0F10 | fondo de página |
 | `papel` | #FFFFFF | #1B1B1D | la tarjeta |
-| `banda` | #F2F1EF | #151517 | banda de sección alterna |
+| `banda` | #F2F1EF | #151517 | hueco de una foto que todavía no bajó |
+| `campo` | #F0EFED | #232326 | relleno de control: buscador, chip, píldora, atajo |
 | `tinta` | #333333 | #F2F2F2 | títulos y texto principal |
 | `tintaSuave` | #6E6E73 | #9A9AA0 | descripciones y texto secundario |
-| `linea` | #E8E6E3 | #2C2C2E | hairlines de 1px |
-| `contraste` | #1F1F21 | #F2F2F2 | control de máximo contraste: botón central, segmento activo |
+| `linea` | #E8E6E3 | #2C2C2E | hairlines de 1px dentro de una tarjeta |
+| `contraste` | #1F1F21 | #F2F2F2 | control de máximo contraste: sección activa, chip elegido |
 | `sobreContraste` | #FFFFFF | #1F1F21 | lo que se escribe encima |
-| `sombra` | 10% gris | negro | color de toda sombra |
-| `velo` | 45% negro | igual | scrim sobre foto |
+| `sombra` | 8% gris | negro | color de toda sombra |
+| `velo` | 35% negro | igual | scrim sobre foto |
+| `veloProfundo` | 55% negro | igual | el pie del degradado, donde va el texto |
 
 **Cada color de marca tiene un rol y no sale de él.** Tres colores sin regla son
 ruido. En particular: el verde es acción, nunca decoración; el mango no se usa
@@ -112,6 +125,10 @@ mínimo accesible. Con la tinta oscura la pieza se ve igual y el contraste sube 
 7:1. Para un público que en buena parte es gente mayor leyendo en la calle, eso
 no es un detalle.
 
+**El velo sobre foto es un degradado, no un tinte parejo.** Carga abajo, que es
+donde vive el texto, y deja limpia la parte de arriba. Velar la foto entera por
+parejo apaga justo lo que se vino a ver.
+
 ### Tipografía
 
 Una sola familia: **Poppins**, sans geométrica. La única excepción es el
@@ -119,21 +136,39 @@ Una sola familia: **Poppins**, sans geométrica. La única excepción es el
 justifica porque leer un texto largo es un contexto distinto de operar una
 interfaz, y porque la referencia del proyecto para artículos es un diario.
 
+Cada pantalla abre con su **título grande alineado a la izquierda**
+(`tituloPantalla`, 26). No hay barra superior: una barra con el nombre de la app
+repetido arriba de las cinco pantallas gasta alto para decir algo que nadie
+necesita leer cinco veces.
+
+**`descripcion` (15sp) no se achica.** Es el único tamaño que no se toca: es el
+texto que se lee de corrido, y el público es en buena parte gente mayor leyendo
+en la calle. Compactar una pantalla a costa de ese tamaño se paga en quien no
+puede leerla.
+
 Los títulos de tarjeta truncan con puntos suspensivos; **las descripciones
 cortan sin ellos**.
 
 ### Radios y elevación
 
-Todo radio sale de `Radio`: `tarjeta` 16, `media` y `lista` 12, `hoja` 24,
+Todo radio sale de `Radio`: `tarjeta` 20, `media` y `lista` 16, `hoja` 28,
 `completo` 999 para cualquier control, y `ninguno` 0 —que es solo para el medio
-que va a sangre dentro de una tarjeta, porque el contenedor ya recorta y
-redondear de nuevo dejaría una esquina doble.
+que va a sangre dentro de un contenedor que ya recorta, porque redondear de
+nuevo dejaría una esquina doble. Una forma puede redondear esquina por esquina
+—la cabecera de una ficha va redondeada solo abajo— siempre que **cada** valor
+salga de `Radio`.
 
-La elevación tiene **dos alturas** y salen de `Elevacion`: `tarjeta` 6 para lo
-que apenas se despega del fondo, `flotante` 12 para lo que tiene que despegarse
+La elevación tiene **dos alturas** y salen de `Elevacion`: `tarjeta` 8 para lo
+que apenas se despega del fondo, `flotante` 14 para lo que tiene que despegarse
 de una foto o un mapa. Toda sombra lleva `Tono.sombra` como `ambientColor` y
 `spotColor`: sin eso sale del negro por omisión y en modo oscuro pinta un halo
 sucio alrededor de cada tarjeta.
+
+### El ritmo
+
+`Medida` fija el aire: `margen` 20, `entreTarjetas` 14, `dentroTarjeta` 16,
+`entreSecciones` 30. El sistema es aireado a propósito — apretarlo fue lo
+primero que se notó mal en la versión anterior.
 
 ### Verificado, no documentado
 

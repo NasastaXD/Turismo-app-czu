@@ -30,6 +30,7 @@ import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
+import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
@@ -54,43 +55,58 @@ import net.caaguazu.turismo.ui.tema.Tono
 fun PantallaPerfil(alAbrirDiagnostico: () -> Unit, modifier: Modifier = Modifier) {
     var toques by remember { mutableIntStateOf(0) }
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize().background(Tono.fondo),
-        contentPadding = PaddingValues(Medida.margen),
-        verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-    ) {
-        item { Grupo(Textos.t("perfil.general")) }
-        item {
-            Tarjeta(Modifier.fillMaxWidth()) {
-                Column {
-                    Fila(Textos.t("perfil.idioma"))
-                    Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta))
-                    FilaAvisos()
+    Column(modifier.fillMaxSize().background(Tono.fondo)) {
+        // La cabecera va fuera de la lista: dentro habria que compensar el
+        // margen lateral de la lista con un padding negativo, que Compose no
+        // admite y que ademas seria una forma rara de decir "esto no es un
+        // item mas".
+        CabeceraPantalla(Textos.t("barra.perfil"))
+
+        LazyColumn(
+            contentPadding = PaddingValues(
+                start = Medida.margen,
+                end = Medida.margen,
+                bottom = Medida.colaDeLista,
+            ),
+            verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+        ) {
+            item { Grupo(Textos.t("perfil.general")) }
+            item {
+                Tarjeta(Modifier.fillMaxWidth()) {
+                    Column {
+                        Fila(Textos.t("perfil.idioma"))
+                        Hairline(
+                            Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta),
+                        )
+                        FilaAvisos()
+                    }
                 }
             }
-        }
 
-        item { Grupo(Textos.t("perfil.acercaDe")) }
-        item {
-            Tarjeta(Modifier.fillMaxWidth()) {
-                Column {
-                    Fila(Textos.t("perfil.acerca"))
-                    Hairline(Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                toques++
-                                if (toques >= 7) {
-                                    toques = 0
-                                    alAbrirDiagnostico()
+            item { Grupo(Textos.t("perfil.acercaDe")) }
+            item {
+                Tarjeta(Modifier.fillMaxWidth()) {
+                    Column {
+                        Fila(Textos.t("perfil.acerca"))
+                        Hairline(
+                            Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta),
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    toques++
+                                    if (toques >= 7) {
+                                        toques = 0
+                                        alAbrirDiagnostico()
+                                    }
                                 }
-                            }
-                            .padding(Medida.dentroTarjeta),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Texto(Textos.t("diag.version"), Letra.chip, Tono.tintaSuave, maxLineas = 1)
-                        Texto(BuildConfig.VERSION_NAME, Letra.chip, Tono.tinta, maxLineas = 1)
+                                .padding(Medida.dentroTarjeta),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Texto(Textos.t("diag.version"), Letra.chip, Tono.tintaSuave, maxLineas = 1)
+                            Texto(BuildConfig.VERSION_NAME, Letra.chip, Tono.tinta, maxLineas = 1)
+                        }
                     }
                 }
             }
@@ -162,10 +178,10 @@ private fun FilaAvisos() {
 private fun Grupo(texto: String) {
     Texto(
         texto = texto,
-        estilo = Letra.chip,
+        estilo = Letra.enlace,
         color = Tono.tintaSuave,
         maxLineas = 1,
-        modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 2.dp),
+        modifier = Modifier.padding(start = 6.dp, top = 10.dp, bottom = 0.dp),
     )
 }
 
@@ -177,6 +193,6 @@ private fun Fila(texto: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Texto(texto, Letra.tituloTarjeta, Tono.tinta, maxLineas = 1)
-        Glifo(Icono.chevron, texto, Tono.tintaSuave, Modifier.size(18.dp))
+        Glifo(Icono.chevron, texto, Tono.tintaSuave, Modifier.size(17.dp))
     }
 }

@@ -30,40 +30,77 @@ val Serif = FontFamily(
 )
 
 object Letra {
-    val tituloSeccion = TextStyle(
+
+    /**
+     * Titulo de pantalla: lo primero que se lee al entrar, alineado a la
+     * izquierda y sin barra que lo encierre. Reemplaza a la cabecera con el
+     * nombre de la app repetido en las cinco pantallas.
+     */
+    val tituloPantalla = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Bold,
-        fontSize = 22.sp, lineHeight = 26.sp, letterSpacing = (-0.2).sp,
+        fontSize = 26.sp, lineHeight = 31.sp, letterSpacing = (-0.5).sp,
     )
+
+    /** Titulo de una ficha abierta. */
     val tituloPagina = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Bold,
-        fontSize = 24.sp, lineHeight = 28.sp,
+        fontSize = 26.sp, lineHeight = 31.sp, letterSpacing = (-0.4).sp,
     )
-    val tituloTarjeta = TextStyle(
+
+    /** Encabezado de seccion dentro de una pantalla. */
+    val tituloSeccion = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Bold,
-        fontSize = 17.sp, lineHeight = 22.sp,
+        fontSize = 19.sp, lineHeight = 24.sp, letterSpacing = (-0.2).sp,
     )
+
+    val tituloTarjeta = TextStyle(
+        fontFamily = Sans, fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp, lineHeight = 21.sp, letterSpacing = (-0.1).sp,
+    )
+
+    /** Metadato: cuando, donde, cuanto dura. */
     val fecha = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Normal,
-        fontSize = 15.sp, lineHeight = 20.sp,
+        fontSize = 14.sp, lineHeight = 19.sp,
     )
+
+    /**
+     * Texto que se lee de corrido. Es el unico tamano que no se toca: el
+     * publico es en buena parte gente mayor leyendo en la calle, y achicar la
+     * descripcion para que la pantalla se vea mas compacta se paga en quien no
+     * puede leerla.
+     */
     val descripcion = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Normal,
-        fontSize = 15.sp, lineHeight = 21.sp,
+        fontSize = 15.sp, lineHeight = 22.sp,
     )
-    /** "Ver todo": texto plano en la linea base del titulo de seccion. */
-    val verTodo = TextStyle(
-        fontFamily = Sans, fontWeight = FontWeight.Medium,
-        fontSize = 15.sp, lineHeight = 20.sp,
+
+    /** Enlace de texto: "ver todo" de una seccion, "leer mas" de una ficha. */
+    val enlace = TextStyle(
+        fontFamily = Sans, fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp, lineHeight = 18.sp,
     )
+
+    /** Lo que se escribe dentro de un control: chip, pildora, campo. */
     val chip = TextStyle(
-        fontFamily = Sans, fontWeight = FontWeight.Medium, fontSize = 15.sp,
+        fontFamily = Sans, fontWeight = FontWeight.Medium, fontSize = 14.sp,
     )
+
+    /** Etiqueta chica: barra inferior, credito de foto, badge. */
     val etiquetaNav = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Medium, fontSize = 12.sp,
     )
+
+    /** Titulo sobre una foto, siempre con el velo debajo. */
     val sobreFoto = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Bold,
-        fontSize = 17.sp, lineHeight = 21.sp,
+        fontSize = 16.sp, lineHeight = 20.sp,
+    )
+
+    /** El precio de la barra de accion: el dato que se busca de un vistazo. */
+    val precio = TextStyle(
+        fontFamily = Sans, fontWeight = FontWeight.Bold,
+        fontSize = 20.sp, lineHeight = 24.sp,
     )
 
     /* --- Articulo: el unico lugar con serif --- */

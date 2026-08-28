@@ -9,10 +9,11 @@ import androidx.compose.ui.unit.dp
 /**
  * Tokens del sistema visual.
  *
- * La forma del sistema es la tarjeta: rectangulo de esquina redondeada que
- * flota sobre el fondo con una sombra suave. Todo lo que se toca —botones,
- * chips, filtros, segmentos— va a radio completo. Todo lo que se lee va sobre
- * una tarjeta.
+ * La forma del sistema es la tarjeta blanda: rectangulo muy redondeado que
+ * flota sobre el fondo con una sombra ancha y clara. Todo lo que se toca
+ * —botones, chips, filtros, campos— va a radio completo sobre un relleno
+ * suave, sin contornos: el sistema separa por color de superficie, no por
+ * lineas.
  *
  * La paleta es cerrada y tiene tres colores de marca con un rol cada uno:
  * verde es accion, coral es afecto y fecha, mango es lo que esta pasando ahora.
@@ -38,6 +39,9 @@ private val Bittersweet = Color(0xFFFF6F61)
  * eso no es un detalle.
  */
 private val VerdeOscuro = Color(0xFF1E3A28)
+
+/** Tinta sobre foto. Es blanco en los dos modos: debajo siempre hay una foto. */
+private val Blanco = Color(0xFFFFFFFF)
 
 object Tono {
 
@@ -75,20 +79,33 @@ object Tono {
     /** Banda de seccion alterna. */
     val banda get() = if (oscuro) Color(0xFF151517) else Color(0xFFF2F1EF)
 
+    /**
+     * Relleno de control: buscador, chip en reposo, pildora de metadato,
+     * contenedor de atajo.
+     *
+     * Es un token propio y no la banda porque hacen dos trabajos distintos: la
+     * banda separa secciones de una pagina, esto dice "esto se toca". Sobre
+     * papel tiene que verse; sobre el fondo tambien.
+     */
+    val campo get() = if (oscuro) Color(0xFF232326) else Color(0xFFF0EFED)
+
     /* --- Texto --- */
 
     val tinta get() = if (oscuro) Color(0xFFF2F2F2) else Color(0xFF333333)
     val tintaSuave get() = if (oscuro) Color(0xFF9A9AA0) else Color(0xFF6E6E73)
+
+    /** Lo que se escribe sobre una foto, siempre con el velo debajo. */
+    val sobreFoto = Blanco
 
     /* --- Estructura --- */
 
     val linea get() = if (oscuro) Color(0xFF2C2C2E) else Color(0xFFE8E6E3)
 
     /**
-     * Control de maximo contraste: el boton central de la barra, el segmento
-     * activo de un interruptor. Se invierte con el modo — en claro es casi
-     * negro, en oscuro es casi blanco— porque su trabajo es destacar sobre el
-     * fondo, y el fondo cambia.
+     * Control de maximo contraste: el item activo de la barra inferior, el chip
+     * elegido, el segmento activo de un interruptor. Se invierte con el modo
+     * —en claro es casi negro, en oscuro es casi blanco— porque su trabajo es
+     * destacar sobre el fondo, y el fondo cambia.
      */
     val contraste get() = if (oscuro) Color(0xFFF2F2F2) else Color(0xFF1F1F21)
 
@@ -96,33 +113,48 @@ object Tono {
     val sobreContraste get() = if (oscuro) Color(0xFF1F1F21) else Color(0xFFFFFFFF)
 
     /** Scrim sobre foto. Igual en los dos modos: la foto ya es oscura debajo. */
-    val velo = Color(0x73000000)
+    val velo = Color(0x59000000)
+
+    /**
+     * Velo mas cargado, para la parte baja de una foto que lleva titulo grande
+     * encima. Un titular de 26 sobre una foto clara necesita mas que el velo
+     * parejo, y cargar el velo entero apagaria la foto.
+     */
+    val veloProfundo = Color(0x8C000000)
 
     /**
      * Color de la sombra. En claro es un gris que no ensucia; en oscuro las
      * sombras casi no se ven, asi que la separacion la hace el propio salto de
      * luminancia entre fondo y tarjeta.
      */
-    val sombra get() = if (oscuro) Color(0xFF000000) else Color(0x1A2B2B2B)
+    val sombra get() = if (oscuro) Color(0xFF000000) else Color(0x142B2B2B)
 }
 
+/**
+ * Ritmo de la pagina.
+ *
+ * El sistema es aireado: el margen es ancho y las tarjetas respiran. Apretarlo
+ * fue lo primero que se noto mal en la version anterior.
+ */
 object Medida {
-    val margen = 16.dp
-    val entreTarjetas = 12.dp
-    val dentroTarjeta = 14.dp
-    val tituloACarrusel = 16.dp
-    val bandaArriba = 28.dp
-    val bandaAbajo = 32.dp
+    val margen = 20.dp
+    val entreTarjetas = 14.dp
+    val dentroTarjeta = 16.dp
+    val tituloACarrusel = 14.dp
+    val entreSecciones = 30.dp
 
-    /** El ancho de tarjeta es 43% del viewport: la tercera queda cortada por el borde. */
-    const val FRACCION_TARJETA = 0.43f
+    /** Aire que deja el contenido al final para no morir contra la barra. */
+    val colaDeLista = 28.dp
+
+    /** El ancho de tarjeta del carrusel: dos enteras y el borde de la tercera. */
+    const val FRACCION_TARJETA = 0.45f
 }
 
 /**
  * Radios del sistema.
  *
- * Contenido redondeado, control a radio completo. No hay una sexta opcion: un
- * radio escrito a mano es un token fuera del sistema que despues nadie
+ * Contenido muy redondeado, control a radio completo. No hay una sexta opcion:
+ * un radio escrito a mano es un token fuera del sistema que despues nadie
  * encuentra para cambiar.
  */
 object Radio {
@@ -132,15 +164,15 @@ object Radio {
      */
     val ninguno = 0.dp
 
-    /** Tarjeta de contenido y tile de menu. */
-    val tarjeta = 16.dp
+    /** Tarjeta de contenido, tile de menu, foto suelta sobre la pagina. */
+    val tarjeta = 20.dp
 
-    /** Media dentro de una tarjeta, y tarjetas de lista. */
-    val media = 12.dp
-    val lista = 12.dp
+    /** Media dentro de una tarjeta, y miniatura de fila. */
+    val media = 16.dp
+    val lista = 16.dp
 
-    /** Hoja que sube desde abajo. */
-    val hoja = 24.dp
+    /** Hoja que sube desde abajo, y la cabecera de una ficha. */
+    val hoja = 28.dp
 
     /** Chips, buscador, filtros, toggles, botones. */
     val completo = 999.dp
@@ -150,9 +182,10 @@ object Radio {
  * Elevacion.
  *
  * Dos alturas y nada mas. La tarjeta apenas se despega del fondo; lo flotante
- * —el boton central, un boton sobre una foto— se despega de verdad.
+ * —el corazon sobre una foto, el boton de volver sobre un mapa— se despega de
+ * verdad.
  */
 object Elevacion {
-    val tarjeta = 6.dp
-    val flotante = 12.dp
+    val tarjeta = 8.dp
+    val flotante = 14.dp
 }

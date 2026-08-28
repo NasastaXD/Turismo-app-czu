@@ -93,7 +93,7 @@ private enum class Cara { CARGANDO, ERROR, VACIO, CONTENIDO }
 
 @Composable
 private fun Aviso(clave: String, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+    Box(modifier.fillMaxSize().padding(40.dp), contentAlignment = Alignment.Center) {
         Texto(
             texto = Textos.t(clave),
             estilo = Letra.descripcion,
@@ -105,14 +105,14 @@ private fun Aviso(clave: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun AvisoConReintento(falla: Falla, reintentar: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+    Box(modifier.fillMaxSize().padding(40.dp), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Texto(
                 texto = Textos.t(if (falla == Falla.SIN_RED) "estado.guardado" else "estado.error"),
-                estilo = Letra.tituloTarjeta,
+                estilo = Letra.tituloSeccion,
                 color = Tono.tinta,
                 alinear = TextAlign.Center,
             )

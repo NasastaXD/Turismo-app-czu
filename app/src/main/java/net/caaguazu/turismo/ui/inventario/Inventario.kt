@@ -44,11 +44,16 @@ class PilaInventario {
 }
 
 @Composable
-fun Inventario(pila: PilaInventario, modifier: Modifier = Modifier) {
+fun Inventario(
+    pila: PilaInventario,
+    alAbrirPerfil: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     when (val ruta = pila.actual) {
         is RutaInv.Categorias -> PantallaCategorias(
             alElegir = { pila.ir(RutaInv.Lista(it)) },
             alVerTodo = { pila.ir(RutaInv.Lista(null)) },
+            alAbrirPerfil = alAbrirPerfil,
             modifier = modifier,
         )
 
@@ -58,6 +63,7 @@ fun Inventario(pila: PilaInventario, modifier: Modifier = Modifier) {
             alCambiarVista = { pila.enMapa = it },
             alAbrir = { pila.ir(RutaInv.Ficha(it)) },
             alVolver = { pila.volver() },
+            alAbrirPerfil = alAbrirPerfil,
             modifier = modifier,
         )
 
