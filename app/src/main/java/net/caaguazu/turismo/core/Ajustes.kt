@@ -39,17 +39,20 @@ object Ajustes {
      * Avisos
      * ------------------------------------------------------------------- */
 
-    /**
-     * Si la app revisa y notifica. Arranca apagado a proposito: notificar sin
-     * que nadie lo haya pedido es la clase de cosa que termina con la app
-     * silenciada entera.
-     */
+    /** Si la app revisa y notifica. Arranca encendido; se apaga solo si se niega el permiso. */
     var avisosActivos: Boolean
-        get() = runCatching { preferencias.getBoolean(CLAVE_AVISOS, false) }.getOrDefault(false)
+        get() = runCatching { preferencias.getBoolean(CLAVE_AVISOS, true) }.getOrDefault(true)
         set(valor) {
             runCatching { preferencias.edit().putBoolean(CLAVE_AVISOS, valor).apply() }
             Registro.info(ETIQUETA, "avisos ${if (valor) "encendidos" else "apagados"}")
         }
+
+    /**
+     * Si el interruptor ya quedo fijado alguna vez, a mano o por el resultado
+     * del permiso. Antes de eso, `avisosActivos` es solo el valor por defecto:
+     * hace falta pedir el permiso de sistema una vez para que sea real.
+     */
+    fun avisosDecididos(): Boolean = runCatching { preferencias.contains(CLAVE_AVISOS) }.getOrDefault(false)
 
     /** Articulos de los que ya se aviso, o que ya existian al encender los avisos. */
     var articulosVistos: Set<Int>

@@ -77,7 +77,11 @@ object BaseMapa {
                     Registro.fallo(ETIQUETA, "el estilo no tiene la marca $MARCA_RUTA")
                     Resultado.Mal(Falla.DATOS_INVALIDOS)
                 } else {
-                    Resultado.Bien(leido.valor.replace(MARCA_RUTA, archivo.absolutePath))
+                    // "pmtiles://" exige una URL completa detras, no una ruta pelada
+                    // (asi como un pmtiles remoto va "pmtiles://https://..."). Sin el
+                    // esquema file://, MapLibre no resuelve el archivo y el mapa
+                    // queda con el fondo plano, sin ninguna capa encima.
+                    Resultado.Bien(leido.valor.replace(MARCA_RUTA, "file://" + archivo.absolutePath))
                 }
             }
             is Resultado.Mal -> Resultado.Mal(Falla.DATOS_INVALIDOS)

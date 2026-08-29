@@ -1,15 +1,24 @@
 package net.caaguazu.turismo.ui
 
+import android.Manifest
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import net.caaguazu.turismo.core.Ajustes
+import net.caaguazu.turismo.core.Avisos
+import net.caaguazu.turismo.core.Vigilante
 import net.caaguazu.turismo.ui.articulos.Articulos
 import net.caaguazu.turismo.ui.buscar.Buscar
 import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
@@ -50,6 +59,8 @@ fun Aplicacion() {
     SideEffect { Tono.oscuro = oscuro }
 
     BackHandler(enabled = true) { navegador.volver() }
+
+    PedirAvisosAlArrancar()
 
     ConMovimientoDelSistema(recordarAnimacionesActivas()) {
         Column(Modifier.fillMaxSize().background(Tono.fondo)) {
@@ -103,6 +114,33 @@ fun Aplicacion() {
                 seleccionada = { navegador.seccion },
                 alElegir = navegador::ir,
             )
+        }
+    }
+}
+
+/**
+ * Los avisos arrancan encendidos, pero en Android 13 o mas nuevo eso no alcanza:
+ * el sistema exige pedir el permiso una vez. Se pide al primer arranque nomas
+ * —`avisosDecididos()` evita repetirlo despues— y si se niega, el interruptor
+ * cae solo a apagado en vez de quedar prendido sin avisar nunca.
+ */
+@Composable
+private fun PedirAvisosAlArrancar() {
+    val contexto = LocalContext.current
+
+    val pedirPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { concedido ->
+        Ajustes.avisosActivos = concedido
+        if (concedido) Vigilante.programar(contexto) else Vigilante.cancelar(contexto)
+    }
+
+    LaunchedEffect(Unit) {
+        if (Ajustes.avisosDecididos()) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !Avisos.hayPermiso(contexto)) {
+            pedirPermiso.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            Ajustes.avisosActivos = true
         }
     }
 }
