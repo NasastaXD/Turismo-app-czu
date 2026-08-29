@@ -362,8 +362,9 @@ minuto, y revisar más seguido solo gastaría batería para encontrar lo mismo.
 
 Cuatro reglas que evitan que los avisos se vuelvan insoportables:
 
-- **Arrancan apagados.** Notificar sin que nadie lo haya pedido termina con la
-  app silenciada entera.
+- **Arrancan encendidos.** En Android 13 o más nuevo eso igual exige pedir el
+  permiso del sistema una sola vez, al primer arranque; si se niega, el
+  interruptor cae solo a apagado en vez de quedar prendido sin avisar nunca.
 - **La primera revisión no avisa nada**, solo toma nota de lo que ya existe.
   Avisar del histórico completo al encender sería inutilizable.
 - **Cinco avisos por vuelta como máximo.** Pasado ese punto no informa, molesta.
