@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNames
 
 /**
  * Modelos del contrato czu-app/v1, calcados de la implementacion del plugin.
@@ -64,11 +65,12 @@ data class Categoria(
     /**
      * Foto de fondo del tile de categoria.
      *
-     * Todavia no existe en el contrato — esta pedida al panel. Mientras no
-     * llegue viene null y la pantalla cae a la foto del primer atractivo de la
-     * categoria, que es contenido real y no una imagen de archivo.
+     * El panel ya la manda, pero como `imagen` y no como `portada` — el pedido
+     * de §6bis se resolvio con otro nombre de campo. Se acepta cualquiera de
+     * los dos por si el nombre cambia de nuevo; si algun dia falta del todo,
+     * la pantalla cae a la foto del primer atractivo de la categoria.
      */
-    val portada: Imagen? = null,
+    @JsonNames("imagen") val portada: Imagen? = null,
     val total: Int = 0,
 )
 
@@ -201,7 +203,14 @@ data class Ficha(
     /** Solo si `tipoItem == "evento"`: cuando pasa. */
     val fechas: Fechas? = null,
     @SerialName("google_maps") val googleMaps: String? = null,
-    @SerialName("articulo_html") val articuloHtml: String = "",
+    /**
+     * El cuerpo de la ficha. El servidor lo manda como `descripcion`; el
+     * contrato original preveia `articulo_html`, y se acepta cualquiera de
+     * los dos por si vuelve a cambiar. Sin esto la ficha se veia sin cuerpo,
+     * sin galeria de texto y sin "leer mas": el campo llegaba, pero con un
+     * nombre que el modelo no sabia leer.
+     */
+    @SerialName("articulo_html") @JsonNames("descripcion") val articuloHtml: String = "",
     @SerialName("articulos_relacionados") val articulosRelacionados: List<ResumenArticulo> = emptyList(),
     val fuentes: String = "",
     val autor: Autor? = null,

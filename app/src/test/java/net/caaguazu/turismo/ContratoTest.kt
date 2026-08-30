@@ -128,6 +128,29 @@ class ContratoTest {
         assertTrue("falta el audio/video de alguna parada", paradas.any { it.medio != null })
     }
 
+    /**
+     * El servidor real manda el cuerpo de la ficha como `descripcion` y la foto
+     * de categoria como `imagen`, no como `articulo_html` ni `portada` que
+     * preveia el contrato original. Sin aceptar el nombre real, una ficha se
+     * veia sin cuerpo, sin galeria de texto y sin "leer mas" — el campo
+     * llegaba, pero con un nombre que el modelo no sabia leer.
+     */
+    @Test
+    fun `el modelo acepta los nombres de campo que el servidor real usa hoy`() {
+        val fichaConDescripcion = """
+            {"id":1,"titulo":"x","descripcion":"<p>Cuerpo real</p>"}
+        """.trimIndent()
+        val ficha = analizador.decodeFromString(Ficha.serializer(), fichaConDescripcion)
+        assertEquals("<p>Cuerpo real</p>", ficha.articuloHtml)
+
+        val categoriaConImagen = """
+            {"id":1,"nombre":"x","imagen":{"url":"https://x/y.jpg","w":10,"h":10}}
+        """.trimIndent()
+        val categoria = analizador.decodeFromString(Categoria.serializer(), categoriaConImagen)
+        assertNotNull("la categoria no trajo la foto por 'imagen'", categoria.portada)
+        assertEquals("https://x/y.jpg", categoria.portada?.url)
+    }
+
     /** Un campo que el servidor agregue manana no puede tumbar una app publicada. */
     @Test
     fun `un campo desconocido no rompe nada`() {
