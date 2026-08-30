@@ -108,6 +108,20 @@ class PilaBusqueda {
             pila.removeAt(pila.lastIndex)
             return true
         }
+        // Salir del mapa y despues deshacer lo buscado, antes de dejar la
+        // seccion. Filtrar por una categoria no empuja una pantalla nueva —es
+        // la misma que cambia de cara—, asi que sin esto el gesto de volver se
+        // saltaba la busqueda entera y tiraba al inicio: se perdia el contexto
+        // de un toque, que es justo lo que la pantalla unica venia a evitar.
+        if (enMapa) {
+            enMapa = false
+            return true
+        }
+        if (buscando) {
+            consulta = ""
+            filtros = Filtros()
+            return true
+        }
         return false
     }
 
