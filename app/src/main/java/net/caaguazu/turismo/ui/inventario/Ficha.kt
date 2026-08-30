@@ -45,6 +45,7 @@ import net.caaguazu.turismo.ui.piezas.BarraAccion
 import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.Cargador
 import net.caaguazu.turismo.ui.piezas.Corazon
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.FilaCompacta
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Glifo
@@ -91,14 +92,31 @@ fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) 
         Cargador(estado = estado.value, reintentar = reintentar) { ficha ->
             Contenido(ficha)
         }
-        // Volver vive fuera del contenido: tiene que existir aunque la ficha no
-        // haya cargado.
+
+        // Volver y favorito viven fuera del contenido, y tienen que dibujarse
+        // DESPUES de el.
+        //
+        // No es una preferencia de orden: la lista que trae la hoja ocupa la
+        // pantalla entera, foto incluida, asi que cualquier control que quede
+        // por debajo deja de recibir el toque. El corazon estaba dentro de la
+        // foto y no se podia tocar — se veia, cambiaba de estado nunca.
         BotonFlotante(
             icono = Icono.volver,
             descripcion = Textos.t("accion.volver"),
             alTocar = alVolver,
             modifier = Modifier.statusBarsPadding().padding(Medida.entreTarjetas),
         )
+        (estado.value as? Estado.Listo)?.valor?.let { ficha ->
+            Corazon(
+                marcado = { Guardado.esFavorito(ficha.id) },
+                alTocar = { Guardado.alternarFavorito(ficha.id) },
+                descripcion = ficha.titulo,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(Medida.entreTarjetas),
+            )
+        }
     }
 }
 
@@ -118,15 +136,6 @@ private fun Contenido(ficha: Ficha) {
         // La foto no esta dentro de la lista: se dibuja detras y no se mueve.
         Box(Modifier.fillMaxWidth().height(altoFoto)) {
             Foto(ficha.portada, ficha.titulo, Modifier.fillMaxSize(), radio = Radio.ninguno)
-            Corazon(
-                marcado = { Guardado.esFavorito(ficha.id) },
-                alTocar = { Guardado.alternarFavorito(ficha.id) },
-                descripcion = ficha.titulo,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(Medida.entreTarjetas),
-            )
             if (ficha.fechas?.enCurso == true) {
                 Badge(
                     texto = Textos.t("evento.enCurso"),
@@ -424,8 +433,10 @@ private fun hayMasQueLeer(cuerpo: List<HtmlSencillo.Bloque>): Boolean {
 /** Los metadatos que tienen algo que decir, en el orden en que se preguntan. */
 private fun metadatosDe(ficha: Ficha): List<String> = buildList {
     fechaCorta(ficha.fechas?.inicio)?.let { add(it) }
-    if (ficha.practicos.horario.isNotBlank()) add(ficha.practicos.horario)
     ficha.categoria?.nombre?.takeIf { it.isNotBlank() }?.let { add(it) }
+    ficha.etiquetas.forEach { etiqueta ->
+        etiqueta.nombre.takeIf { it.isNotBlank() }?.let { add(it) }
+    }
 }
 
 /** Solo los campos que tienen algo: no se reservan huecos vacios. */

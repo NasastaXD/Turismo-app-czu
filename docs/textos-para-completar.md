@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**0 claves esperando texto.** Las 71 están escritas.
+**0 claves esperando texto.** Las 69 están escritas.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -38,6 +38,12 @@ hacer falta, el texto estaba escrito y está en el historial.
 - `banda.verTodo` aparece ahora en varios encabezados de sección del inicio.
 
 Ninguna otra clave se tocó.
+
+**Se fueron dos claves más**: `perfil.idioma` y `perfil.acerca`. Eran dos filas
+de la pantalla de ajustes con chevrón de "esto lleva a algún lado" que no
+llevaban a ninguno — no había selector de idioma ni pantalla de "acerca de"
+detrás. El texto estaba escrito y queda en el historial: cuando esas dos
+pantallas existan, las claves vuelven.
 
 Aparte del rework, `main` sacó el modo mocks y con él dos claves más:
 `barra.perfil` pasó a llamarse `barra.ajustes` (ya no es un perfil de cuenta,

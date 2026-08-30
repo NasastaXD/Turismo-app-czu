@@ -285,12 +285,18 @@ private fun Resultados(items: List<ItemInventario>, alAbrir: (Int) -> Unit) {
 
 @Composable
 private fun FilaResultado(item: ItemInventario, alTocar: () -> Unit) {
-    val cuando = fechaCorta(item.fechas?.inicio) ?: item.horarioResumen
+    // El horario es una frase entera —"Parque abierto, se visita de dia"— y va
+    // en la linea gris de descripcion, no en la etiqueta de metadato: en 12sp y
+    // en color de fecha entraba media frase cortada. La etiqueta queda para lo
+    // que de verdad es una fecha, que es de lo que habla el acento.
+    val descripcion = listOf(item.gancho, item.zona?.nombre.orEmpty(), item.horarioResumen)
+        .firstOrNull { it.isNotBlank() }
+
     FilaCompacta(
         imagen = item.portada,
         titulo = item.titulo,
-        detalle = item.gancho.ifBlank { item.zona?.nombre },
-        meta = cuando.ifBlank { null },
+        detalle = descripcion,
+        meta = fechaCorta(item.fechas?.inicio),
         // Un evento en curso es lo unico de la lista que cambia solo, y es el
         // unico lugar donde aparece el mango.
         colorMeta = if (item.fechas?.enCurso == true) Tono.destacado else Tono.acento,

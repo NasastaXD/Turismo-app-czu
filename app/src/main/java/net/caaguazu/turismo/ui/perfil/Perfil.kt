@@ -33,7 +33,6 @@ import net.caaguazu.turismo.core.Vigilante
 import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Glifo
-import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.Interruptor
 import net.caaguazu.turismo.ui.piezas.Tarjeta
@@ -84,13 +83,7 @@ fun PantallaPerfil(
             item { Grupo(Textos.t("perfil.general")) }
             item {
                 Tarjeta(Modifier.fillMaxWidth()) {
-                    Column {
-                        Fila(Textos.t("perfil.idioma"))
-                        Hairline(
-                            Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta),
-                        )
-                        FilaAvisos()
-                    }
+                    FilaAvisos()
                 }
             }
 
@@ -98,10 +91,6 @@ fun PantallaPerfil(
             item {
                 Tarjeta(Modifier.fillMaxWidth()) {
                     Column {
-                        Fila(Textos.t("perfil.acerca"))
-                        Hairline(
-                            Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta),
-                        )
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -194,16 +183,4 @@ private fun Grupo(texto: String) {
         maxLineas = 1,
         modifier = Modifier.padding(start = 6.dp, top = 10.dp, bottom = 0.dp),
     )
-}
-
-@Composable
-private fun Fila(texto: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(Medida.dentroTarjeta),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Texto(texto, Letra.tituloTarjeta, Tono.tinta, maxLineas = 1)
-        Glifo(Icono.chevron, texto, Tono.tintaSuave, Modifier.size(17.dp))
-    }
 }
