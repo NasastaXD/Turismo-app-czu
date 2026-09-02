@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
+import net.caaguazu.turismo.datos.nombreVisible
 import net.caaguazu.turismo.ui.PilaBusqueda
 import net.caaguazu.turismo.ui.piezas.CabeceraHoja
 import net.caaguazu.turismo.ui.piezas.ChipFiltro
@@ -69,7 +70,7 @@ fun BoxScope.HojaFiltros(pila: PilaBusqueda) {
                 if (lista.isNotEmpty()) {
                     GrupoFiltro(Textos.t("filtro.categoria")) {
                         FilaDeChips(
-                            opciones = lista.map { it.id to it.nombre },
+                            opciones = lista.map { it.id to it.nombreVisible() },
                             elegida = pila.filtros.categoria,
                             alElegir = { id ->
                                 pila.filtros = pila.filtros.copy(
@@ -86,7 +87,7 @@ fun BoxScope.HojaFiltros(pila: PilaBusqueda) {
                 if (lista.isNotEmpty()) {
                     GrupoFiltro(Textos.t("filtro.zona")) {
                         FilaDeChips(
-                            opciones = lista.map { it.id to it.nombre },
+                            opciones = lista.map { it.id to it.nombreVisible() },
                             elegida = pila.filtros.zona,
                             alElegir = { id ->
                                 pila.filtros = pila.filtros.copy(
@@ -103,7 +104,7 @@ fun BoxScope.HojaFiltros(pila: PilaBusqueda) {
                 if (lista.isNotEmpty()) {
                     GrupoFiltro(Textos.t("filtro.etiqueta")) {
                         FilaDeChips(
-                            opciones = lista.map { it.id to it.nombre },
+                            opciones = lista.map { it.id to it.nombreVisible() },
                             elegida = pila.filtros.etiqueta,
                             alElegir = { id ->
                                 pila.filtros = pila.filtros.copy(

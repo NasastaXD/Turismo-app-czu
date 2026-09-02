@@ -4,6 +4,7 @@ import android.content.Context
 import net.caaguazu.turismo.BuildConfig
 import net.caaguazu.turismo.core.Cache
 import net.caaguazu.turismo.core.Http
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Resultado
 import net.caaguazu.turismo.core.Textos
@@ -37,7 +38,24 @@ object Datos {
      * Si falla no pasa nada visible: queda el respaldo embebido, que es
      * exactamente para lo que existe.
      */
-    suspend fun refrescarTextos(idioma: String = "es") {
+    /**
+     * Trae la lista de idiomas del panel. Si el endpoint no esta —un servidor
+     * anterior a 0.8.0 responde 404— queda la lista de respaldo, que alcanza
+     * para que el selector funcione igual.
+     */
+    suspend fun refrescarIdiomas() {
+        when (val respuesta = api.idiomas()) {
+            is Resultado.Bien -> Idioma.aplicarDisponibles(
+                respuesta.valor.idiomas.map { Idioma.Disponible(it.codigo, it.nombre.ifBlank { it.codigo }) },
+            )
+            is Resultado.Mal -> Registro.aviso(
+                ETIQUETA,
+                "sin lista de idiomas (${respuesta.falla}); sigue la de respaldo",
+            )
+        }
+    }
+
+    suspend fun refrescarTextos(idioma: String = Idioma.actual) {
         when (val respuesta = api.textos(idioma)) {
             is Resultado.Bien -> Textos.aplicarMapa(respuesta.valor, "servidor/$idioma")
             is Resultado.Mal -> Registro.aviso(

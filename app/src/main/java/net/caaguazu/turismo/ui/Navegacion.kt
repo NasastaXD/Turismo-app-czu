@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.ui.articulos.PilaArticulos
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.recorridos.PilaRecorridos
@@ -187,7 +188,15 @@ class Navegador {
      * una busqueda a una ficha tambien es un cambio de pantalla, no solo cambiar
      * de pestaña.
      */
-    fun caraActual(): String = when {
+    fun caraActual(): String = Idioma.actual + ":" + cara()
+
+    /**
+     * El idioma va en la cara y no es cosmetico: es lo que hace que al
+     * cambiarlo se rehagan los pedidos. Cada cara es un subarbol propio, asi
+     * que uno nuevo arranca sus cargas de cero en vez de seguir mostrando lo
+     * que se bajo en el idioma anterior.
+     */
+    private fun cara(): String = when {
         diagnosticoAbierto -> "diagnostico"
         perfilAbierto -> "perfil"
         seccion == Seccion.BUSCAR -> "bus:" + busqueda.actual::class.simpleName

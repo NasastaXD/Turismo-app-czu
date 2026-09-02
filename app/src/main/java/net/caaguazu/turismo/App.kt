@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
 import net.caaguazu.turismo.core.Guardado
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
@@ -22,7 +23,9 @@ class App : Application() {
         // El registro primero: si algo falla mas abajo, queda constancia.
         Registro.iniciar(this)
         Ajustes.iniciar(this)
-        Textos.cargarEmbebido(this)
+        // El idioma antes que los textos: es quien decide cual de los tres
+        // juegos embebidos se carga encima del castellano.
+        Idioma.iniciar(this)
         Datos.iniciar(this)
         Guardado.iniciar(this)
 
@@ -39,7 +42,10 @@ class App : Application() {
 
         // Los textos del servidor pisan al respaldo cuando llegan. No se espera:
         // la app arranca con el embebido y se actualiza sola.
-        CoroutineScope(SupervisorJob()).launch { Datos.refrescarTextos() }
+        CoroutineScope(SupervisorJob()).launch {
+            Datos.refrescarIdiomas()
+            Datos.refrescarTextos()
+        }
     }
 
     // Los parentesis son explicitos a proposito: `and` liga mas fuerte que `==`

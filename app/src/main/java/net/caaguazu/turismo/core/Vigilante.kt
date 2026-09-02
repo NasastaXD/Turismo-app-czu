@@ -40,7 +40,7 @@ class Vigilante(
 
         // Los textos tienen que estar cargados: un aviso con la clave entre
         // angulos seria peor que no mandar nada.
-        Textos.cargarEmbebido(applicationContext)
+        Textos.cargarEmbebido(applicationContext, Idioma.actual)
 
         revisarArticulos()
         revisarEventos()

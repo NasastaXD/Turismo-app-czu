@@ -33,11 +33,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Calendario
 import net.caaguazu.turismo.core.Guardado
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.HtmlSencillo
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Ficha
+import net.caaguazu.turismo.datos.nombreVisible
 import net.caaguazu.turismo.datos.ResumenArticulo
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.Badge
@@ -191,6 +193,20 @@ private fun Contenido(ficha: Ficha) {
                         ) {
                             items(metadatos) { dato -> PildoraMeta(dato) }
                         }
+                    }
+
+                    // La caida al original es campo por campo, asi que una ficha
+                    // puede venir con el titulo traducido y el cuerpo no. Se
+                    // avisa en vez de esconderla: a medio traducir sigue
+                    // teniendo la foto, el mapa, el horario y el precio, que es
+                    // la mayor parte de para que se abre.
+                    if (!ficha.traducido && ficha.idioma != Idioma.ORIGINAL) {
+                        Texto(
+                            texto = Textos.t("ficha.parcial"),
+                            estilo = Letra.fecha,
+                            color = Tono.tintaSuave,
+                            modifier = Modifier.padding(horizontal = Medida.margen),
+                        )
                     }
                 }
             }
@@ -433,9 +449,9 @@ private fun hayMasQueLeer(cuerpo: List<HtmlSencillo.Bloque>): Boolean {
 /** Los metadatos que tienen algo que decir, en el orden en que se preguntan. */
 private fun metadatosDe(ficha: Ficha): List<String> = buildList {
     fechaCorta(ficha.fechas?.inicio)?.let { add(it) }
-    ficha.categoria?.nombre?.takeIf { it.isNotBlank() }?.let { add(it) }
+    ficha.categoria?.nombreVisible()?.takeIf { it.isNotBlank() }?.let { add(it) }
     ficha.etiquetas.forEach { etiqueta ->
-        etiqueta.nombre.takeIf { it.isNotBlank() }?.let { add(it) }
+        etiqueta.nombreVisible().takeIf { it.isNotBlank() }?.let { add(it) }
     }
 }
 

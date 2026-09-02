@@ -22,7 +22,6 @@ import kotlinx.serialization.json.jsonPrimitive
 object Textos {
 
     private const val ETIQUETA = "Textos"
-    private const val EMBEBIDO = "textos/es.json"
 
     /** Leerlo desde una composicion la suscribe: al refrescar textos, la pantalla se redibuja. */
     private var mapa by mutableStateOf<Map<String, String>>(emptyMap())
@@ -30,25 +29,52 @@ object Textos {
     /** El respaldo del APK. Es el piso: nunca se pierde, solo se pisa clave a clave. */
     private var embebidos: Map<String, String> = emptyMap()
 
-    var idioma: String = "es"
+    var idioma: String = Idioma.ORIGINAL
         private set
 
-    /** Respaldo embebido, para el primer arranque sin red. */
-    fun cargarEmbebido(contexto: Context) {
-        val leido = intentar(ETIQUETA, "leer $EMBEBIDO") {
-            contexto.assets.open(EMBEBIDO).bufferedReader().use { it.readText() }
+    /**
+     * Respaldo embebido, para el primer arranque sin red y para todo lo que el
+     * panel todavia no tradujo.
+     *
+     * Van en tres capas y el orden importa: el castellano es el piso —es el
+     * original y esta completo—, encima el idioma elegido, y encima de todo lo
+     * que mande el servidor. Asi una clave que falta en ingles sale en
+     * castellano en vez de salir marcada entre angulos, que es lo peor de los
+     * tres resultados posibles.
+     */
+    fun cargarEmbebido(contexto: Context, codigo: String = Idioma.ORIGINAL) {
+        idioma = codigo
+        val piso = leerAsset(contexto, Idioma.ORIGINAL)
+        val propio = if (codigo == Idioma.ORIGINAL) emptyMap() else leerAsset(contexto, codigo)
+
+        if (piso.isEmpty() && propio.isEmpty()) {
+            Registro.fallo(ETIQUETA, "sin textos embebidos: la interfaz saldra marcada")
+            return
         }
-        when (leido) {
-            is Resultado.Bien -> {
-                aplicar(leido.valor, "embebido")
-                embebidos = mapa
-            }
-            is Resultado.Mal -> Registro.fallo(ETIQUETA, "sin textos embebidos: la interfaz saldra marcada")
+        embebidos = piso + propio
+        mapa = embebidos
+        Registro.info(
+            ETIQUETA,
+            "${embebidos.size} textos embebidos para $codigo (${propio.size} propios sobre ${piso.size})",
+        )
+    }
+
+    private fun leerAsset(contexto: Context, codigo: String): Map<String, String> {
+        val ruta = "textos/$codigo.json"
+        val leido = intentar(ETIQUETA, "leer $ruta") {
+            contexto.assets.open(ruta).bufferedReader().use { it.readText() }
+        }
+        return when (leido) {
+            is Resultado.Bien -> interpretar(leido.valor, ruta) ?: emptyMap()
+            // Que falte el archivo de un idioma no es un fallo: el panel puede
+            // ofrecer uno para el que todavia no viajamos textos de interfaz, y
+            // ahi el piso en castellano es la respuesta correcta.
+            is Resultado.Mal -> emptyMap()
         }
     }
 
-    /** Reemplaza los textos con los del servidor. Si el JSON viene roto, se conserva lo anterior. */
-    fun aplicar(json: String, origen: String) {
+    /** Un JSON plano de clave a texto. Null si vino roto. */
+    private fun interpretar(json: String, origen: String): Map<String, String>? {
         val analizado = intentar(ETIQUETA, "interpretar textos de $origen") {
             Json.parseToJsonElement(json).let { raiz ->
                 buildMap {
@@ -57,16 +83,12 @@ object Textos {
                 }
             }
         }
-        when (analizado) {
-            is Resultado.Bien -> {
-                if (analizado.valor.isEmpty()) {
-                    Registro.aviso(ETIQUETA, "textos de $origen vinieron vacios, se conserva lo anterior")
-                } else {
-                    mapa = analizado.valor
-                    Registro.info(ETIQUETA, "cargados ${analizado.valor.size} textos de $origen")
-                }
+        return when (analizado) {
+            is Resultado.Bien -> analizado.valor
+            is Resultado.Mal -> {
+                Registro.aviso(ETIQUETA, "textos de $origen ilegibles, se conserva lo anterior")
+                null
             }
-            is Resultado.Mal -> Registro.aviso(ETIQUETA, "textos de $origen ilegibles, se conserva lo anterior")
         }
     }
 
@@ -96,6 +118,16 @@ object Textos {
 
     /** El unico camino por el que un texto llega a la pantalla. */
     fun t(clave: String): String = mapa[clave] ?: marcador(clave)
+
+    /**
+     * Como `t`, pero calla si no esta.
+     *
+     * Es para las claves que no son de la interfaz sino del contenido: el
+     * nombre de una categoria o de una etiqueta se busca por su slug, y que no
+     * este es lo normal —el panel recien va a cargarlas— no un hueco que haya
+     * que marcar en pantalla. Quien llama cae al nombre que vino en el dato.
+     */
+    fun opcional(clave: String): String? = mapa[clave]?.takeIf { it.isNotBlank() }
 
     private fun marcador(clave: String): String {
         Registro.aviso(ETIQUETA, "falta la clave $clave")
