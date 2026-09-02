@@ -13,11 +13,14 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.4.3"
+        versionCode = 16
+        versionName = "1.5.0"
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
-        resourceConfigurations += setOf("es", "en", "gn")
+        // Son los mismos tres que ofrece el selector. El guarani sale de aca
+        // hasta que haya textos: tenerlo listado sin traducciones no agregaba
+        // nada, y dejaba afuera al portugues, que si las tiene.
+        resourceConfigurations += setOf("es", "en", "pt")
 
         // x86 solo sirve para emuladores. Cada ABI de mas son 12 MB de MapLibre.
         ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a") }

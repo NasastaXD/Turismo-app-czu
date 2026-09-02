@@ -7,6 +7,7 @@ import net.caaguazu.turismo.core.Analizador
 import net.caaguazu.turismo.core.DecodificadorTolerante
 import net.caaguazu.turismo.core.Falla
 import net.caaguazu.turismo.core.Http
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Resultado
 import java.net.URLEncoder
@@ -23,6 +24,19 @@ class ApiHttp(
 ) {
 
     private companion object { const val ETIQUETA = "Api" }
+
+    /**
+     * El idioma viaja en la URL de todo lo que lleva texto.
+     *
+     * Va siempre, incluso en castellano, por la cache: la clave de una entrada
+     * es su URL, asi que dejarlo afuera para el original haria que la ficha 260
+     * en ingles pise a la 260 en castellano. Con el parametro puesto, cada
+     * idioma es una entrada distinta sin tener que tocar la cache.
+     *
+     * Un servidor que todavia no sepa de idiomas lo ignora y responde como
+     * siempre, asi que esto no rompe nada mientras el panel se actualiza.
+     */
+    private fun Consulta.conIdioma() = si("idioma", Idioma.actual)
 
     suspend fun categorias() =
         pedirLista("categorias", Categoria.serializer())
@@ -44,6 +58,7 @@ class ApiHttp(
         porPagina: Int = 20,
     ) = pedirPagina(
         ruta("inventario") {
+            conIdioma()
             si("categoria", categoria)
             si("zona", zona)
             si("etiqueta", etiqueta)
@@ -56,13 +71,14 @@ class ApiHttp(
     )
 
     suspend fun ficha(id: Int) =
-        pedir("inventario/$id", Ficha.serializer())
+        pedir(ruta("inventario/$id") { conIdioma() }, Ficha.serializer())
 
     suspend fun marcadores() =
         pedirLista("mapa/markers", Marcador.serializer())
 
     suspend fun eventos(desde: String? = null, hasta: String? = null) = pedirPagina(
         ruta("eventos") {
+            conIdioma()
             si("desde", desde)
             si("hasta", hasta)
         },
@@ -70,13 +86,13 @@ class ApiHttp(
     )
 
     suspend fun evento(id: Int) =
-        pedir("eventos/$id", Evento.serializer())
+        pedir(ruta("eventos/$id") { conIdioma() }, Evento.serializer())
 
     suspend fun recorridos() =
-        pedirPagina("recorridos", Recorrido.serializer())
+        pedirPagina(ruta("recorridos") { conIdioma() }, Recorrido.serializer())
 
     suspend fun recorrido(id: Int) =
-        pedir("recorridos/$id", Recorrido.serializer())
+        pedir(ruta("recorridos/$id") { conIdioma() }, Recorrido.serializer())
 
     suspend fun articulos(
         pagina: Int = 1,
@@ -85,6 +101,7 @@ class ApiHttp(
         buscar: String? = null,
     ) = pedirPagina(
         ruta("articulos") {
+            conIdioma()
             si("pagina", pagina)
             si("categoria", categoria)
             si("etiqueta", etiqueta)
@@ -94,7 +111,13 @@ class ApiHttp(
     )
 
     suspend fun articulo(id: Int) =
-        pedir("articulos/$id", Articulo.serializer())
+        pedir(ruta("articulos/$id") { conIdioma() }, Articulo.serializer())
+
+    /**
+     * Los idiomas que sirve el panel. La lista no va compilada en la app: el
+     * guarani esta previsto y va a aparecer aca antes de que salga un APK.
+     */
+    suspend fun idiomas() = pedir("idiomas", Idiomas.serializer())
 
     suspend fun textos(idioma: String) =
         pedir("strings/$idioma", MapSerializer(String.serializer(), String.serializer()))

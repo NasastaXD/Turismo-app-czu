@@ -1,15 +1,22 @@
 # Textos de la app — para completar
 
-**0 claves esperando texto.** Las 69 están escritas.
+**0 claves esperando texto.** Las 71 están escritas, en castellano, inglés y portugués.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
 los toma en el siguiente arranque.
 
-Se editan en dos sitios: `app/src/main/assets/textos/es.json`, que es el respaldo
-que viaja dentro del APK para el primer arranque sin red, y el mismo juego de
-claves en `GET /strings/es` del panel. Los otros dos idiomas (`en`, `gn`) usan las
-mismas claves.
+Se editan en dos sitios: `app/src/main/assets/textos/{es,en,pt}.json`, que es el
+respaldo que viaja dentro del APK para el primer arranque sin red, y el mismo
+juego de claves en `GET /strings/{idioma}` del panel.
+
+El castellano es el original y el piso de los otros dos: una clave que falta en
+inglés o en portugués sale en castellano, no marcada. `TraduccionesTest` falla
+si los tres archivos dejan de tener las mismas claves.
+
+Por ahí van también los nombres de categorías y etiquetas, buscados por su slug
+(`sitio-natural`, `con-ninos`). Todavía no están cargados del lado del panel, así
+que hoy se muestran con el nombre que viene en el dato, en castellano.
 
 No hace falta completarlas todas de una: una clave sin texto se muestra entre
 ángulos y no rompe nada.

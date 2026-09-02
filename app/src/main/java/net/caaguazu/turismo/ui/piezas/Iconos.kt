@@ -184,6 +184,11 @@ object Icono {
         )
     }
 
+    /** Tilde: esto es lo elegido. */
+    val tilde: ImageVector by lazy {
+        trazo("tilde", "M5 12.5 L10 17.5 L19 7")
+    }
+
     /** Aspa: quitar esto de aca. No es cerrar ni es volver. */
     val quitar: ImageVector by lazy {
         trazo("quitar", "M6.5 6.5 L17.5 17.5 M17.5 6.5 L6.5 17.5")

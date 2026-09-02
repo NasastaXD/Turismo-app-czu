@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,15 +30,22 @@ import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.BuildConfig
 import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
+import net.caaguazu.turismo.core.Idioma
+import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
+import kotlinx.coroutines.launch
 import net.caaguazu.turismo.ui.piezas.BotonIcono
+import net.caaguazu.turismo.ui.piezas.CabeceraHoja
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Glifo
+import net.caaguazu.turismo.ui.piezas.Hairline
+import net.caaguazu.turismo.ui.piezas.HojaInferior
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.Interruptor
 import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
+import net.caaguazu.turismo.ui.piezas.Tirador
 import net.caaguazu.turismo.ui.tema.Letra
 import net.caaguazu.turismo.ui.tema.Medida
 import net.caaguazu.turismo.ui.tema.Tono
@@ -57,40 +66,49 @@ fun PantallaPerfil(
     alAbrirDiagnostico: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val contexto = LocalContext.current
+    val alcance = rememberCoroutineScope()
     var toques by remember { mutableIntStateOf(0) }
+    var eligiendoIdioma by remember { mutableStateOf(false) }
 
-    Column(modifier.fillMaxSize().background(Tono.fondo)) {
-        // La cabecera va fuera de la lista: dentro habria que compensar el
-        // margen lateral de la lista con un padding negativo, que Compose no
-        // admite y que ademas seria una forma rara de decir "esto no es un
-        // item mas".
-        CabeceraPantalla(Textos.t("barra.ajustes")) {
-            BotonIcono(
-                icono = Icono.volver,
-                descripcion = Textos.t("accion.volver"),
-                alTocar = alVolver,
-            )
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(
-                start = Medida.margen,
-                end = Medida.margen,
-                bottom = Medida.colaDeLista,
-            ),
-            verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-        ) {
-            item { Grupo(Textos.t("perfil.general")) }
-            item {
-                Tarjeta(Modifier.fillMaxWidth()) {
-                    FilaAvisos()
-                }
+    Box(modifier.fillMaxSize().background(Tono.fondo)) {
+        Column(Modifier.fillMaxSize()) {
+            // La cabecera va fuera de la lista: dentro habria que compensar el
+            // margen lateral de la lista con un padding negativo, que Compose no
+            // admite y que ademas seria una forma rara de decir "esto no es un
+            // item mas".
+            CabeceraPantalla(Textos.t("barra.ajustes")) {
+                BotonIcono(
+                    icono = Icono.volver,
+                    descripcion = Textos.t("accion.volver"),
+                    alTocar = alVolver,
+                )
             }
 
-            item { Grupo(Textos.t("perfil.acercaDe")) }
-            item {
-                Tarjeta(Modifier.fillMaxWidth()) {
-                    Column {
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = Medida.margen,
+                    end = Medida.margen,
+                    bottom = Medida.colaDeLista,
+                ),
+                verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+            ) {
+                item { Grupo(Textos.t("perfil.general")) }
+                item {
+                    Tarjeta(Modifier.fillMaxWidth()) {
+                        Column {
+                            FilaIdioma { eligiendoIdioma = true }
+                            Hairline(
+                                Modifier.fillMaxWidth().padding(horizontal = Medida.dentroTarjeta),
+                            )
+                            FilaAvisos()
+                        }
+                    }
+                }
+
+                item { Grupo(Textos.t("perfil.acercaDe")) }
+                item {
+                    Tarjeta(Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -110,6 +128,68 @@ fun PantallaPerfil(
                     }
                 }
             }
+        }
+
+        HojaInferior(visible = eligiendoIdioma, alCerrar = { eligiendoIdioma = false }) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) { Tirador() }
+            CabeceraHoja(titulo = Textos.t("perfil.idioma"))
+
+            // La lista sale del panel, no del APK: el guarani esta previsto y va
+            // a aparecer ahi antes de que salga una version nueva de la app.
+            Idioma.disponibles.forEach { disponible ->
+                FilaIdiomaDisponible(
+                    nombre = disponible.nombre,
+                    elegido = disponible.codigo == Idioma.actual,
+                    alTocar = {
+                        Idioma.elegir(contexto, disponible.codigo)
+                        eligiendoIdioma = false
+                        // Lo embebido ya quedo cambiado; esto trae encima lo
+                        // que el panel tenga traducido para el idioma nuevo.
+                        alcance.launch { Datos.refrescarTextos() }
+                    },
+                )
+            }
+        }
+    }
+}
+
+/** El idioma elegido, con su nombre en su propio idioma. */
+@Composable
+private fun FilaIdioma(alTocar: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = alTocar).padding(Medida.dentroTarjeta),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Texto(Textos.t("perfil.idioma"), Letra.tituloTarjeta, Tono.tinta, maxLineas = 1)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Texto(Idioma.nombreDe(Idioma.actual), Letra.chip, Tono.tintaSuave, maxLineas = 1)
+            Glifo(Icono.chevron, Textos.t("perfil.idioma"), Tono.tintaSuave, Modifier.size(17.dp))
+        }
+    }
+}
+
+@Composable
+private fun FilaIdiomaDisponible(nombre: String, elegido: Boolean, alTocar: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = alTocar)
+            .padding(horizontal = Medida.margen, vertical = 15.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Texto(
+            texto = nombre,
+            estilo = Letra.tituloTarjeta,
+            color = if (elegido) Tono.tinta else Tono.tintaSuave,
+            maxLineas = 1,
+        )
+        if (elegido) {
+            Glifo(Icono.tilde, nombre, Tono.primario, Modifier.size(20.dp))
         }
     }
 }

@@ -41,11 +41,37 @@ descripciones, ni copy de relleno, ni textos de ejemplo que queden en
 producción. Si hace falta un marcador para maquetar, va marcado de forma
 inequívoca —`‹clave›`— para que sea imposible confundirlo con texto terminado.
 
+**Tres idiomas: castellano, inglés y portugués.** El castellano es el original
+—en el que se escribe todo— y los otros dos son una capa encima. El idioma se
+elige en Ajustes y se guarda; sin elegir, se sigue al del teléfono, y si el
+teléfono está en uno que no tenemos, se abre en castellano.
+
+La lista de idiomas **no va compilada**: la manda el panel en `GET /idiomas`, y
+lo que viaja en el APK es sólo el respaldo para el primer arranque sin red. El
+guaraní está previsto del lado del panel y va a aparecer ahí antes de que salga
+un APK nuevo.
+
+**El contenido cae al original campo por campo, no por pieza.** Una ficha puede
+venir con el título traducido y el cuerpo en castellano porque alguien tradujo
+uno y todavía no el otro. Por eso el contenido trae `traducido`, y por eso la
+ficha avisa en vez de esconderse: a medio traducir sigue teniendo la foto, el
+mapa, el horario y el precio, que es la mayor parte de para qué se abre.
+
+**El idioma viaja en la URL de todo lo que lleva texto**, incluso en castellano.
+La clave de la caché es la URL, así que dejarlo afuera para el original haría
+que la ficha 260 en inglés pise a la 260 en castellano.
+
+**Los nombres de categorías y etiquetas no se traducen con la ficha.** Son del
+sistema y los comparten cientos de fichas: traducirlos por ficha sería traducir
+lo mismo una vez por lugar. Viajan por `/strings/{idioma}` y se buscan por su
+slug, con el nombre del dato como respaldo.
+
 **Ningún texto visible vive en el código.** Todos salen de `Textos.t("clave")`,
 y las claves de un JSON. Eso permite cambiar cualquier texto sin publicar un APK
 nuevo: se editan del lado del panel en `GET /strings/{locale}` y la app los toma
-en el siguiente arranque. El archivo `app/src/main/assets/textos/es.json` es solo
-el respaldo del primer arranque sin red.
+en el siguiente arranque. Los archivos `app/src/main/assets/textos/{es,en,pt}.json` son solo
+el respaldo del primer arranque sin red. El castellano es además el piso de los
+otros dos: una clave que falta en inglés sale en castellano, nunca marcada.
 
 **Los textos del servidor se fusionan sobre el respaldo, nunca lo reemplazan.**
 Un panel a medio cargar no puede dejar sin texto al resto de la app — y menos a

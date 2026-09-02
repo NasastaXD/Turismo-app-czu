@@ -22,6 +22,7 @@ import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.datos.ItemInventario
+import net.caaguazu.turismo.datos.nombreVisible
 import net.caaguazu.turismo.datos.Pagina
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.AtajoFoto
@@ -125,7 +126,7 @@ fun Principal(
                         val categoria = lista[indice]
                         AtajoFoto(
                             imagen = categoria.portada ?: fotos[categoria.id],
-                            etiqueta = categoria.nombre,
+                            etiqueta = categoria.nombreVisible(),
                             colorSinFoto = categoria.color,
                             alTocar = { alBuscarCategoria(categoria.id) },
                         )

@@ -15,6 +15,7 @@ object Ajustes {
 
     private const val ETIQUETA = "Ajustes"
     private const val ARCHIVO = "ajustes"
+    private const val CLAVE_IDIOMA = "idioma"
     private const val CLAVE_AVISOS = "avisos"
     private const val CLAVE_ARTICULOS_VISTOS = "articulos_vistos"
     private const val CLAVE_EVENTOS_AVISADOS = "eventos_avisados"
@@ -40,6 +41,17 @@ object Ajustes {
      * ------------------------------------------------------------------- */
 
     /** Si la app revisa y notifica. Arranca encendido; se apaga solo si se niega el permiso. */
+    /**
+     * El idioma elegido a mano. Null significa que nadie eligio todavia, que no
+     * es lo mismo que haber elegido castellano: sin elegir se sigue al telefono,
+     * y elegido se respeta aunque el telefono diga otra cosa.
+     */
+    var idioma: String?
+        get() = runCatching { preferencias.getString(CLAVE_IDIOMA, null) }.getOrNull()
+        set(valor) {
+            runCatching { preferencias.edit().putString(CLAVE_IDIOMA, valor).apply() }
+        }
+
     var avisosActivos: Boolean
         get() = runCatching { preferencias.getBoolean(CLAVE_AVISOS, true) }.getOrDefault(true)
         set(valor) {

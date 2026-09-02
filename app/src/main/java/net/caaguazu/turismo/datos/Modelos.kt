@@ -135,6 +135,18 @@ data class ItemInventario(
     /** Solo si `tipoItem == "evento"`: cuando pasa. */
     val fechas: Fechas? = null,
     @SerialName("google_maps") val googleMaps: String? = null,
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
     val actualizado: String? = null,
 )
 
@@ -182,6 +194,18 @@ data class ResumenArticulo(
     val autores: List<AutorArticulo> = emptyList(),
     val publicado: String? = null,
     val etiquetas: List<Termino> = emptyList(),
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
 )
 
 @Immutable
@@ -214,6 +238,18 @@ data class Ficha(
     @SerialName("articulos_relacionados") val articulosRelacionados: List<ResumenArticulo> = emptyList(),
     val fuentes: String = "",
     val autor: Autor? = null,
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
     val actualizado: String? = null,
 )
 
@@ -258,6 +294,18 @@ data class Evento(
     val resumen: String = "",
     @SerialName("articulo_html") val articuloHtml: String = "",
     val autor: Autor? = null,
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
     val actualizado: String? = null,
 )
 
@@ -277,6 +325,18 @@ data class Articulo(
     val etiquetas: List<Termino> = emptyList(),
     val fuentes: List<String> = emptyList(),
     val relacionados: List<ResumenArticulo> = emptyList(),
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
     val actualizado: String? = null,
 )
 
@@ -366,6 +426,39 @@ data class Recorrido(
     @SerialName("google_maps") val googleMaps: String? = null,
     val historia: Historia? = null,
     @SerialName("articulo_html") val articuloHtml: String = "",
+    /**
+     * En que idioma vienen los textos de esta pieza, ya resuelto: si se pidio
+     * uno que el panel no tiene, aca dice el original.
+     */
+    val idioma: String = "es",
+    /**
+     * True solo si TODOS los campos traducibles de esta pieza estaban
+     * traducidos. La caida al original es campo por campo, asi que false
+     * significa que alguno vino en castellano y lo que se ve es una mezcla.
+     * Con el original pedido viene siempre false: no hay nada que traducir.
+     */
+    val traducido: Boolean = false,
+)
+
+/**
+ * Un idioma que el panel sirve. `nombre` viene en su propio idioma, que es como
+ * se escribe un selector: nadie busca "Ingles" en una lista que esta mirando
+ * justamente porque no entiende el castellano.
+ */
+@Immutable
+@Serializable
+data class IdiomaDisponible(
+    val codigo: String,
+    val nombre: String = "",
+    val original: Boolean = false,
+)
+
+/** Lo que devuelve `/idiomas`. La lista no va compilada en la app. */
+@Immutable
+@Serializable
+data class Idiomas(
+    val original: String = "es",
+    val idiomas: List<IdiomaDisponible> = emptyList(),
 )
 
 /** Entrada del manifiesto de medios: imagen o animacion. */

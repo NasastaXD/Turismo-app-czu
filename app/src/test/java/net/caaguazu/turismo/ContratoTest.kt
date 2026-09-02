@@ -151,6 +151,28 @@ class ContratoTest {
         assertEquals("https://x/y.jpg", categoria.portada?.url)
     }
 
+    /**
+     * El multi-idioma llega en 0.8.0 y la app tiene que andar contra las dos
+     * versiones del panel: la vieja no manda `idioma` ni `traducido`, y sin un
+     * valor por defecto sensato una respuesta de hoy dejaria de decodificar.
+     */
+    @Test
+    fun `el idioma de una pieza decodifica con y sin los campos nuevos`() {
+        val vieja = analizador.decodeFromString(
+            Ficha.serializer(),
+            """{"id":1,"titulo":"x"}""",
+        )
+        assertEquals("sin el campo, se asume el original", "es", vieja.idioma)
+        assertTrue("en el original no hay nada traducido", !vieja.traducido)
+
+        val nueva = analizador.decodeFromString(
+            Ficha.serializer(),
+            """{"id":1,"titulo":"x","idioma":"en","traducido":true}""",
+        )
+        assertEquals("en", nueva.idioma)
+        assertTrue(nueva.traducido)
+    }
+
     /** Un campo que el servidor agregue manana no puede tumbar una app publicada. */
     @Test
     fun `un campo desconocido no rompe nada`() {
