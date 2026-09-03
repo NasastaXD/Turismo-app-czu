@@ -119,15 +119,6 @@ object Textos {
     /** El unico camino por el que un texto llega a la pantalla. */
     fun t(clave: String): String = mapa[clave] ?: marcador(clave)
 
-    /**
-     * Como `t`, pero calla si no esta.
-     *
-     * Es para las claves que no son de la interfaz sino del contenido: el
-     * nombre de una categoria o de una etiqueta se busca por su slug, y que no
-     * este es lo normal —el panel recien va a cargarlas— no un hueco que haya
-     * que marcar en pantalla. Quien llama cae al nombre que vino en el dato.
-     */
-    fun opcional(clave: String): String? = mapa[clave]?.takeIf { it.isNotBlank() }
 
     private fun marcador(clave: String): String {
         Registro.aviso(ETIQUETA, "falta la clave $clave")
