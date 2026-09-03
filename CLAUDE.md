@@ -362,10 +362,22 @@ incompleto sin que nadie se entere.
 
 ---
 
-## 7. Avisos y calendario
+## 7. Avisos, calendario y compartir
 
-Las dos cosas siguen el mismo criterio que el mapa: **se delega en lo que el
+Las tres cosas siguen el mismo criterio que el mapa: **se delega en lo que el
 teléfono ya tiene, en vez de construirlo de nuevo.**
+
+### Compartir
+
+`Intent.ACTION_SEND` abre el selector del sistema — WhatsApp, mensajes,
+copiar — con el título y un enlace a `caaguazu-web`, el espejo web temporal
+para quien no tiene la app instalada (hoy, sobre todo, quien está en iOS).
+Sin él, compartir solo podría mandar el título suelto: nadie sin la app
+puede abrir una ficha por su id.
+
+El enlace sale de `BuildConfig.URL_ESPEJO`, nunca quemado en el código, igual
+que `URL_BASE`. Vive en ficha, artículo y recorrido — lo mismo que ya tiene
+botón de "cómo llego".
 
 ### Agendar un evento
 

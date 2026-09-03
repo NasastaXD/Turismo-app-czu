@@ -13,8 +13,8 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.5.1"
+        versionCode = 18
+        versionName = "1.5.2"
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
         // Son los mismos tres que ofrece el selector. El guarani sale de aca
@@ -27,6 +27,10 @@ android {
 
         // La URL base nunca va quemada en el codigo, aunque hoy solo exista una.
         buildConfigField("String", "URL_BASE", "\"https://caaguazu.net/wp-json/czu-app/v1/\"")
+
+        // El espejo web (caaguazu-web), para compartir un lugar/articulo/recorrido
+        // con quien no tiene la app. Usa el mismo ruteo por hash que ese sitio.
+        buildConfigField("String", "URL_ESPEJO", "\"https://caaguazu.net/ios/\"")
     }
 
     // La clave de release vive fuera del repo. CI la escribe a disco a partir de

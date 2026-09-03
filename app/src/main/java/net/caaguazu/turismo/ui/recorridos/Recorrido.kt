@@ -16,10 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import net.caaguazu.turismo.core.Compartir
 import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
@@ -29,6 +31,7 @@ import net.caaguazu.turismo.ui.mapa.Pin
 import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.BarraAccion
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.FilaCompacta
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.piezas.PildoraMeta
@@ -151,6 +154,17 @@ fun PantallaRecorrido(
             alTocar = alVolver,
             modifier = Modifier.statusBarsPadding().padding(12.dp),
         )
+        (estado.value as? Estado.Listo)?.valor?.let { recorrido ->
+            BotonFlotante(
+                icono = Icono.compartir,
+                descripcion = Textos.t("diag.compartir"),
+                alTocar = { Compartir.compartir(contexto, recorrido.titulo, "recorrido/${recorrido.id}") },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(12.dp),
+            )
+        }
     }
 }
 

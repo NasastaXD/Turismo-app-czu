@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Calendario
+import net.caaguazu.turismo.core.Compartir
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.HtmlSencillo
@@ -87,6 +88,7 @@ private val SOLAPE = 32.dp
  */
 @Composable
 fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) {
+    val contexto = LocalContext.current
     val (estado, reintentar) = cargar(id) { Datos.api.ficha(id) }
 
     Box(modifier.fillMaxSize().background(Tono.fondo)) {
@@ -108,6 +110,15 @@ fun PantallaFicha(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) 
             modifier = Modifier.statusBarsPadding().padding(Medida.entreTarjetas),
         )
         (estado.value as? Estado.Listo)?.valor?.let { ficha ->
+            BotonFlotante(
+                icono = Icono.compartir,
+                descripcion = Textos.t("diag.compartir"),
+                alTocar = { Compartir.compartir(contexto, ficha.titulo, "ficha/${ficha.id}") },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(end = 66.dp, top = Medida.entreTarjetas),
+            )
             Corazon(
                 marcado = { Guardado.esFavorito(ficha.id) },
                 alTocar = { Guardado.alternarFavorito(ficha.id) },

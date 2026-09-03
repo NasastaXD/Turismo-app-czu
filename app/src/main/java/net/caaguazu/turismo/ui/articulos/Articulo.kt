@@ -16,10 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import net.caaguazu.turismo.core.Compartir
 import net.caaguazu.turismo.core.HtmlSencillo
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Articulo
@@ -27,6 +30,7 @@ import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Imagen
 import net.caaguazu.turismo.ui.piezas.BotonFlotante
 import net.caaguazu.turismo.ui.piezas.Cargador
+import net.caaguazu.turismo.ui.piezas.Estado
 import net.caaguazu.turismo.ui.piezas.Foto
 import net.caaguazu.turismo.ui.piezas.Hairline
 import net.caaguazu.turismo.ui.piezas.Icono
@@ -48,6 +52,7 @@ import net.caaguazu.turismo.ui.tema.Tono
  */
 @Composable
 fun PantallaArticulo(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifier) {
+    val contexto = LocalContext.current
     val (estado, reintentar) = cargar(id) { Datos.api.articulo(id) }
 
     Box(modifier.fillMaxSize().background(Tono.papel)) {
@@ -60,6 +65,17 @@ fun PantallaArticulo(id: Int, alVolver: () -> Unit, modifier: Modifier = Modifie
             alTocar = alVolver,
             modifier = Modifier.statusBarsPadding().padding(12.dp),
         )
+        (estado.value as? Estado.Listo)?.valor?.let { articulo ->
+            BotonFlotante(
+                icono = Icono.compartir,
+                descripcion = Textos.t("diag.compartir"),
+                alTocar = { Compartir.compartir(contexto, articulo.titulo, "articulo/${articulo.id}") },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(12.dp),
+            )
+        }
     }
 }
 
