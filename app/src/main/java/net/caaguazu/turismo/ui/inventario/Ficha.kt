@@ -39,7 +39,6 @@ import net.caaguazu.turismo.core.MapasExternos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.Ficha
-import net.caaguazu.turismo.datos.nombreVisible
 import net.caaguazu.turismo.datos.ResumenArticulo
 import net.caaguazu.turismo.ui.articulos.fechaCorta
 import net.caaguazu.turismo.ui.piezas.Badge
@@ -449,9 +448,9 @@ private fun hayMasQueLeer(cuerpo: List<HtmlSencillo.Bloque>): Boolean {
 /** Los metadatos que tienen algo que decir, en el orden en que se preguntan. */
 private fun metadatosDe(ficha: Ficha): List<String> = buildList {
     fechaCorta(ficha.fechas?.inicio)?.let { add(it) }
-    ficha.categoria?.nombreVisible()?.takeIf { it.isNotBlank() }?.let { add(it) }
+    ficha.categoria?.nombre?.takeIf { it.isNotBlank() }?.let { add(it) }
     ficha.etiquetas.forEach { etiqueta ->
-        etiqueta.nombreVisible().takeIf { it.isNotBlank() }?.let { add(it) }
+        etiqueta.nombre.takeIf { it.isNotBlank() }?.let { add(it) }
     }
 }
 

@@ -39,10 +39,10 @@ class ApiHttp(
     private fun Consulta.conIdioma() = si("idioma", Idioma.actual)
 
     suspend fun categorias() =
-        pedirLista("categorias", Categoria.serializer())
+        pedirLista(ruta("categorias") { conIdioma() }, Categoria.serializer())
 
     suspend fun etiquetas() =
-        pedirLista("etiquetas", Etiqueta.serializer())
+        pedirLista(ruta("etiquetas") { conIdioma() }, Etiqueta.serializer())
 
     suspend fun zonas() =
         pedirLista("zonas", Zona.serializer())

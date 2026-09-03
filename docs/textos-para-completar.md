@@ -14,9 +14,7 @@ El castellano es el original y el piso de los otros dos: una clave que falta en
 inglés o en portugués sale en castellano, no marcada. `TraduccionesTest` falla
 si los tres archivos dejan de tener las mismas claves.
 
-Por ahí van también los nombres de categorías y etiquetas, buscados por su slug
-(`sitio-natural`, `con-ninos`). Todavía no están cargados del lado del panel, así
-que hoy se muestran con el nombre que viene en el dato, en castellano.
+
 
 No hace falta completarlas todas de una: una clave sin texto se muestra entre
 ángulos y no rompe nada.
@@ -46,11 +44,12 @@ hacer falta, el texto estaba escrito y está en el historial.
 
 Ninguna otra clave se tocó.
 
-**Se fueron dos claves más**: `perfil.idioma` y `perfil.acerca`. Eran dos filas
-de la pantalla de ajustes con chevrón de "esto lleva a algún lado" que no
-llevaban a ninguno — no había selector de idioma ni pantalla de "acerca de"
-detrás. El texto estaba escrito y queda en el historial: cuando esas dos
-pantallas existan, las claves vuelven.
+**Se fue una clave**: `perfil.acerca`. Era una fila de ajustes con chevrón de
+"esto lleva a algún lado" que no llevaba a ninguno — no hay pantalla de "acerca
+de" detrás. El texto está en el historial para cuando esa pantalla exista.
+
+`perfil.idioma` sí volvió: es el título de la fila y de la hoja del selector de
+idioma.
 
 Aparte del rework, `main` sacó el modo mocks y con él dos claves más:
 `barra.perfil` pasó a llamarse `barra.ajustes` (ya no es un perfil de cuenta,

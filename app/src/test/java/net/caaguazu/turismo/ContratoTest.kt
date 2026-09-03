@@ -173,6 +173,26 @@ class ContratoTest {
         assertTrue(nueva.traducido)
     }
 
+    /**
+     * `/categorias` y `/etiquetas` traducen `nombre` solos cuando se les pasa
+     * `?idioma`. No hay que buscar nada aparte: lo que trae el campo es lo que
+     * se muestra.
+     */
+    @Test
+    fun `categorias y etiquetas ya traen el nombre traducido`() {
+        val categoria = analizador.decodeFromString(
+            Categoria.serializer(),
+            """{"id":66,"slug":"sitio-natural","nombre":"Natural Site"}""",
+        )
+        assertEquals("Natural Site", categoria.nombre)
+
+        val etiqueta = analizador.decodeFromString(
+            Etiqueta.serializer(),
+            """{"id":70,"slug":"al-aire-libre","nombre":"outdoors"}""",
+        )
+        assertEquals("outdoors", etiqueta.nombre)
+    }
+
     /** Un campo que el servidor agregue manana no puede tumbar una app publicada. */
     @Test
     fun `un campo desconocido no rompe nada`() {

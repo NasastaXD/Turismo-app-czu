@@ -28,7 +28,6 @@ import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.datos.ItemInventario
-import net.caaguazu.turismo.datos.nombreVisible
 import net.caaguazu.turismo.ui.Filtros
 import net.caaguazu.turismo.ui.PilaBusqueda
 import net.caaguazu.turismo.ui.RutaBusqueda
@@ -225,7 +224,7 @@ private fun Mosaico(
         itemsDeGrilla(lista, key = { it.id }) { categoria ->
             TileEtiquetado(
                 imagen = categoria.portada,
-                etiqueta = categoria.nombreVisible(),
+                etiqueta = categoria.nombre,
                 colorSinFoto = categoria.color,
                 proporcion = 16f / 13f,
                 alTocar = { alElegir(categoria.id) },

@@ -63,8 +63,10 @@ que la ficha 260 en inglés pise a la 260 en castellano.
 
 **Los nombres de categorías y etiquetas no se traducen con la ficha.** Son del
 sistema y los comparten cientos de fichas: traducirlos por ficha sería traducir
-lo mismo una vez por lugar. Viajan por `/strings/{idioma}` y se buscan por su
-slug, con el nombre del dato como respaldo.
+lo mismo una vez por lugar. `GET /categorias` y `GET /etiquetas` aceptan
+`?idioma` y devuelven `nombre` ya traducido, y lo mismo vale para el
+`categoria`/`etiquetas[]` embebido en una ficha, un artículo o un recorrido: no
+hay que buscar nada aparte, lo que trae el campo es lo que se muestra.
 
 **Ningún texto visible vive en el código.** Todos salen de `Textos.t("clave")`,
 y las claves de un JSON. Eso permite cambiar cualquier texto sin publicar un APK
