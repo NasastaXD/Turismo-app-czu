@@ -152,6 +152,26 @@ class ContratoTest {
     }
 
     /**
+     * `caaguazu-app-api` 0.7.0: `/categorias` suma `descripcion` e `imagen`.
+     * Solo llega en el catalogo — la `categoria` resumida embebida en una
+     * ficha o un articulo se queda con el resumen de siempre, sin estos dos.
+     */
+    @Test
+    fun `las categorias del catalogo traen descripcion, embebidas no`() {
+        val delCatalogo = analizador.decodeFromString(
+            Categoria.serializer(),
+            """{"id":12,"nombre":"Sitio Natural","descripcion":"Saltos, cerros y reservas."}""",
+        )
+        assertEquals("Saltos, cerros y reservas.", delCatalogo.descripcion)
+
+        val embebida = analizador.decodeFromString(
+            Categoria.serializer(),
+            """{"id":12,"nombre":"Sitio Natural","color":"#2E7D32"}""",
+        )
+        assertTrue("una categoria embebida no deberia traer descripcion", embebida.descripcion.isEmpty())
+    }
+
+    /**
      * El multi-idioma llega en 0.8.0 y la app tiene que andar contra las dos
      * versiones del panel: la vieja no manda `idioma` ni `traducido`, y sin un
      * valor por defecto sensato una respuesta de hoy dejaria de decodificar.

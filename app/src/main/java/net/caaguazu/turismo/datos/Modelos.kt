@@ -57,6 +57,15 @@ data class Categoria(
     val id: Int,
     val slug: String = "",
     val nombre: String = "",
+    /**
+     * Una o dos lineas para encabezar la pantalla de la categoria. Viene
+     * siempre: cadena vacia cuando nadie la escribio, nunca null.
+     *
+     * Solo llega asi en el catalogo de `/categorias`. La `categoria` resumida
+     * que viaja embebida en una ficha o un articulo no trae esto — repetir la
+     * misma descripcion en cada item de una lista de cien seria puro peso.
+     */
+    val descripcion: String = "",
     val padre: Int? = null,
     val icono: String = "",
     val color: String = "",
