@@ -70,9 +70,18 @@ android {
 
     // Un APK por arquitectura mas uno universal. MapLibre lleva 12 MB de codigo
     // nativo por ABI; un universal con las cuatro arquitecturas seria absurdo.
+    //
+    // Esto es solo para las APK sueltas que se reparten fuera de una tienda
+    // (GitHub Releases): ahi no hay ningun Play Store que arme el paquete
+    // justo para cada telefono. Un bundle para Play no puede convivir con
+    // splits habilitados — AGP lo rechaza directamente, ver
+    // https://issuetracker.google.com/402800800 — asi que se apagan con
+    // -PparaTienda=true, que es como se arma el .aab: `./gradlew :app:bundleRelease -PparaTienda=true`.
+    val paraTienda = project.hasProperty("paraTienda")
+
     splits {
         abi {
-            isEnable = true
+            isEnable = !paraTienda
             reset()
             include("arm64-v8a", "armeabi-v7a")
             isUniversalApk = true
