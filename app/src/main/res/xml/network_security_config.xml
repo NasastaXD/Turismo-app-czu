@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  La app solo habla con caaguazu.net, y solo por HTTPS. Sin esto, Android
+  permite trafico sin cifrar hasta API 27 por defecto — no hace falta, y
+  las revisiones de las tiendas lo marcan si lo encuentran abierto.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>
