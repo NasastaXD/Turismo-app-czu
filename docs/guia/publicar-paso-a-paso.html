@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Publicar la app de Turismo de Caaguazú</title>
+<style>
+  :root{
+    --verde:#96C8A2; --verdeTinta:#1E3A28; --coral:#FF6F61; --mango:#FFC300;
+    --tinta:#333333; --suave:#6E6E73; --linea:#E8E6E3; --papel:#FFFFFF; --banda:#F4F3F1;
+  }
+  @page { size: A4; margin: 19mm 17mm 17mm 17mm; }
+  *{ box-sizing:border-box; }
+  body{
+    font-family:"Bitstream Charter","DejaVu Serif",Georgia,serif;
+    font-size:10.6pt; line-height:1.52; color:var(--tinta);
+    margin:0; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  h1,h2,h3,h4,.ui{ font-family:"Liberation Sans","DejaVu Sans",Arial,sans-serif; }
+
+  /* ---- Portada ---- */
+  .portada{ height:252mm; display:flex; flex-direction:column; justify-content:center; page-break-after:always; }
+  .portada .sello{ font-size:8.6pt; letter-spacing:.14em; text-transform:uppercase; color:var(--suave); margin-bottom:9mm; }
+  .portada h1{ font-size:31pt; line-height:1.1; margin:0 0 6mm; letter-spacing:-.015em; }
+  .portada .bajada{ font-size:13pt; color:var(--suave); line-height:1.45; max-width:132mm; margin:0 0 14mm; }
+  .portada .regla{ height:5px; width:46mm; background:var(--verde); border-radius:999px; margin-bottom:12mm; }
+  .portada .meta{ font-size:9.4pt; color:var(--suave); }
+  .portada .meta b{ color:var(--tinta); }
+
+  h2{
+    font-size:16.5pt; margin:0 0 4mm; padding-top:2mm; letter-spacing:-.01em;
+    page-break-after:avoid;
+  }
+  h2 .num{
+    display:inline-block; min-width:9.5mm; height:9.5mm; line-height:9.5mm; text-align:center;
+    background:var(--verde); color:var(--verdeTinta); border-radius:999px;
+    font-size:11pt; margin-right:3.2mm; vertical-align:2px;
+  }
+  h3{ font-size:12pt; margin:7mm 0 2.5mm; page-break-after:avoid; }
+  h4{ font-size:10.4pt; margin:5mm 0 1.5mm; color:var(--verdeTinta); page-break-after:avoid; }
+  p{ margin:0 0 3mm; }
+  .seccion{ page-break-before:always; }
+  ul,ol{ margin:0 0 3.5mm; padding-left:6mm; }
+  li{ margin-bottom:1.6mm; }
+  li>ul,li>ol{ margin-top:1.6mm; }
+  code{ font-family:"DejaVu Sans Mono","Liberation Mono",monospace; font-size:8.9pt;
+        background:var(--banda); padding:.5mm 1.3mm; border-radius:2px; }
+  strong{ font-weight:700; }
+  a{ color:var(--verdeTinta); }
+
+  /* Las cuatro cajas comparten la base. Van agrupadas y no encadenadas como
+     `class="caja ojo"` porque al escribir el documento es facil olvidarse la
+     primera clase, y entonces la caja pierde el relleno y el texto queda
+     pegado al borde de color. */
+  .caja,.ojo,.alto,.bien{
+    background:var(--banda); border-radius:4mm; padding:4.5mm 5mm; margin:4mm 0;
+    page-break-inside:avoid;
+  }
+  .caja p:last-child,.caja ul:last-child,.caja ol:last-child,
+  .ojo p:last-child,.ojo ul:last-child,.ojo ol:last-child,
+  .alto p:last-child,.alto ul:last-child,.alto ol:last-child,
+  .bien p:last-child,.bien ul:last-child,.bien ol:last-child{ margin-bottom:0; }
+  .caja .titulo,.ojo .titulo,.alto .titulo,.bien .titulo{
+    font-family:"Liberation Sans",sans-serif; font-size:9pt; font-weight:700;
+    text-transform:uppercase; letter-spacing:.1em; color:var(--suave); margin-bottom:2.5mm; }
+  .ojo{ background:#FFF6DC; border-left:4px solid var(--mango); border-radius:0 4mm 4mm 0; }
+  .ojo .titulo{ color:#8A6400; }
+  .alto{ background:#FFEFEC; border-left:4px solid var(--coral); border-radius:0 4mm 4mm 0; }
+  .alto .titulo{ color:#9B3327; }
+  .bien{ background:#EEF6F0; border-left:4px solid var(--verde); border-radius:0 4mm 4mm 0; }
+  .bien .titulo{ color:var(--verdeTinta); }
+
+  table{ width:100%; border-collapse:collapse; margin:4mm 0; font-size:9.6pt; page-break-inside:avoid; }
+  th,td{ text-align:left; padding:2.4mm 3mm; border-bottom:1px solid var(--linea); vertical-align:top; }
+  th{ font-family:"Liberation Sans",sans-serif; font-size:8.6pt; text-transform:uppercase;
+      letter-spacing:.07em; color:var(--suave); border-bottom:1.6px solid var(--tinta); }
+
+  .paso{ page-break-inside:avoid; margin:0 0 5mm; }
+  .paso .cab{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10.8pt; margin-bottom:1.5mm; }
+  .paso .cab .n{ color:var(--coral); margin-right:2mm; }
+  .paso .cuerpo{ padding-left:7.5mm; border-left:2px solid var(--linea); }
+  .paso .cuerpo p:last-child,.paso .cuerpo ul:last-child{ margin-bottom:0; }
+
+  .tiempo{ font-family:"Liberation Sans",sans-serif; font-size:8.4pt; color:var(--suave);
+           text-transform:uppercase; letter-spacing:.07em; }
+
+  .indice ol{ list-style:none; padding:0; counter-reset:i; }
+  .indice li{ counter-increment:i; padding:2.4mm 0; border-bottom:1px solid var(--linea);
+              font-family:"Liberation Sans",sans-serif; font-size:10.4pt; }
+  .indice li::before{ content:counter(i); display:inline-block; width:8mm; color:var(--coral); font-weight:700; }
+  .indice li span{ color:var(--suave); font-size:9.2pt; }
+
+  .pie{ margin-top:8mm; padding-top:3mm; border-top:1px solid var(--linea);
+        font-size:8.8pt; color:var(--suave); }
+</style>
+</head>
+<body>
+
+<section class="portada">
+  <div class="sello">Turismo de Caaguazú · Guía de publicación</div>
+  <h1>Cómo publicar la app<br>en Play Store y App Store</h1>
+  <div class="regla"></div>
+  <p class="bajada">Paso a paso, en lenguaje sencillo. Qué hacer, en qué orden,
+  cuánto cuesta y cuánto tarda cada cosa — y qué de todo esto todavía
+  no se puede hacer.</p>
+  <p class="meta">
+    <b>Estado al 16 de septiembre de 2026.</b><br>
+    La app de Android está lista para cargarse. La de iOS todavía no.<br>
+    En la sección 1 está el por qué, y es lo primero que conviene leer.
+  </p>
+</section>
+
+<section>
+  <h2><span class="num">0</span>Antes de empezar</h2>
+
+  <p>Esta guía tiene dos partes que <strong>no están en la misma
+  situación</strong>, y mezclarlas es la forma más rápida de perder tiempo:</p>
+
+  <table>
+    <tr><th>Tienda</th><th>¿Se puede cargar hoy?</th><th>Qué hace falta</th></tr>
+    <tr>
+      <td><strong>Google Play</strong><br>(Android)</td>
+      <td>Sí. El archivo que pide Google ya se compila y sale firmado.</td>
+      <td>Nada de programación. Falta abrir la cuenta y llenar la ficha.</td>
+    </tr>
+    <tr>
+      <td><strong>App Store</strong><br>(iPhone)</td>
+      <td>No todavía.</td>
+      <td>Falta programación —semanas, no días— y hace falta una
+      computadora Mac.</td>
+    </tr>
+  </table>
+
+  <div class="ojo">
+    <div class="titulo">Lo que conviene entender de entrada</div>
+    <p>Las dos tiendas piden más o menos las mismas cosas: una cuenta paga,
+    un archivo de la app, textos, imágenes y una política de privacidad. La
+    diferencia no está en los pasos, está en <strong>cuánto tardan en
+    dejarte publicar</strong>. Google te deja subir en el día; Apple revisa
+    a mano y puede rechazar.</p>
+  </div>
+
+  <h3>El camino más corto</h3>
+  <p>Si el objetivo es tener la app publicada cuanto antes, el orden es
+  este:</p>
+  <ol>
+    <li><strong>Abrir la cuenta de Google Play hoy.</strong> La verificación
+    de identidad puede tardar días y no depende de nosotros, así que es lo
+    primero que conviene largar, aunque todavía no haya nada más listo.</li>
+    <li><strong>Escribir los textos y juntar las imágenes</strong> (sección
+    2). Esto sirve para las dos tiendas y no necesita ninguna cuenta.</li>
+    <li><strong>Publicar en Android</strong> (sección 3).</li>
+    <li><strong>Después, iOS</strong> (secciones 4 y 5), que es un proyecto
+    aparte.</li>
+  </ol>
+
+  <h3>Cuánto cuesta, en total</h3>
+  <table>
+    <tr><th>Concepto</th><th>Costo</th><th>Cada cuánto</th></tr>
+    <tr><td>Cuenta de Google Play Console</td><td>USD 25</td><td>Una sola vez, para siempre</td></tr>
+    <tr><td>Apple Developer Program</td><td>USD 99</td><td>Por año. Si se deja de pagar, la app sale del App Store</td></tr>
+    <tr><td>Computadora Mac (para iOS)</td><td>variable</td><td>Una vez. Se puede alquilar por hora en servicios en la nube</td></tr>
+    <tr><td>Servidores, mapas, notificaciones</td><td><strong>USD 0</strong></td><td>La app no usa ningún servicio pago</td></tr>
+  </table>
+  <p>Ese último renglón no es casualidad: el mapa viaja dentro de la app y
+  los avisos se resuelven en el teléfono, justamente para que publicarla no
+  arrastre un costo mensual detrás.</p>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">1</span>Qué está listo y qué no</h2>
+
+  <p>Vale la pena ser preciso acá, porque de esto depende qué se puede
+  prometer y cuándo.</p>
+
+  <h3>Android: listo</h3>
+  <div class="bien">
+    <div class="titulo">Ya resuelto en el código</div>
+    <ul>
+      <li>El archivo que pide Google Play (se llama <code>.aab</code>) se
+      compila solo desde GitHub y sale firmado con la clave del proyecto.</li>
+      <li>Incluye las arquitecturas que Google exige, tráfico cifrado
+      obligatorio, el ícono definitivo, y el archivo que hace legibles los
+      reportes de fallos que lleguen desde la consola.</li>
+      <li>La app no manda datos a ningún lado, así que el formulario de
+      privacidad de Google se contesta rápido y con la verdad.</li>
+    </ul>
+  </div>
+
+  <h3>iOS: empezado, no terminado</h3>
+  <p>Hay una base real construida y verificada: el contrato con el panel de
+  caaguazu.net ya está compartido entre las dos plataformas, y el mapa ya
+  está escrito para iPhone —el mismo mapa, el mismo archivo de 2 MB, sin
+  servidor de por medio—. Pero de ahí a una app que se pueda subir falta:</p>
+  <ul>
+    <li><strong>El proyecto de Xcode.</strong> Es el envoltorio que
+    convierte el código en una app de iPhone. No se puede crear sin una Mac.</li>
+    <li><strong>La conexión a internet.</strong> La forma en que la app
+    Android habla con caaguazu.net no existe en iPhone; hay que escribirla
+    de nuevo.</li>
+    <li><strong>Los textos y las nueve pantallas.</strong> El código se
+    comparte, pero hay que mudarlo de lugar y probarlo.</li>
+  </ul>
+
+  <div class="alto">
+    <div class="titulo">Para que quede dicho</div>
+    <p><strong>Nadie vio nunca esta app corriendo en un iPhone.</strong> Lo
+    que está comprobado es que el código compila, que se arma el paquete que
+    Xcode necesita, y que las pruebas del contrato pasan en el simulador de
+    iOS. Que se <em>vea</em> bien lo tiene que comprobar una persona con un
+    teléfono en la mano, y eso todavía no pasó.</p>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">2</span>Lo que sirve para las dos tiendas</h2>
+  <p class="tiempo">Se hace una vez · No necesita ninguna cuenta · Se puede empezar ahora</p>
+
+  <p>Las dos tiendas piden lo mismo con medidas distintas. Si se prepara una
+  vez y bien, el resto es copiar y pegar.</p>
+
+  <h3>La política de privacidad</h3>
+  <p>Es <strong>obligatoria en las dos tiendas</strong> y tiene que estar en
+  una dirección web pública, que cualquiera pueda abrir. No alcanza con
+  tenerla en un documento.</p>
+  <div class="caja">
+    <div class="titulo">Cómo resolverlo</div>
+    <p>Hay un borrador escrito en el repositorio, en
+    <code>docs/privacidad-borrador.md</code>. Está armado revisando el
+    código de verdad, no copiando una plantilla: dice lo que la app
+    realmente hace, que es guardar todo en el teléfono y no mandar nada a
+    ningún servidor.</p>
+    <p>Faltan tres cosas: completar los datos de contacto, que alguien con
+    criterio legal lo lea, y publicarlo. <strong>Lo más simple es una página
+    más en caaguazu.net</strong> — por ejemplo
+    <code>caaguazu.net/privacidad-app</code>. Esa dirección es la que se
+    pega en las dos tiendas.</p>
+  </div>
+
+  <h3>Los textos de la ficha</h3>
+  <p>Esto lo tiene que escribir una persona. No es un trámite: es lo único
+  que alguien lee antes de decidir si instala la app.</p>
+  <table>
+    <tr><th>Qué</th><th>Play Store</th><th>App Store</th></tr>
+    <tr><td>Nombre de la app</td><td>hasta 30 caracteres</td><td>hasta 30 caracteres</td></tr>
+    <tr><td>Frase corta</td><td>hasta 80 caracteres</td><td>subtítulo, hasta 30</td></tr>
+    <tr><td>Descripción larga</td><td>hasta 4.000 caracteres</td><td>hasta 4.000 caracteres</td></tr>
+    <tr><td>Palabras clave</td><td>no existe</td><td>hasta 100 caracteres, separadas por coma</td></tr>
+  </table>
+  <p>Un consejo que vale para las dos: <strong>las primeras dos líneas son
+  casi todo</strong>. Es lo único que se ve sin tocar «leer más».</p>
+
+  <h3>Las imágenes</h3>
+  <ul>
+    <li><strong>Ícono.</strong> 512×512 píxeles para Play, 1024×1024 para
+    Apple. Sin transparencia, sin bordes redondeados dibujados a mano (las
+    tiendas los redondean solas).</li>
+    <li><strong>Capturas de pantalla.</strong> Mínimo 2 en Play, mínimo 3 en
+    Apple. Se toman del teléfono con la app corriendo. Conviene elegir las
+    que muestran el mapa y una ficha de lugar, que es lo que distingue a
+    esta app.</li>
+    <li><strong>Gráfico de portada</strong> (solo Play): 1024×500.</li>
+  </ul>
+  <div class="ojo">
+    <div class="titulo">Cuidado con las fotos</div>
+    <p>Las fotos que se usen tienen que ser <strong>del destino real</strong>
+    y con permiso de quien las sacó. Fotos de banco de imágenes en la ficha
+    de una app de turismo se notan, y además contradicen una decisión que ya
+    está tomada en el proyecto.</p>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">3</span>Google Play, paso a paso</h2>
+  <p class="tiempo">Esto se puede hacer completo hoy</p>
+
+  <div class="paso">
+    <div class="cab"><span class="n">1.</span>Abrir la cuenta</div>
+    <div class="cuerpo">
+      <p>En <code>play.google.com/console</code>, con una cuenta de Google.
+      Pide <strong>USD 25 una sola vez</strong>.</p>
+      <p>Va a pedir <strong>verificar identidad</strong>: documento, dirección
+      y a veces un teléfono. <strong>Esto puede tardar de un día a dos
+      semanas</strong> y no hay forma de apurarlo, así que conviene largarlo
+      antes que cualquier otra cosa.</p>
+      <p>Hay que elegir entre cuenta <strong>personal</strong> u
+      <strong>organización</strong>. No es un detalle: mirá el paso 7 antes de
+      decidir, porque cambia bastante el trabajo.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">2.</span>Crear la app en la consola</div>
+    <div class="cuerpo">
+      <p>«Crear aplicación». Nombre, idioma principal (castellano), que es
+      una <em>app</em> y no un juego, y que es <strong>gratuita</strong>.</p>
+      <p><strong>Gratuita es una decisión sin vuelta:</strong> una app gratis
+      no se puede pasar a paga después. (Al revés sí.)</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">3.</span>Conseguir el archivo de la app</div>
+    <div class="cuerpo">
+      <p>El archivo se compila solo en GitHub. No hace falta instalar nada:</p>
+      <ol>
+        <li>Entrar al repositorio en GitHub, pestaña <strong>Actions</strong>.</li>
+        <li>En la lista de la izquierda, <strong>«Publicar bundle (Play
+        Store)»</strong>.</li>
+        <li>Botón <strong>«Run workflow»</strong>, elegir la rama
+        <code>main</code>, confirmar.</li>
+        <li>Esperar unos cinco minutos hasta que aparezca el tilde verde.</li>
+        <li>Entrar a la corrida y bajar el archivo <strong>«caaguazu-bundle»</strong>
+        del final de la página.</li>
+      </ol>
+      <p>Adentro vienen dos archivos: <code>app-release.aab</code>, que es la
+      app, y <code>mapping.txt</code>. <strong>Guardá los dos.</strong> El
+      segundo es el que hace legibles los reportes de fallos, y sin él los
+      errores que reporte Google son ilegibles incluso para quien escribió el
+      código.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">4.</span>Subirlo y activar la firma de Google</div>
+    <div class="cuerpo">
+      <p>En la consola, «Producción» (o «Prueba cerrada», ver paso 7) →
+      «Crear nueva versión» → subir el <code>.aab</code>.</p>
+      <p>Google va a ofrecer <strong>«Play App Signing»</strong>. Hay que
+      aceptarlo: es obligatorio para toda app nueva.</p>
+      <div class="caja">
+        <div class="titulo">Qué significa, en simple</div>
+        <p>Toda app lleva una firma digital, y si se pierde esa firma no se
+        puede volver a actualizar la app <em>nunca</em> — hay que publicarla
+        de cero con otro nombre. Con Play App Signing, <strong>Google guarda
+        la firma de verdad</strong> y lo que subimos nosotros es una llave
+        secundaria. Si esa llave secundaria se pierde o se filtra, Google
+        tiene un procedimiento para cambiarla sin perder la app.</p>
+        <p>Es decir: aceptarlo es un seguro, no una concesión.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">5.</span>Llenar la ficha y los formularios</div>
+    <div class="cuerpo">
+      <p>Con lo de la sección 2 ya preparado, esto es pegar. Hay tres
+      formularios que sí conviene mirar:</p>
+      <h4>Seguridad de los datos («Data Safety»)</h4>
+      <p>Pregunta qué datos recolecta la app. Revisando el código, la
+      respuesta honesta es <strong>«no se recolecta ningún dato»</strong> en
+      todas las categorías: no hay cuentas, no hay analítica, no hay
+      publicidad, y lo que la app guarda (favoritos, idioma, recorridos
+      propios) no sale del teléfono.</p>
+      <div class="alto">
+        <div class="titulo">No mientas acá</div>
+        <p>Google compara lo declarado con lo que la app hace de verdad.
+        Declarar de más o de menos es causa de suspensión. En nuestro caso no
+        hay tentación: la respuesta verdadera es también la más
+        simple.</p>
+      </div>
+      <h4>Clasificación de contenido</h4>
+      <p>Un cuestionario. Es una app de información turística, sin contenido
+      para adultos, sin chat entre usuarios y sin compras: sale con la
+      clasificación más baja en todos los países.</p>
+      <h4>Público objetivo</h4>
+      <p>Conviene declarar <strong>adultos</strong>, no niños. Declarar que
+      es para niños activa un montón de requisitos extra.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">6.</span>Los países</div>
+    <div class="cuerpo">
+      <p>Se elige dónde se publica. Lo razonable es Paraguay más los países
+      de donde llega turismo —Argentina, Brasil— y, dado que la app está en
+      tres idiomas, no hay motivo para no abrirla a todos.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">7.</span>La prueba cerrada, si la cuenta es personal</div>
+    <div class="cuerpo">
+      <div class="ojo">
+        <div class="titulo">Este es el paso que más sorprende</div>
+        <p>Si la cuenta de desarrollador es <strong>personal</strong> y es
+        nueva, Google exige, antes de dejar publicar al público:</p>
+        <ul>
+          <li>una <strong>prueba cerrada</strong> con al menos
+          <strong>12 personas</strong> que acepten la invitación e instalen la
+          app;</li>
+          <li>que esas 12 personas sigan ahí <strong>14 días
+          seguidos</strong>;</li>
+          <li>y recién después, pedir acceso a producción — que Google revisa
+          a mano y puede tardar otra semana.</li>
+        </ul>
+        <p>O sea: <strong>tres semanas largas antes de que la app sea
+        pública</strong>, por más que esté todo listo el primer día.</p>
+      </div>
+      <p><strong>Las cuentas de organización no tienen este requisito.</strong>
+      Registrarse como organización pide un número de identificación de la
+      entidad (en Paraguay, el RUC) y tarda más en verificarse, pero salta el
+      mes de espera. Si hay una entidad detrás del proyecto —una
+      municipalidad, una gobernación, una asociación— <strong>conviene mucho
+      usarla</strong>.</p>
+      <p>De paso, la prueba cerrada no es puro trámite: son 12 personas
+      usando la app en teléfonos de verdad, que es exactamente lo que falta
+      para saber si funciona bien.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">8.</span>Enviar a revisión</div>
+    <div class="cuerpo">
+      <p>Cuando no queden avisos pendientes, «Enviar a revisión». La primera
+      suele tardar <strong>algunos días</strong>; las actualizaciones
+      después, horas.</p>
+      <p>Si rechazan, el correo dice qué política se incumplió. Casi siempre
+      es la política de privacidad o algo del formulario de datos, no el
+      código.</p>
+    </div>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">4</span>Antes de poder pensar en el App Store</h2>
+
+  <p>Esta sección no tiene pasos de tienda, porque todavía no corresponde.
+  Tiene lo que hay que resolver primero.</p>
+
+  <h3>Hace falta una Mac. No hay vuelta.</h3>
+  <p>Apple no permite crear ni subir una app de iPhone desde Windows o
+  Linux. Las opciones son:</p>
+  <ul>
+    <li><strong>Comprar o prestarse una Mac.</strong> Cualquiera de los
+    últimos años sirve.</li>
+    <li><strong>Alquilar una por hora</strong> en servicios como MacStadium o
+    similares. Sale unos pocos dólares la hora y para armar el proyecto una
+    vez puede alcanzar.</li>
+    <li><strong>Usar GitHub Actions</strong>, que ya tiene máquinas Mac — de
+    hecho el proyecto ya las usa para verificar que el código de iOS
+    compile. Sirve para <em>compilar</em> y hasta para subir a Apple, pero
+    <strong>no</strong> para armar el proyecto la primera vez ni para ver la
+    app dibujada.</li>
+  </ul>
+
+  <h3>Dos decisiones técnicas pendientes</h3>
+  <p>No son trámites; cambian cómo funciona la app y una de las dos afecta
+  también a Android. Están explicadas en detalle en
+  <code>docs/ios.md</code>, y acá va la versión corta.</p>
+
+  <h4>Cómo habla la app con caaguazu.net</h4>
+  <p>Hoy la app Android usa algo que en iPhone no existe. Hay dos caminos:
+  agregar una biblioteca externa (menos trabajo, pero suma una dependencia
+  que el proyecto venía evitando a propósito) o escribirlo dos veces, una
+  por plataforma (nada nuevo que dependa de terceros, pero más trabajo y dos
+  cosas que mantener).</p>
+
+  <h4>Los avisos en iPhone van a andar peor</h4>
+  <div class="alto">
+    <div class="titulo">Esto conviene saberlo antes de prometerlo</div>
+    <p>En Android, el sistema <strong>garantiza</strong> que la app revise si
+    hay novedades cada seis horas, incluso con el teléfono guardado o después
+    de reiniciarlo.</p>
+    <p>En iPhone <strong>no existe esa garantía</strong>. Apple decide si
+    deja correr esa revisión y cuándo, según cuánto se use la app. En la
+    práctica, en iPhone los avisos van a llegar tarde o no llegar.</p>
+    <p>Las salidas son dos: aceptarlo y decirlo, o agregar notificaciones
+    push de Apple — que significa un servidor más, y contradice de frente una
+    decisión explícita del proyecto: que no haya push, ni servicios externos,
+    ni nadie del otro lado sabiendo quién tiene la app instalada.</p>
+    <p><strong>Esta decisión es tuya, y conviene tomarla antes de seguir
+    programando.</strong></p>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">5</span>App Store, paso a paso</h2>
+  <p class="tiempo">Para cuando lo de la sección 4 esté resuelto</p>
+
+  <div class="paso">
+    <div class="cab"><span class="n">1.</span>Inscribirse en el Apple Developer Program</div>
+    <div class="cuerpo">
+      <p>En <code>developer.apple.com</code>. <strong>USD 99 por año.</strong>
+      Si se deja de pagar, la app sale del App Store — no es un pago único
+      como el de Google.</p>
+      <p>Igual que con Google, conviene decidir entre individuo y
+      organización. Como organización, Apple pide un código de identificación
+      de empresa internacional (<em>D-U-N-S</em>), que es gratis pero puede
+      tardar <strong>un par de semanas</strong> en conseguirse.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">2.</span>Armar el proyecto de Xcode</div>
+    <div class="cuerpo">
+      <p>Es el paso que hoy bloquea todo lo demás. Está todo escrito y listo
+      para copiar en <code>ios/xcode/README.md</code> del repositorio: los
+      dos archivos de Swift que hacen falta y los pasos exactos.</p>
+      <p>Hay un detalle ahí que rompe el mapa en silencio: al agregar la
+      carpeta del mapa hay que elegir <strong>«Create folder
+      references»</strong> y no «Create groups». Con la opción equivocada el
+      mapa dibuja pero <strong>sin una sola etiqueta</strong> — ni calles ni
+      nombres de lugares — y nada avisa por qué.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">3.</span>Certificados y permisos de firma</div>
+    <div class="cuerpo">
+      <p>Apple exige firmar la app con certificados propios. Xcode lo
+      resuelve casi solo si se activa <strong>«Automatically manage
+      signing»</strong> y se elige la cuenta de desarrollador.</p>
+      <p>Hay que elegir un <strong>Bundle ID</strong>, que es el nombre
+      interno y único de la app y <strong>no se puede cambiar
+      después</strong>. Lo coherente con el resto del proyecto es
+      <code>net.caaguazu.turismo</code>, el mismo que usa la versión de
+      Android.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">4.</span>El archivo de privacidad de Apple</div>
+    <div class="cuerpo">
+      <p>Apple pide, adentro de la app, un archivo que declara por qué se
+      usan ciertas funciones del sistema. Se llama
+      <code>PrivacyInfo.xcprivacy</code> y <strong>si falta o está mal, la
+      app se rechaza en la carga, antes de cualquier revisión
+      humana</strong>.</p>
+      <p>En nuestro caso hay que declarar al menos el guardado de
+      preferencias en el teléfono (idioma elegido, favoritos), que está en la
+      lista de funciones que Apple obliga a justificar. Es una declaración
+      corta, pero es fácil olvidarla y el error que devuelve no es claro.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">5.</span>Crear la ficha en App Store Connect</div>
+    <div class="cuerpo">
+      <p>En <code>appstoreconnect.apple.com</code>: nombre, subtítulo,
+      descripción, palabras clave, capturas y el ícono de 1024×1024. Otra vez
+      lo de la sección 2, con las medidas de Apple.</p>
+      <p>Hay dos preguntas que confunden y se contestan fácil:</p>
+      <ul>
+        <li><strong>«App Privacy»</strong> (la etiqueta de privacidad): con
+        la misma auditoría que la de Google, la respuesta es <strong>«Data
+        Not Collected»</strong>.</li>
+        <li><strong>Cumplimiento de exportación / cifrado:</strong> pregunta
+        si la app usa cifrado. Usa HTTPS, que es el cifrado estándar del
+        sistema operativo, y eso entra en la excepción habitual. Hay que
+        contestarlo, no ignorarlo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">6.</span>Subir y probar con TestFlight</div>
+    <div class="cuerpo">
+      <p>Desde Xcode, «Product → Archive» y de ahí «Distribute App».</p>
+      <p>Apple tiene un sistema de prueba propio, <strong>TestFlight</strong>,
+      que es mucho más cómodo que el de Google: se invita gente por correo y
+      listo. <strong>No es obligatorio</strong> como la prueba cerrada de
+      Google, pero <strong>usalo igual</strong> — es la primera vez que
+      alguien va a ver esta app en un iPhone.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="cab"><span class="n">7.</span>Enviar a revisión</div>
+    <div class="cuerpo">
+      <p>Apple revisa <strong>a mano</strong>, en general en uno o dos días.
+      Es más estricta que Google y rechaza más seguido. Lo que más conviene
+      tener cuidado:</p>
+      <ul>
+        <li><strong>Que la app haga algo propio.</strong> Apple rechaza apps
+        que son «una página web adentro de una app». Esta no lo es —el mapa
+        vectorial funciona sin internet, que es más de lo que hace el sitio
+        web—, pero conviene <strong>decirlo</strong> en las notas para el
+        revisor.</li>
+        <li><strong>Que funcione sin cuenta.</strong> A favor nuestro: no hay
+        registro, así que el revisor ve todo de entrada.</li>
+        <li><strong>Las capturas tienen que ser reales.</strong> Maquetas
+        bonitas que no coinciden con la app son motivo de rechazo.</li>
+      </ul>
+      <p>Si rechazan, contestan por un chat dentro de la consola y se puede
+      discutir. Un rechazo no es el final, es una conversación.</p>
+    </div>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2><span class="num">6</span>Resumen y qué necesito de tu lado</h2>
+
+  <h3>Los tiempos, honestos</h3>
+  <table>
+    <tr><th>Etapa</th><th>Cuánto tarda</th><th>De quién depende</th></tr>
+    <tr><td>Verificación de la cuenta de Google</td><td>1 día a 2 semanas</td><td>Google</td></tr>
+    <tr><td>Textos, ícono y capturas</td><td>lo que lleve escribirlos</td><td>Una persona del proyecto</td></tr>
+    <tr><td>Publicar la política de privacidad</td><td>una tarde</td><td>Quien administra caaguazu.net</td></tr>
+    <tr><td>Prueba cerrada de Google (solo cuenta personal)</td><td>3 semanas</td><td>12 personas con teléfono Android</td></tr>
+    <tr><td>Revisión de Google</td><td>días</td><td>Google</td></tr>
+    <tr><td><strong>Android publicado</strong></td><td><strong>3 a 6 semanas</strong></td><td>—</td></tr>
+    <tr><td>Terminar el código de iOS</td><td>semanas de programación</td><td>Programación + una Mac</td></tr>
+    <tr><td>Revisión de Apple</td><td>1 a 3 días</td><td>Apple</td></tr>
+  </table>
+
+  <h3>Lo que sólo podés hacer vos</h3>
+  <ul>
+    <li><strong>Abrir las cuentas</strong> y decidir si van como persona o
+    como organización. Para Google esa decisión vale tres semanas de
+    diferencia.</li>
+    <li><strong>Escribir los textos de la ficha.</strong> No los escribo yo:
+    es una regla del proyecto, y además son el texto que más se lee de todo
+    esto.</li>
+    <li><strong>Sacar las capturas</strong> con la app instalada en un
+    teléfono.</li>
+    <li><strong>Publicar la política de privacidad</strong> en caaguazu.net y
+    pasarme la dirección.</li>
+    <li><strong>Conseguir acceso a una Mac</strong>, si iOS va en serio.</li>
+  </ul>
+
+  <h3>Tres decisiones que están esperándote</h3>
+  <ol>
+    <li><strong>La clave de firma de Android.</strong> La actual quedó
+    expuesta en el historial del repositorio en agosto. En su momento se
+    decidió no hacer nada, y era razonable porque no había nada publicado.
+    Ahora que se viene la carga real conviene reconsiderarlo:
+    <strong>generar una clave nueva hoy no cuesta nada</strong> —no hay
+    ninguna instalación desde una tienda que dependa de la actual— y con Play
+    App Signing el riesgo queda cubierto de todos modos. Si querés, la genero
+    y te la mando aparte.</li>
+    <li><strong>Los avisos en iPhone</strong> (sección 4): aceptar que sean
+    menos confiables, o agregar push y con eso un servidor y un servicio
+    externo.</li>
+    <li><strong>Cómo se conecta la app de iPhone a internet</strong>: una
+    dependencia externa menos trabajo, o dos implementaciones más trabajo.</li>
+  </ol>
+
+  <div class="bien">
+    <div class="titulo">Lo que sí puedo seguir haciendo sin esperar nada</div>
+    <p>Terminar de mudar el código a la parte compartida, escribir la conexión
+    a internet de iOS en cuanto elijas el camino, y dejar el proyecto de Xcode
+    documentado al detalle para que armarlo sea media hora y no una tarde.</p>
+  </div>
+
+  <div class="pie">
+    <p>Los precios, plazos y requisitos de las consolas son los que estaban
+    vigentes al 16 de septiembre de 2026 y las dos empresas los cambian sin
+    aviso: lo que diga la consola en pantalla manda sobre lo que diga esta
+    guía. La parte técnica —qué está listo, qué falta y qué está verificado—
+    sale de revisar el código de este proyecto, y está en
+    <code>docs/publicar-en-tiendas.md</code> y <code>docs/ios.md</code>.</p>
+  </div>
+</section>
+
+</body>
+</html>

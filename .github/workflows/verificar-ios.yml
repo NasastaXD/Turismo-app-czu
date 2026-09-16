@@ -87,6 +87,16 @@ jobs:
         # sus dependencias nativas dentro, MapLibre incluido.
         run: ./gradlew :ios:linkDebugFrameworkIosSimulatorArm64 --no-daemon
 
+      # Kotlin/Native decide los nombres que Swift va a ver, y no hay forma de
+      # saberlos sin mirar la cabecera que genera. `ios/xcode/VistaCompose.swift`
+      # llama a `PuntoDeEntradaKt.puntoDeEntrada()`: esto lo comprueba en vez de
+      # darlo por bueno. Si el simbolo no esta, grep devuelve 1 y el paso falla,
+      # que es lo que corresponde — seria un framework que Xcode no puede usar.
+      - name: Que exporta el framework
+        run: |
+          CABECERA=ios/build/bin/iosSimulatorArm64/debugFramework/Turismo.framework/Headers/Turismo.h
+          grep -n -B 6 "puntoDeEntrada" "$CABECERA"
+
       - name: Guardar los reportes de prueba si algo fallo
         if: failure()
         uses: actions/upload-artifact@v4
