@@ -1,0 +1,92 @@
+# El proyecto de Xcode, como especificacion y no como .pbxproj.
+#
+# XcodeGen arma el .xcodeproj a partir de este archivo. Se hace asi porque un
+# .pbxproj son miles de lineas generadas que nadie puede revisar en una
+# diferencia, y porque el CI necesita poder armar el proyecto solo, sin que
+# nadie abra Xcode. Este archivo es la fuente: el .xcodeproj es descartable.
+#
+#   brew install xcodegen && cd ios/xcode && xcodegen generate
+
+name: Turismo
+
+options:
+  bundleIdPrefix: net.caaguazu
+  deploymentTarget:
+    # 15.0 cubre desde el iPhone 6s. Bajar mas no gana nada: Compose
+    # Multiplatform pide 13 como piso y los telefonos mas viejos que eso ya no
+    # reciben actualizaciones de iOS.
+    iOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+targets:
+  Turismo:
+    type: application
+    platform: iOS
+
+    sources:
+      # Los dos unicos archivos de Swift de la app. Si esto crece, algo se hizo
+      # mal: las pantallas van en Kotlin, compartidas con Android.
+      - path: .
+        includes:
+          - "*.swift"
+        group: Swift
+
+      - path: PrivacyInfo.xcprivacy
+        buildPhase: resources
+
+      # El mapa, como REFERENCIA DE CARPETA y no como grupo. Es lo que
+      # preserva `map/glifos/{fontstack}/{range}.pbf`: si Xcode aplana la
+      # estructura, el mapa dibuja pero sin una sola etiqueta —ni calles ni
+      # nombres de lugares— y nada avisa por que.
+      - path: ../../app/src/main/assets/map
+        type: folder
+        buildPhase: resources
+
+    info:
+      # Generado por XcodeGen desde lo de abajo, para que project.yml sea la
+      # unica fuente. Queda fuera del repositorio.
+      path: Generado/Info.plist
+      properties:
+        CFBundleDisplayName: Turismo
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Automatic
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # La app no pide ni un permiso: no hay ubicacion, ni camara, ni
+        # calendario, ni notificaciones. El mapa se dibuja sin saber donde
+        # esta quien lo mira, y eso es una decision del proyecto.
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        FRAMEWORK_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../build/bin/iosSimulatorArm64/debugFramework
+        # El CI compila para el simulador, que no necesita firma. Un build para
+        # un telefono real la exige y la resuelve Xcode con la cuenta de
+        # desarrollador.
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+
+    dependencies:
+      # Estatico, por eso `embed: false`: un framework dinamico habria que
+      # firmarlo y embeberlo aparte, y no gana nada para un solo consumidor.
+      - framework: ../build/bin/iosSimulatorArm64/debugFramework/Turismo.framework
+        embed: false
+        codeSign: false
+
+schemes:
+  Turismo:
+    build:
+      targets:
+        Turismo: all
+    run:
+      config: Debug

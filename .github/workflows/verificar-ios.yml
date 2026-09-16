@@ -95,7 +95,10 @@ jobs:
       - name: Que exporta el framework
         run: |
           CABECERA=ios/build/bin/iosSimulatorArm64/debugFramework/Turismo.framework/Headers/Turismo.h
-          grep -n -B 6 "puntoDeEntrada" "$CABECERA"
+          # La clase y el metodo, cada uno con su swift_name — que es el nombre
+          # con el que Swift los ve. Sin contexto de lineas: el KDoc de Kotlin
+          # se copia al encabezado y se comeria la ventana.
+          grep -n -E "interface .*PuntoDeEntradaKt|\\(UIViewController \\*\\)puntoDeEntrada" "$CABECERA"
 
       - name: Guardar los reportes de prueba si algo fallo
         if: failure()

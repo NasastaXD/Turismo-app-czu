@@ -1,0 +1,179 @@
+# Arranca la app de iOS en el simulador y saca una captura.
+#
+# Es la unica forma, desde un entorno sin Mac, de pasar de "el codigo compila"
+# a "el mapa se ve". Sin esto, lo de iOS seria una promesa: el proyecto tiene
+# una regla explicita contra dar por bueno lo que no se comprobo.
+#
+# Va aparte de "Verificar iOS" a proposito. Ese workflow tarda 1m40s con cache
+# y conviene que siga siendo el ciclo rapido; este arma el proyecto de Xcode,
+# compila una app entera y arranca un simulador, que es bastante mas lento.
+name: Captura de iOS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - 'compartido/**'
+      - 'app/src/main/assets/map/**'
+      - '.github/workflows/captura-ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  captura:
+    runs-on: macos-15
+
+    steps:
+      - name: Traer el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Se cachea ~/.konan junto con Gradle: el compilador de Kotlin/Native se
+      # baja aparte y pesa cientos de MB. Misma clave que "Verificar iOS" para
+      # que los dos workflows compartan el trabajo ya hecho.
+      - name: Cache de Gradle y de Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ios-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: ios-
+
+      # Hace falta aunque aca no se compile nada de Android: `:compartido`
+      # tiene un androidTarget y `:app` esta en el settings, asi que Gradle
+      # configura los dos en cualquier invocacion.
+      - name: Preparar el SDK de Android
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - name: Compilar el framework de Kotlin
+        # Tiene que existir antes de que Xcode lo busque: el proyecto lo
+        # referencia por ruta.
+        run: ./gradlew :ios:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Generar el proyecto de Xcode
+        working-directory: ios/xcode
+        run: |
+          xcodegen generate
+          ls -la Turismo.xcodeproj
+
+      - name: Compilar la app para el simulador
+        working-directory: ios/xcode
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Turismo.xcodeproj \
+            -scheme Turismo \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath dd \
+            build
+          echo "--- lo que salio ---"
+          ls -la dd/Build/Products/Debug-iphonesimulator/
+
+      - name: Comprobar que el mapa viaja dentro de la app
+        working-directory: ios/xcode
+        # El fallo mas silencioso de todos: si Xcode aplana la carpeta del
+        # mapa, el .app se arma igual, el mapa dibuja igual, y queda sin una
+        # sola etiqueta. Mejor fallar aca, con un mensaje claro, que mirar una
+        # captura sin nombres de calles y no saber por que.
+        run: |
+          APP=dd/Build/Products/Debug-iphonesimulator/Turismo.app
+          echo "--- contenido de map/ dentro del .app ---"
+          find "$APP/map" -maxdepth 2 | head -20
+
+          test -f "$APP/map/caaguazu.pmtiles" \
+            || { echo "FALTA el .pmtiles dentro del .app"; exit 1; }
+          test -f "$APP/map/estilo.json" \
+            || { echo "FALTA el estilo dentro del .app"; exit 1; }
+          test -d "$APP/map/glifos" \
+            || { echo "FALTA la carpeta de glifos: Xcode aplano la estructura"; exit 1; }
+
+          GLIFOS=$(find "$APP/map/glifos" -name "*.pbf" | wc -l | tr -d ' ')
+          echo "glifos empaquetados: $GLIFOS"
+          test "$GLIFOS" -gt 0 \
+            || { echo "La carpeta de glifos existe pero esta vacia"; exit 1; }
+
+          echo "PMTiles: $(du -h "$APP/map/caaguazu.pmtiles" | cut -f1)"
+
+      - name: Arrancar un simulador
+        id: simulador
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          equipos = json.load(sys.stdin)["devices"]
+          for entorno, lista in equipos.items():
+              if "iOS" not in entorno:
+                  continue
+              for equipo in lista:
+                  if equipo.get("isAvailable") and "iPhone" in equipo["name"]:
+                      print(equipo["udid"], equipo["name"], entorno.split(".")[-1])
+                      raise SystemExit
+          raise SystemExit("no hay ningun simulador de iPhone disponible")
+          ')
+          echo "simulador elegido: $UDID"
+          SOLO_UDID=$(echo "$UDID" | cut -d' ' -f1)
+          echo "udid=$SOLO_UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$SOLO_UDID"
+          # bootstatus espera hasta que el simulador termine de arrancar, en
+          # lugar de adivinar con un sleep.
+          xcrun simctl bootstatus "$SOLO_UDID"
+
+      - name: Instalar y arrancar la app
+        working-directory: ios/xcode
+        env:
+          UDID: ${{ steps.simulador.outputs.udid }}
+        run: |
+          xcrun simctl install "$UDID" dd/Build/Products/Debug-iphonesimulator/Turismo.app
+          # Sin segundo plano: `launch` devuelve el pid y vuelve. La app corre
+          # dentro del simulador, no como hija de este shell.
+          xcrun simctl launch "$UDID" net.caaguazu.turismo
+          echo "app lanzada, esperando que el mapa cargue"
+
+      - name: Sacar las capturas
+        env:
+          UDID: ${{ steps.simulador.outputs.udid }}
+        # Dos capturas y no una: si la primera sale en blanco y la segunda con
+        # el mapa, eso dice "tarda en cargar". Una sola captura en blanco no
+        # distingue entre lento y roto.
+        run: |
+          mkdir -p capturas
+          sleep 6
+          xcrun simctl io "$UDID" screenshot capturas/1-a-los-6-segundos.png
+          sleep 18
+          xcrun simctl io "$UDID" screenshot capturas/2-a-los-24-segundos.png
+          ls -la capturas/
+
+      - name: Guardar el registro de la app
+        if: always()
+        env:
+          UDID: ${{ steps.simulador.outputs.udid }}
+        # Si el mapa no aparece, MapLibre deja dicho por que en el registro del
+        # sistema — y ahi es donde se ve si `pmtiles://` no resolvio.
+        run: |
+          mkdir -p capturas
+          xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "Turismo"' \
+            > capturas/registro-de-la-app.txt 2>&1 || true
+          tail -40 capturas/registro-de-la-app.txt || true
+
+      - name: Subir las capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captura-ios
+          path: capturas/
+          retention-days: 30
