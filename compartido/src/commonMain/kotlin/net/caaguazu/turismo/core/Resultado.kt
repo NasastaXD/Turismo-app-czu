@@ -3,6 +3,10 @@ package net.caaguazu.turismo.core
 /**
  * Resultado explicito. Las operaciones que pueden fallar lo devuelven en vez de lanzar,
  * para que quien llama este obligado a contemplar el fallo.
+ *
+ * Vive aca y no en :app porque es el idioma de fallos de todo el proyecto, y el lado
+ * de iOS tiene los mismos fallos que atender. El paquete no cambio: para :app esto
+ * sigue estando donde estaba.
  */
 sealed interface Resultado<out T> {
     data class Bien<T>(val valor: T) : Resultado<T>
@@ -26,15 +30,3 @@ inline fun <T, R> Resultado<T>.mapear(transformar: (T) -> R): Resultado<R> = whe
 }
 
 fun <T> Resultado<T>.oNulo(): T? = (this as? Resultado.Bien)?.valor
-
-/**
- * Envuelve algo que puede lanzar y lo convierte en resultado, dejando constancia.
- * Es el unico lugar de la app donde se atrapa una excepcion generica.
- */
-inline fun <T> intentar(etiqueta: String, que: String, bloque: () -> T): Resultado<T> =
-    try {
-        Resultado.Bien(bloque())
-    } catch (e: Throwable) {
-        Registro.fallo(etiqueta, "fallo $que", e)
-        Resultado.Mal(Falla.DESCONOCIDA)
-    }

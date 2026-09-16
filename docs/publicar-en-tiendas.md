@@ -78,32 +78,34 @@ mano cuando algo de esta lista se resuelve.
 
 ## iOS (App Store)
 
-**No hay ninguna app de iOS en este repositorio.** Todo el proyecto es
-Android nativo (Kotlin + Jetpack Compose, MapLibre Android, WorkManager) —
-nada de eso corre en iOS tal cual. Publicar en el App Store no es una
-casilla más de esta lista: es un proyecto nuevo.
+**La decisión está tomada y hay código.** El detalle completo —la
+investigación, lo construido, lo verificado y lo que falta— está en
+[`docs/ios.md`](ios.md). El resumen:
 
-Antes de que tenga sentido preparar nada de código, hay una decisión de
-arquitectura que no me corresponde tomar sola:
+Se eligió **Compose Multiplatform**: se comparten datos, contrato *y*
+pantallas. Lo que lo hizo posible fue una decisión que ya estaba tomada en
+este proyecto por otro motivo: **no hay Material3**, así que el sistema
+visual es `compose.foundation`/`compose.ui` puro y cruza sin despegarse de
+nada atado a Android.
 
-1. **Nativo en Swift/SwiftUI, de cero.** Máxima calidad y aprovecha
-   MapLibre iOS (existe, con soporte de PMTiles también), pero es rehacer
-   las nueve pantallas y toda la capa de datos en otro lenguaje.
-2. **Kotlin Multiplatform (KMP)**: mover la capa de datos y la lógica que
-   ya existe (modelos, `ApiHttp`, `Http`, `Ajustes`, etc.) a un módulo
-   compartido, y escribir la interfaz de iOS en SwiftUI aparte. Reutiliza
-   lo que menos cambia (el contrato con el panel) y no toca el sistema
-   visual, que es Compose puro y no se comparte.
-3. **Un framework cruzado** (Flutter, React Native): reescribe todo de
-   cero en otra base, sin reutilizar nada de este repo, y choca de frente
-   con varias decisiones ya tomadas acá (sin Material3, mapa vectorial
-   embebido con soporte nativo de pmtiles, R8/ProGuard propio).
+Lo que decidió la viabilidad fue el mapa: **MapLibre iOS lee `pmtiles://`
+de forma nativa desde la 6.10**, así que los 2 MB embebidos cruzan sin
+servidor y sin una línea de Swift. Si eso no hubiera existido, se caía la
+premisa central del proyecto y con ella el sentido de compartir código.
 
-Dado cómo está armado este proyecto — separación limpia entre datos y UI,
-"un solo modelo por entidad", sin capas de por medio — la opción 2 es la
-que menos trabajo tira a la basura. Pero es una decisión de meses de
-trabajo y de stack, no algo para arrancar sin que alguien la tome a
-propósito.
+Hay dos módulos nuevos, `:compartido` (el contrato, ya compartido de verdad
+con `:app`) y `:ios` (la cáscara con el mapa), y un workflow **"Verificar
+iOS"** en un runner macOS, que es la única forma de comprobar que compilan:
+Kotlin/Native no cruza a iOS desde Linux.
+
+**La app Android no cambió de forma** y no ve Compose Multiplatform por
+ningún lado. Eso es deliberado: hay un `.aab` a punto de entrar a Play.
+
+Falta bastante más de lo que hay: el proyecto de Xcode (requiere un Mac),
+la capa de red, `Textos`, y las pantallas. Y quedan **dos preguntas
+abiertas** que están en `docs/ios.md` y que convienen decidir antes de
+seguir: con qué se hace HTTP en iOS, y qué se hace con los avisos, que en
+iOS no pueden ser tan confiables como en Android.
 
 **Además, aparte del código:**
 
@@ -123,6 +125,8 @@ propósito.
 - **Android**: technically listo para cargar a Play Console. Lo que falta
   es todo lo que no es código — cuenta, ficha de tienda, y la decisión
   sobre rotar el keystore.
-- **iOS**: no hay para qué preparar código todavía. Lo que hace falta
-  primero es elegir el camino (nativo, KMP, o cruzado) antes de escribir
-  una sola línea.
+- **iOS**: el camino está elegido (Compose Multiplatform) y el contrato
+  ya se comparte de verdad con la app Android. Falta la mayor parte del
+  trabajo, y sobre todo un Mac: el proyecto de Xcode no se puede generar
+  desde acá. Antes de seguir conviene decidir las dos preguntas abiertas de
+  `docs/ios.md` — HTTP y avisos.

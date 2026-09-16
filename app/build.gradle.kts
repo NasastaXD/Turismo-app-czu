@@ -120,6 +120,11 @@ android {
 }
 
 dependencies {
+    // El contrato con el panel vive aca: es lo mismo en Android y en iOS, y
+    // por eso salio de este modulo. Kotlin puro — no suma ninguna dependencia
+    // nueva a la app.
+    implementation(project(":compartido"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

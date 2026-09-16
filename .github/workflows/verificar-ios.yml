@@ -1,0 +1,98 @@
+# Compila la version de iOS. Es la unica forma de saber si compila.
+#
+# Kotlin/Native no cruza a iOS desde Linux: hace falta macOS con Xcode, y el
+# entorno donde se escribe este proyecto es Linux. Sin este workflow, todo lo
+# que hay en :ios seria codigo que nadie comprobo nunca — y el proyecto tiene
+# una regla explicita contra dar por bueno lo que no se comprobo.
+#
+# Lo que verifica, en orden de lo que cuesta menos a lo que cuesta mas:
+#   1. que el contrato compartido compile para iOS;
+#   2. que sus pruebas pasen corriendo de verdad en el simulador, no en la JVM
+#      —la serializacion no siempre se comporta igual en Kotlin/Native—;
+#   3. que el modulo :ios compile contra maplibre-compose;
+#   4. que el framework que Xcode va a consumir se enlace.
+#
+# No arma un .ipa: para eso hace falta el proyecto de Xcode, que todavia no
+# existe en el repo, mas cuenta de Apple Developer y certificados.
+name: Verificar iOS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - 'compartido/**'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/verificar-ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    # macOS con Apple Silicon: los targets del proyecto son iosArm64 e
+    # iosSimulatorArm64, y el simulador arm64 necesita un host arm64.
+    runs-on: macos-15
+
+    steps:
+      - name: Traer el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Se cachea tambien ~/.konan: el compilador de Kotlin/Native se baja
+      # aparte y pesa cientos de MB, asi que sin eso cada corrida lo trae de
+      # nuevo. Los comentarios van aca arriba y no dentro de `path:`, que es un
+      # escalar literal donde una almohadilla es texto y no comentario.
+      - name: Cache de Gradle y de Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ios-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: ios-
+
+      # Hace falta aunque aca no se compile nada de Android: `:compartido` tiene
+      # un androidTarget y `:app` esta en el settings, asi que Gradle configura
+      # los dos en cualquier invocacion y AGP exige la plataforma instalada. Las
+      # imagenes macOS de Apple Silicon no traen el SDK de Android.
+      - name: Preparar el SDK de Android
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - name: Que version de Xcode hay
+        # Queda en el log a proposito: si un dia esto falla por el compilador de
+        # Apple y no por el codigo, esta linea es la que lo explica.
+        run: xcodebuild -version
+
+      - name: Compilar el contrato compartido para iOS
+        run: ./gradlew :compartido:compileKotlinIosSimulatorArm64 --no-daemon
+
+      - name: Correr las pruebas del contrato en el simulador
+        run: ./gradlew :compartido:iosSimulatorArm64Test --no-daemon
+
+      - name: Compilar la version de iOS
+        run: ./gradlew :ios:compileKotlinIosSimulatorArm64 --no-daemon
+
+      - name: Enlazar el framework que consume Xcode
+        # El paso que de verdad prueba que hay algo utilizable: compilar valida
+        # el codigo, enlazar valida que el framework se pueda armar con todas
+        # sus dependencias nativas dentro, MapLibre incluido.
+        run: ./gradlew :ios:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+
+      - name: Guardar los reportes de prueba si algo fallo
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-ios
+          path: |
+            compartido/build/reports/tests/
+            compartido/build/test-results/
+          retention-days: 14

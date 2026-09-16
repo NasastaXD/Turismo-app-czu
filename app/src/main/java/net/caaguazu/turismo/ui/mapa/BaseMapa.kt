@@ -5,6 +5,7 @@ import net.caaguazu.turismo.core.Falla
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Resultado
 import net.caaguazu.turismo.core.intentar
+import net.caaguazu.turismo.datos.Encuadre
 import java.io.File
 
 /**
@@ -21,14 +22,16 @@ object BaseMapa {
     private const val ORIGEN = "map/caaguazu.pmtiles"
     private const val DESTINO = "caaguazu.pmtiles"
     private const val ESTILO = "map/estilo.json"
-    private const val MARCA_RUTA = "__RUTA_PMTILES__"
+    private const val MARCA_RUTA = Encuadre.MARCA_RUTA
 
-    /** Centro de Caaguazu y encuadre util, derivados del recorte que lleva el APK. */
-    const val LAT_CENTRO = -25.4730
-    const val LON_CENTRO = -56.0224
-    const val ZOOM_INICIAL = 13.5
-    const val ZOOM_MIN = 9.0
-    const val ZOOM_MAX = 18.0
+    // Centro de Caaguazu y encuadre util, derivados del recorte que lleva el APK.
+    // Los valores viven en :compartido porque iOS dibuja el mismo territorio; se
+    // reexportan con estos nombres para no tocar las pantallas que ya los usan.
+    const val LAT_CENTRO = Encuadre.LAT_CENTRO
+    const val LON_CENTRO = Encuadre.LON_CENTRO
+    const val ZOOM_INICIAL = Encuadre.ZOOM_INICIAL
+    const val ZOOM_MIN = Encuadre.ZOOM_MIN
+    const val ZOOM_MAX = Encuadre.ZOOM_MAX
 
     /**
      * Deja el archivo disponible en disco y devuelve su ruta.
