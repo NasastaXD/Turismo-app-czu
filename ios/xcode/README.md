@@ -37,7 +37,28 @@ llame a Gradle, para que el framework se regenere solo. Sin eso hay que
 acordarse de correr Gradle a mano cada vez que cambia el Kotlin, y
 olvidarse produce un error de compilación confuso.
 
-## 3. El mapa, que es lo que más fácil se rompe
+## 3. Los recursos de Compose
+
+Antes de generar el proyecto hay que juntar los Compose Resources que traen
+las dependencias —maplibre-compose empaqueta así los textos de su
+atribución— en `ios/xcode/Generado/compose-resources`:
+
+```sh
+mkdir -p ios/xcode/Generado/compose-resources
+find ios/build compartido/build -type d -name compose-resources \
+  -exec cp -R {}/. ios/xcode/Generado/compose-resources/ \;
+```
+
+Sin esto la app **compila y arranca, y se cae a los pocos segundos** con
+`MissingResourceException`. Pasó, y costó varias vueltas de CI encontrarlo,
+porque el mensaje va a stderr y no al registro del sistema.
+
+El paso equivalente en el workflow se llama «Juntar los recursos de Compose»,
+y busca la carpeta en lugar de tener la ruta escrita: la salida del plugin de
+Compose cambió de lugar entre versiones, y una ruta quemada se rompería en
+silencio.
+
+## 4. El mapa, que es lo que más fácil se rompe
 
 Arrastrar `app/src/main/assets/map/` al proyecto y elegir **Create folder
 references**, *no* "Create groups".
@@ -50,7 +71,7 @@ nombres de lugares. Es un fallo silencioso y confunde.
 El bundle tiene que quedar con `map/caaguazu.pmtiles` y `map/glifos/…`
 adentro, con esa forma exacta.
 
-## 4. Qué debería verse
+## 5. Qué debería verse
 
 El distrito de Caaguazú en vectorial, centrado, con las etiquetas en
 Poppins y `© OpenStreetMap` abajo. Todo desde el archivo embebido: se puede

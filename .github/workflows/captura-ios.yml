@@ -64,6 +64,30 @@ jobs:
         # referencia por ruta.
         run: ./gradlew :ios:linkDebugFrameworkIosSimulatorArm64 --no-daemon
 
+      # Tiene que ir antes de generar el proyecto: XcodeGen exige que la
+      # carpeta exista cuando arma el .xcodeproj.
+      - name: Juntar los recursos de Compose
+        run: |
+          set -x
+          DESTINO=ios/xcode/Generado/compose-resources
+          rm -rf "$DESTINO"
+          mkdir -p "$DESTINO"
+
+          # Se buscan en lugar de escribir la ruta a mano: la salida de Gradle
+          # para los Compose Resources de iOS cambio de lugar entre versiones
+          # del plugin, y una ruta quemada se rompe en silencio — el sintoma
+          # seria justo la caida que esto arregla. Si algun dia no aparece
+          # nada, el `find` queda en el log y se ve.
+          find ios/build compartido/build -type d -name "compose-resources" \
+            2>/dev/null | tee /tmp/recursos.txt
+
+          while read -r CARPETA; do
+            [ -n "$CARPETA" ] && cp -R "$CARPETA/." "$DESTINO/" || true
+          done < /tmp/recursos.txt
+
+          echo "archivos juntados: $(find "$DESTINO" -type f | wc -l | tr -d ' ')"
+          find "$DESTINO" -name "*.cvr" | head -10
+
       - name: Instalar XcodeGen
         run: brew install xcodegen
 

@@ -35,6 +35,19 @@ targets:
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources
 
+      # Los recursos de Compose que traen las dependencias — maplibre-compose
+      # empaqueta los textos de su atribucion como Compose Resources. Sin
+      # ellos la app se caia con MissingResourceException buscando
+      # `compose-resources/composeResources/.../strings.commonMain.cvr`.
+      #
+      # La carpeta la arma el paso "Juntar los recursos de Compose" del
+      # workflow, que los busca en la salida de Gradle y los copia aca. Va
+      # como referencia de carpeta para que la estructura de adentro se
+      # preserve: es lo que la ruta del error espera.
+      - path: Generado/compose-resources
+        type: folder
+        buildPhase: resources
+
       # El mapa, como REFERENCIA DE CARPETA y no como grupo. Es lo que
       # preserva `map/glifos/{fontstack}/{range}.pbf`: si Xcode aplana la
       # estructura, el mapa dibuja pero sin una sola etiqueta —ni calles ni
@@ -57,6 +70,11 @@ targets:
         CFBundleVersion: "1"
         UILaunchScreen: {}
         UIUserInterfaceStyle: Automatic
+        # Compose Multiplatform comprueba esta clave al arrancar y lanza
+        # IllegalStateException si falta o es false — la app se caia por esto,
+        # con el mensaje diciendo exactamente que agregar. Sin ella, en un
+        # iPhone de pantalla rapida el dibujado queda limitado a 60 Hz.
+        CADisableMinimumFrameDurationOnPhone: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         # La app no pide ni un permiso: no hay ubicacion, ni camara, ni
