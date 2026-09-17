@@ -223,21 +223,32 @@ jobs:
 
           xcrun simctl terminate "$UDID" net.caaguazu.turismo || true
 
-          # El primer lanzamiento va con la consola atada y en segundo plano,
-          # y es lo que faltaba para diagnosticar: Kotlin/Native escribe
-          # "Uncaught Kotlin exception: <mensaje>" a **stderr**, no al registro
-          # unificado del sistema. Por eso `log show` mostraba la caida
-          # —terminateWithUnhandledException en la pila del informe— pero nunca
-          # el motivo. Esto lo guarda en un archivo que va al artefacto.
+          # PRIMERA PASADA, solo para diagnosticar. Con la consola atada y en
+          # segundo plano: Kotlin/Native escribe "Uncaught Kotlin exception:
+          # <mensaje>" a stderr, no al registro unificado del sistema, y esa
+          # fue la unica forma de encontrar las dos causas de la caida. Tambien
+          # es donde maplibre-compose deja dicho si dibujo su primer cuadro.
           nohup xcrun simctl launch --console-pty \
             "$UDID" net.caaguazu.turismo \
             > ../../capturas/salida-de-la-app.txt 2>&1 &
+          sleep 15
 
-          # Y el segundo lo trae al frente. Sobre una app ya viva `launch` no
-          # reinicia nada, y la consola del primero sigue atada y capturando.
-          sleep 12
+          # Y se termina. La sospecha es que `--console-pty` deja la app
+          # corriendo sin quedar al frente: con el mapa ya dibujando su primer
+          # cuadro —lo dice la salida de arriba— la captura seguia trayendo el
+          # escritorio de SpringBoard. Asi que la pasada de diagnostico se
+          # cierra antes de la buena.
+          xcrun simctl terminate "$UDID" net.caaguazu.turismo || true
+          sleep 3
+
+          # SEGUNDA PASADA, la que se fotografia: lanzamiento limpio y sin
+          # consola atada, que es la forma normal de que una app quede al
+          # frente en el simulador.
           SALIDA=$(xcrun simctl launch "$UDID" net.caaguazu.turismo)
           echo "$SALIDA"
+
+          echo "--- simuladores arrancados ---"
+          xcrun simctl list devices booted
 
           # El pid queda para el paso de las capturas: con eso, una falla
           # distingue "la app se murio" de "esta viva pero no se ve", que son
