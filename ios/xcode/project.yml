@@ -86,7 +86,7 @@ targets:
     dependencies:
       # Estatico, por eso `embed: false`: un framework dinamico habria que
       # firmarlo y embeberlo aparte, y no gana nada para un solo consumidor.
-      - framework: ../build/bin/iosSimulatorArm64/debugFramework/Turismo.framework
+      - framework: ../build/bin/iosSimulatorArm64/debugFramework/TurismoKit.framework
         embed: false
         codeSign: false
 

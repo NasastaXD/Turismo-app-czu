@@ -20,7 +20,11 @@ archivos de este directorio en su lugar.
 ./gradlew :ios:linkDebugFrameworkIosSimulatorArm64
 ```
 
-Sale en `ios/build/bin/iosSimulatorArm64/debugFramework/Turismo.framework`.
+Sale en `ios/build/bin/iosSimulatorArm64/debugFramework/TurismoKit.framework`.
+
+Se llama **TurismoKit** y no Turismo a proposito: el modulo de la app en
+Xcode ya se llama Turismo, y Swift no puede importar un modulo que se llame
+igual que el que se esta compilando.
 Para el dispositivo real es `linkDebugFrameworkIosArm64` (y
 `linkReleaseFramework…` para release).
 

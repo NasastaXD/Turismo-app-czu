@@ -25,7 +25,11 @@ kotlin {
     // su Gradle module metadata, no supuesto.
     listOf(iosArm64(), iosSimulatorArm64()).forEach { objetivo ->
         objetivo.binaries.framework {
-            baseName = "Turismo"
+            // TurismoKit y no Turismo: el modulo de la app en Xcode ya se
+            // llama Turismo, y Swift no puede importar un modulo con el mismo
+            // nombre que el que se esta compilando. Ademas separa bien las dos
+            // cosas: esto es la biblioteca, aquello es la app.
+            baseName = "TurismoKit"
             // Estatico: un framework dinamico obliga a firmarlo y embeberlo
             // aparte, y no gana nada para un solo consumidor.
             isStatic = true
