@@ -136,6 +136,15 @@ jobs:
           # lugar de adivinar con un sleep.
           xcrun simctl bootstatus "$SOLO_UDID"
 
+          # Y despues de bootstatus, un rato mas. No es supersticion: en la
+          # primera corrida que llego hasta aca, la app arranco bien —la vista
+          # de Compose quedo en la jerarquia y MapLibre creo su runtime, los dos
+          # en el registro— pero la captura salio con el escritorio de iOS
+          # encima. bootstatus vuelve cuando el sistema arranco, no cuando
+          # SpringBoard termino de dibujar el escritorio, y una app lanzada en
+          # esa ventana queda tapada.
+          sleep 15
+
       - name: Instalar y arrancar la app
         working-directory: ios/xcode
         # Techo corto: instalar y lanzar son cosa de segundos. La primera vez
@@ -162,21 +171,35 @@ jobs:
           xcrun simctl launch --terminate-running-process \
             "$UDID" net.caaguazu.turismo
 
-          echo "app lanzada, esperando que el mapa cargue"
+          # Se lanza dos veces a proposito. La segunda no reinicia nada: sobre
+          # una app ya viva, `launch` la trae al frente, que es justo lo que
+          # faltaba cuando el escritorio quedaba encima. Entre las dos, tiempo
+          # para que la primera termine de montar su ventana.
+          sleep 10
+          xcrun simctl launch "$UDID" net.caaguazu.turismo
+
+          echo "app lanzada y traida al frente"
 
       - name: Sacar las capturas
         timeout-minutes: 5
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
-        # Dos capturas y no una: si la primera sale en blanco y la segunda con
-        # el mapa, eso dice "tarda en cargar". Una sola captura en blanco no
-        # distingue entre lento y roto.
+        # Tres capturas y no una: una sola en blanco no distingue entre lento y
+        # roto. Con tres se lee la secuencia — si el mapa aparece en la segunda
+        # o la tercera, tarda; si no aparece en ninguna, no llega.
         run: |
+          set -x
           mkdir -p capturas
-          sleep 6
-          xcrun simctl io "$UDID" screenshot capturas/1-a-los-6-segundos.png
-          sleep 18
-          xcrun simctl io "$UDID" screenshot capturas/2-a-los-24-segundos.png
+          sleep 8
+          xcrun simctl io "$UDID" screenshot capturas/1-a-los-8-segundos.png
+          sleep 17
+          xcrun simctl io "$UDID" screenshot capturas/2-a-los-25-segundos.png
+          sleep 20
+          xcrun simctl io "$UDID" screenshot capturas/3-a-los-45-segundos.png
+
+          # Si las tres son identicas, la pantalla nunca cambio, y eso conviene
+          # que se lea en el log sin tener que bajar los PNG.
+          md5 capturas/*.png
           ls -la capturas/
 
       - name: Guardar el registro de la app
