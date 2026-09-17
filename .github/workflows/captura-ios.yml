@@ -166,6 +166,11 @@ jobs:
         # sistema — y ahi es donde se ve si `pmtiles://` no resolvio.
         run: |
           mkdir -p capturas
+          if [ -z "$UDID" ]; then
+            echo "el simulador nunca arranco: no hay registro que traer" \
+              | tee capturas/registro-de-la-app.txt
+            exit 0
+          fi
           xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "Turismo"' \
             > capturas/registro-de-la-app.txt 2>&1 || true
           tail -40 capturas/registro-de-la-app.txt || true
