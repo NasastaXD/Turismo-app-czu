@@ -1,9 +1,7 @@
 package net.caaguazu.turismo.ios
 
 import androidx.compose.ui.window.ComposeUIViewController
-import kotlinx.cinterop.ExperimentalForeignApi
 import net.caaguazu.turismo.core.Bitacora
-import platform.Foundation.NSLog
 import platform.UIKit.UIViewController
 
 /**
@@ -40,15 +38,29 @@ fun puntoDeEntrada(): UIViewController {
  * esto todo lo que anotan `Http` y `Cache` se perderia — justo lo que hace
  * falta para diagnosticar si los pines llegaron o no.
  *
- * Va a NSLog y no a `println` a proposito: NSLog escribe al registro unificado
- * del sistema, que es de donde el workflow "Captura de iOS" saca el log con
- * `log show`. Un `println` iria a stdout y ese paso no lo veria.
+ * Va a `println` y NO a NSLog, y esto costo dos caidas: **un String de Kotlin
+ * pasado como vararg de Objective-C no se convierte a NSString**. NSLog recibe
+ * un objeto de Kotlin, le pregunta `respondsToSelector` y el proceso muere con
+ * EXC_BAD_ACCESS. La pila del informe de caida lo dice entero:
+ *
+ *   Bitacora.anotar -> engancharBitacora$1.invoke -> NSLog ->
+ *   __CFSTRING_IS_CALLING_OUT_TO_AN_OBJECT_FORMAT_ARGUMENT ->
+ *   objc_opt_respondsToSelector -> SIGSEGV
+ *
+ * No era el especificador de formato. Cambiar `%s` por `%@` no arreglo nada
+ * porque el problema es el paso del argumento, no como se lo imprime. Y el
+ * sintoma era de los peores: la app arrancaba, dibujaba el mapa, pedia por red
+ * con exito, y moria recien al anotar la primera linea.
+ *
+ * `println` es de Kotlin y no cruza a Objective-C, asi que no puede pasar. Se
+ * pierde el registro unificado del sistema —`log show` no ve stdout— y a
+ * cambio no se pierde la app. Para diagnosticar hay dos vias mejores que ya
+ * estan en el workflow: los informes de caida y la consola atada.
  *
  * Esto es el equivalente de lo que hace `App` en Android, donde engancha al
  * `Registro` de siempre. Aca no hay archivo rotativo ni pantalla de
  * diagnostico: cuando haga falta, es el lugar donde van.
  */
-@OptIn(ExperimentalForeignApi::class)
 private fun engancharBitacora() {
     // Idempotente: `puntoDeEntrada` se puede llamar mas de una vez si Swift
     // recrea la vista, y no hace falta reemplazar el destino cada vez.
@@ -56,17 +68,6 @@ private fun engancharBitacora() {
 
     Bitacora.destino = { nivel, etiqueta, mensaje, causa ->
         val porque = causa?.message?.let { " — $it" } ?: ""
-
-        // `%@` y un solo argumento, no `%s` con varios. Un String de Kotlin
-        // llega a NSLog convertido en NSString, o sea un objeto, y `%s` espera
-        // un puntero a char de C: leer un objeto como cadena de C es una falta
-        // de memoria que mata el proceso entero.
-        //
-        // Eso es exactamente lo que pasaba. La app arrancaba, la ventana se
-        // volvia key, Compose componia, el LaunchedEffect pedia los
-        // marcadores, Http anotaba la primera linea aca, y el proceso moria
-        // antes de la primera captura. Por eso nunca aparecio ni una linea de
-        // la bitacora en el registro: se caia al escribir la primera.
-        NSLog("%@", "[" + nivel.name + "] " + etiqueta + ": " + mensaje + porque)
+        println("[" + nivel.name + "] " + etiqueta + ": " + mensaje + porque)
     }
 }
