@@ -7,6 +7,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
+import net.caaguazu.turismo.core.Bitacora
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Registro
@@ -22,6 +23,20 @@ class App : Application() {
 
         // El registro primero: si algo falla mas abajo, queda constancia.
         Registro.iniciar(this)
+
+        // El codigo compartido con iOS no puede llamar a `Registro` —escribe a
+        // Logcat y a un archivo, y nada de eso existe del otro lado—, asi que
+        // anota en `Bitacora` y aca se la engancha al registro de siempre. Sin
+        // esta linea la app funciona igual pero pierde lo que anotan `Cache` y
+        // `Http`, que es justo lo que hace falta para diagnosticar la red.
+        Bitacora.destino = { nivel, etiqueta, mensaje, causa ->
+            when (nivel) {
+                Bitacora.Nivel.DETALLE -> Registro.detalle(etiqueta, mensaje)
+                Bitacora.Nivel.INFO -> Registro.info(etiqueta, mensaje)
+                Bitacora.Nivel.AVISO -> Registro.aviso(etiqueta, mensaje)
+                Bitacora.Nivel.FALLO -> Registro.fallo(etiqueta, mensaje, causa)
+            }
+        }
         Ajustes.iniciar(this)
         // El idioma antes que los textos: es quien decide cual de los tres
         // juegos embebidos se carga encima del castellano.

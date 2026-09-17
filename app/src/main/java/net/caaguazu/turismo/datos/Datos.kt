@@ -28,7 +28,7 @@ object Datos {
         private set
 
     fun iniciar(contexto: Context) {
-        cache = Cache(File(contexto.cacheDir, "api"))
+        cache = Cache(File(contexto.cacheDir, "api").absolutePath)
         api = ApiHttp(Http(cache), BuildConfig.URL_BASE)
     }
 
