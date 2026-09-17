@@ -136,16 +136,23 @@ jobs:
           # lugar de adivinar con un sleep.
           xcrun simctl bootstatus "$SOLO_UDID"
 
-          # Y despues de bootstatus, un rato mas. No es supersticion: en la
-          # primera corrida que llego hasta aca, la app arranco bien —la vista
-          # de Compose quedo en la jerarquia y MapLibre creo su runtime, los dos
-          # en el registro— pero la captura salio con el escritorio de iOS
-          # encima. bootstatus vuelve cuando el sistema arranco, no cuando
-          # SpringBoard termino de dibujar el escritorio, y una app lanzada en
-          # esa ventana queda tapada.
-          sleep 15
+          # Abrir Simulator.app, y esto es lo que faltaba. Un simulador
+          # booteado solo con `simctl boot` corre headless: la app arranca y
+          # corre —el registro lo probo dos veces, con la vista de Compose en
+          # la jerarquia y MapLibre creando su runtime— pero no hay anfitrion
+          # de interfaz que componga su ventana al framebuffer, asi que
+          # `simctl io screenshot` devuelve el escritorio de SpringBoard y nada
+          # mas. Dos corridas salieron asi, con la app viva durante las tres
+          # capturas.
+          open -a Simulator --args -CurrentDeviceUDID "$SOLO_UDID"
+
+          # Y despues, tiempo para que SpringBoard termine de dibujar:
+          # bootstatus vuelve cuando el sistema arranco, no cuando el
+          # escritorio esta listo.
+          sleep 25
 
       - name: Instalar y arrancar la app
+        id: lanzamiento
         working-directory: ios/xcode
         # Techo corto: instalar y lanzar son cosa de segundos. La primera vez
         # `simctl launch` se colgo sin devolver nunca, y sin techo el job se
@@ -172,29 +179,50 @@ jobs:
             "$UDID" net.caaguazu.turismo
 
           # Se lanza dos veces a proposito. La segunda no reinicia nada: sobre
-          # una app ya viva, `launch` la trae al frente, que es justo lo que
-          # faltaba cuando el escritorio quedaba encima. Entre las dos, tiempo
+          # una app ya viva, `launch` la trae al frente. Entre las dos, tiempo
           # para que la primera termine de montar su ventana.
           sleep 10
-          xcrun simctl launch "$UDID" net.caaguazu.turismo
+          SALIDA=$(xcrun simctl launch "$UDID" net.caaguazu.turismo)
+          echo "$SALIDA"
 
-          echo "app lanzada y traida al frente"
+          # El pid queda para el paso de las capturas: con eso, una falla
+          # distingue "la app se murio" de "esta viva pero no se ve", que son
+          # dos problemas completamente distintos.
+          echo "pid=$(echo "$SALIDA" | sed 's/.*: //')" >> "$GITHUB_OUTPUT"
+
+          # Y el Info.plist que genero XcodeGen, una vez, para descartarlo como
+          # causa sin tener que suponer nada.
+          plutil -p dd/Build/Products/Debug-iphonesimulator/Turismo.app/Info.plist \
+            | grep -iE "URL_BASE|LaunchScreen|Scene|Bundle(Identifier|Name)|DeviceFamily" || true
 
       - name: Sacar las capturas
         timeout-minutes: 5
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
+          PID: ${{ steps.lanzamiento.outputs.pid }}
         # Tres capturas y no una: una sola en blanco no distingue entre lento y
         # roto. Con tres se lee la secuencia — si el mapa aparece en la segunda
         # o la tercera, tarda; si no aparece en ninguna, no llega.
         run: |
           set -x
           mkdir -p capturas
+
+          viva() {
+            if [ -n "$PID" ] && xcrun simctl spawn "$UDID" ps -p "$PID" > /dev/null 2>&1; then
+              echo "la app sigue viva (pid $PID)"
+            else
+              echo "OJO: la app ya no esta viva (pid $PID)"
+            fi
+          }
+
           sleep 8
+          viva
           xcrun simctl io "$UDID" screenshot capturas/1-a-los-8-segundos.png
           sleep 17
+          viva
           xcrun simctl io "$UDID" screenshot capturas/2-a-los-25-segundos.png
           sleep 20
+          viva
           xcrun simctl io "$UDID" screenshot capturas/3-a-los-45-segundos.png
 
           # Si las tres son identicas, la pantalla nunca cambio, y eso conviene
