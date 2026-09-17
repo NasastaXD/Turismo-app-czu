@@ -13,6 +13,7 @@ import platform.Foundation.NSURLErrorNotConnectedToInternet
 import platform.Foundation.NSURLErrorSecureConnectionFailed
 import platform.Foundation.NSURLErrorTimedOut
 import platform.Foundation.NSURLSession
+import platform.Foundation.NSURLSessionConfiguration
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.create
 import platform.Foundation.dataTaskWithRequest
@@ -34,6 +35,25 @@ import kotlin.coroutines.resume
  * caida a la copia guardada quedaron compartidos, asi que lo unico duplicado es
  * abrir la conexion y leer la respuesta.
  */
+/**
+ * Una sola sesion para toda la app, con los timeouts del proyecto.
+ *
+ * No es `sharedSession`: esa no deja configurar tiempos de espera. Y una sesion
+ * nueva por pedido seria peor que el problema, porque cada una trae su propio
+ * pool de conexiones y tiraria a la basura la conexion reutilizable.
+ *
+ * NSURLSession distingue el timeout de un pedido —cuanto puede quedarse sin
+ * recibir un byte— del de un recurso entero. El primero toma el valor de
+ * lectura y el segundo uno mas generoso: cortar una descarga lenta pero viva
+ * seria peor que esperarla, y con la senal de un distrito de 942 km eso pasa.
+ */
+private val sesion: NSURLSession by lazy {
+    val configuracion = NSURLSessionConfiguration.defaultSessionConfiguration
+    configuracion.timeoutIntervalForRequest = Http.ESPERA_LECTURA_MS / 1000.0
+    configuracion.timeoutIntervalForResource = Http.ESPERA_LECTURA_MS * 3.0 / 1000.0
+    NSURLSession.sessionWithConfiguration(configuracion)
+}
+
 internal actual suspend fun pedirHttp(
     url: String,
     etag: String?,
@@ -47,14 +67,13 @@ internal actual suspend fun pedirHttp(
     solicitud.setValue("application/json", forHTTPHeaderField = "Accept")
     if (etag != null) solicitud.setValue(etag, forHTTPHeaderField = "If-None-Match")
 
-    // NSURLSession tiene un solo timeout por pedido, no uno de conexion y otro
-    // de lectura como HttpURLConnection. Se usa el de lectura, que es el mayor:
-    // usar el de conexion cortaria descargas legitimamente lentas.
-    //
-    // Es una propiedad y no un setter: `setTimeoutInterval(...)` no resuelve.
-    solicitud.timeoutInterval = esperaLecturaMs / 1000.0
+    // Los dos parametros de espera no se usan aca y es a proposito: el timeout
+    // va configurado en la sesion, no por pedido. `requestWithURL` devuelve la
+    // peticion con `timeoutInterval` de solo lectura, y el setter de la
+    // subclase mutable no resuelve por su nombre — asi que el lugar correcto es
+    // la configuracion de la sesion, que ademas se arma una sola vez.
 
-    val tarea = NSURLSession.sharedSession.dataTaskWithRequest(solicitud) { datos, respuesta, error ->
+    val tarea = sesion.dataTaskWithRequest(solicitud) { datos, respuesta, error ->
         if (!continuacion.isActive) return@dataTaskWithRequest
 
         if (error != null) {

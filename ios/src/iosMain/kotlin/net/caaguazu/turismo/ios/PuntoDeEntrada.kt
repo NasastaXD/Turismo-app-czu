@@ -1,6 +1,9 @@
 package net.caaguazu.turismo.ios
 
 import androidx.compose.ui.window.ComposeUIViewController
+import kotlinx.cinterop.ExperimentalForeignApi
+import net.caaguazu.turismo.core.Bitacora
+import platform.Foundation.NSLog
 import platform.UIKit.UIViewController
 
 /**
@@ -25,6 +28,34 @@ import platform.UIKit.UIViewController
  * El proyecto de Xcode todavia no existe en el repo: generarlo requiere un Mac,
  * y este entorno es Linux.
  */
-fun puntoDeEntrada(): UIViewController = ComposeUIViewController {
-    PantallaMapaIos()
+fun puntoDeEntrada(): UIViewController {
+    engancharBitacora()
+    return ComposeUIViewController { PantallaMapaIos() }
+}
+
+/**
+ * El registro del lado iOS.
+ *
+ * `Bitacora` no escribe nada hasta que una plataforma la engancha, asi que sin
+ * esto todo lo que anotan `Http` y `Cache` se perderia — justo lo que hace
+ * falta para diagnosticar si los pines llegaron o no.
+ *
+ * Va a NSLog y no a `println` a proposito: NSLog escribe al registro unificado
+ * del sistema, que es de donde el workflow "Captura de iOS" saca el log con
+ * `log show`. Un `println` iria a stdout y ese paso no lo veria.
+ *
+ * Esto es el equivalente de lo que hace `App` en Android, donde engancha al
+ * `Registro` de siempre. Aca no hay archivo rotativo ni pantalla de
+ * diagnostico: cuando haga falta, es el lugar donde van.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private fun engancharBitacora() {
+    // Idempotente: `puntoDeEntrada` se puede llamar mas de una vez si Swift
+    // recrea la vista, y no hace falta reemplazar el destino cada vez.
+    if (Bitacora.destino != null) return
+
+    Bitacora.destino = { nivel, etiqueta, mensaje, causa ->
+        val porque = causa?.message?.let { " — $it" } ?: ""
+        NSLog("[%s] %s: %s%s", nivel.name, etiqueta, mensaje, porque)
+    }
 }
