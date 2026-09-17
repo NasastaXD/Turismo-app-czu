@@ -170,18 +170,25 @@ jobs:
           # si algo se cuelga el log deja dicho en cual de los dos comandos
           # fue, que es la informacion que hacia falta.
           set -x
+          mkdir -p ../../capturas
           xcrun simctl install "$UDID" \
             dd/Build/Products/Debug-iphonesimulator/Turismo.app
 
-          # --terminate-running-process por si una corrida anterior dejo la app
-          # viva en este simulador: sin eso, `launch` se queda esperando.
-          xcrun simctl launch --terminate-running-process \
-            "$UDID" net.caaguazu.turismo
+          xcrun simctl terminate "$UDID" net.caaguazu.turismo || true
 
-          # Se lanza dos veces a proposito. La segunda no reinicia nada: sobre
-          # una app ya viva, `launch` la trae al frente. Entre las dos, tiempo
-          # para que la primera termine de montar su ventana.
-          sleep 10
+          # El primer lanzamiento va con la consola atada y en segundo plano,
+          # y es lo que faltaba para diagnosticar: Kotlin/Native escribe
+          # "Uncaught Kotlin exception: <mensaje>" a **stderr**, no al registro
+          # unificado del sistema. Por eso `log show` mostraba la caida
+          # —terminateWithUnhandledException en la pila del informe— pero nunca
+          # el motivo. Esto lo guarda en un archivo que va al artefacto.
+          nohup xcrun simctl launch --console-pty \
+            "$UDID" net.caaguazu.turismo \
+            > ../../capturas/salida-de-la-app.txt 2>&1 &
+
+          # Y el segundo lo trae al frente. Sobre una app ya viva `launch` no
+          # reinicia nada, y la consola del primero sigue atada y capturando.
+          sleep 12
           SALIDA=$(xcrun simctl launch "$UDID" net.caaguazu.turismo)
           echo "$SALIDA"
 
@@ -255,7 +262,11 @@ jobs:
           find ~/Library/Logs/DiagnosticReports -iname "*Turismo*" -maxdepth 2 \
             -exec cp {} capturas/caidas/ \; 2>/dev/null || true
           echo "informes de caida encontrados: $(ls -1 capturas/caidas | wc -l | tr -d ' ')"
-          head -40 capturas/caidas/* 2>/dev/null || true
+
+          # Lo que escribio la app a stdout/stderr: aca esta el mensaje de una
+          # excepcion de Kotlin, que es lo que el informe de caida no trae.
+          echo "=== salida de la app (stdout y stderr) ==="
+          cat capturas/salida-de-la-app.txt 2>/dev/null || echo "(no se capturo)"
 
       - name: Subir las capturas
         if: always()
