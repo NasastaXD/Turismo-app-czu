@@ -198,102 +198,56 @@ jobs:
           # escritorio esta listo.
           sleep 25
 
-      - name: Instalar y arrancar la app
+      - name: Sostener la app al frente con XCUITest y fotografiar
         id: lanzamiento
         working-directory: ios/xcode
-        # Techo corto: instalar y lanzar son cosa de segundos. La primera vez
-        # `simctl launch` se colgo sin devolver nunca, y sin techo el job se
-        # habria quedado horas ahi.
-        timeout-minutes: 5
+        timeout-minutes: 12
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
+        # Aca esta el cambio de enfoque, y la razon esta medida, no supuesta:
+        # `simctl launch` deja la app en ForegroundInactive —lo dice el propio
+        # registro del sistema— y entonces `simctl io screenshot` compone el
+        # escritorio de SpringBoard en lugar de la app. La app corre, dibuja el
+        # mapa con Metal y hasta pide por red con exito; lo unico que no hace
+        # es quedar activa.
+        #
+        # `XCUIApplication().launch()` si la activa. Asi que el test la
+        # sostiene al frente cuarenta y cinco segundos mientras el host saca
+        # las capturas desde afuera. Cada herramienta en lo que sabe hacer.
         run: |
-          # `set -x` y nada mas. NO va `timeout` alrededor de cada comando:
-          # `timeout` es de GNU coreutils y macOS no lo trae, asi que el
-          # envoltorio que estaba aca para robustecer el paso era lo que lo
-          # rompia — "timeout: command not found", codigo 127. El techo real es
-          # el `timeout-minutes` de arriba, que es nativo de Actions y no
-          # depende de que comandos traiga el sistema; combinado con `set -x`,
-          # si algo se cuelga el log deja dicho en cual de los dos comandos
-          # fue, que es la informacion que hacia falta.
           set -x
           mkdir -p ../../capturas
-          xcrun simctl install "$UDID" \
-            dd/Build/Products/Debug-iphonesimulator/Turismo.app
 
-          xcrun simctl terminate "$UDID" net.caaguazu.turismo || true
-
-          # PRIMERA PASADA, solo para diagnosticar. Con la consola atada y en
-          # segundo plano: Kotlin/Native escribe "Uncaught Kotlin exception:
-          # <mensaje>" a stderr, no al registro unificado del sistema, y esa
-          # fue la unica forma de encontrar las dos causas de la caida. Tambien
-          # es donde maplibre-compose deja dicho si dibujo su primer cuadro.
-          nohup xcrun simctl launch --console-pty \
-            "$UDID" net.caaguazu.turismo \
+          # El test corre en segundo plano y deja su salida en un archivo: es
+          # donde aparece un "Uncaught Kotlin exception", que no va al registro
+          # unificado del sistema.
+          nohup xcodebuild test \
+            -project Turismo.xcodeproj \
+            -scheme Turismo \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -derivedDataPath dd \
+            -resultBundlePath ../../capturas/resultado.xcresult \
             > ../../capturas/salida-de-la-app.txt 2>&1 &
-          sleep 15
+          echo $! > /tmp/pid-xcodebuild
 
-          # Y se termina. La sospecha es que `--console-pty` deja la app
-          # corriendo sin quedar al frente: con el mapa ya dibujando su primer
-          # cuadro —lo dice la salida de arriba— la captura seguia trayendo el
-          # escritorio de SpringBoard. Asi que la pasada de diagnostico se
-          # cierra antes de la buena.
-          xcrun simctl terminate "$UDID" net.caaguazu.turismo || true
-          sleep 3
+          # Hay que darle tiempo a que compile el target de pruebas, instale y
+          # active. Recien despues tiene sentido fotografiar.
+          sleep 45
 
-          # SEGUNDA PASADA, la que se fotografia: lanzamiento limpio y sin
-          # consola atada, que es la forma normal de que una app quede al
-          # frente en el simulador.
-          SALIDA=$(xcrun simctl launch "$UDID" net.caaguazu.turismo)
-          echo "$SALIDA"
+          for INTENTO in 1 2 3; do
+            xcrun simctl io "$UDID" screenshot \
+              "../../capturas/$INTENTO-captura.png" || true
+            sleep 12
+          done
 
-          echo "--- simuladores arrancados ---"
-          xcrun simctl list devices booted
+          md5 ../../capturas/*.png || true
+          ls -la ../../capturas/
 
-          # El pid queda para el paso de las capturas: con eso, una falla
-          # distingue "la app se murio" de "esta viva pero no se ve", que son
-          # dos problemas completamente distintos.
-          echo "pid=$(echo "$SALIDA" | sed 's/.*: //')" >> "$GITHUB_OUTPUT"
-
-          # Y el Info.plist que genero XcodeGen, una vez, para descartarlo como
-          # causa sin tener que suponer nada.
-          plutil -p dd/Build/Products/Debug-iphonesimulator/Turismo.app/Info.plist \
-            | grep -iE "URL_BASE|LaunchScreen|Scene|Bundle(Identifier|Name)|DeviceFamily" || true
-
-      - name: Sacar las capturas
-        timeout-minutes: 5
-        env:
-          UDID: ${{ steps.simulador.outputs.udid }}
-          PID: ${{ steps.lanzamiento.outputs.pid }}
-        # Tres capturas y no una: una sola en blanco no distingue entre lento y
-        # roto. Con tres se lee la secuencia — si el mapa aparece en la segunda
-        # o la tercera, tarda; si no aparece en ninguna, no llega.
-        run: |
-          set -x
-          mkdir -p capturas
-
-          viva() {
-            if [ -n "$PID" ] && xcrun simctl spawn "$UDID" ps -p "$PID" > /dev/null 2>&1; then
-              echo "la app sigue viva (pid $PID)"
-            else
-              echo "OJO: la app ya no esta viva (pid $PID)"
-            fi
-          }
-
-          sleep 8
-          viva
-          xcrun simctl io "$UDID" screenshot capturas/1-a-los-8-segundos.png
-          sleep 17
-          viva
-          xcrun simctl io "$UDID" screenshot capturas/2-a-los-25-segundos.png
-          sleep 20
-          viva
-          xcrun simctl io "$UDID" screenshot capturas/3-a-los-45-segundos.png
-
-          # Si las tres son identicas, la pantalla nunca cambio, y eso conviene
-          # que se lea en el log sin tener que bajar los PNG.
-          md5 capturas/*.png
-          ls -la capturas/
+          # Se espera al test para que su resultado y sus propios adjuntos
+          # queden completos. Si falla no se corta el paso: las capturas del
+          # host ya estan, y el log dice por que fallo.
+          wait "$(cat /tmp/pid-xcodebuild)" || true
 
       - name: Guardar el registro de la app
         if: always()
@@ -324,7 +278,21 @@ jobs:
           # Lo que escribio la app a stdout/stderr: aca esta el mensaje de una
           # excepcion de Kotlin, que es lo que el informe de caida no trae.
           echo "=== salida de la app (stdout y stderr) ==="
-          cat capturas/salida-de-la-app.txt 2>/dev/null || echo "(no se capturo)"
+          tail -60 capturas/salida-de-la-app.txt 2>/dev/null || echo "(no se capturo)"
+
+          # Las capturas que el propio test adjunto al resultado, como segunda
+          # via por si las del host salieran mal. Se extraen y se tira el
+          # .xcresult: es un bundle de miles de archivos y no tiene sentido
+          # subirlo entero.
+          if [ -d capturas/resultado.xcresult ]; then
+            mkdir -p capturas/del-test
+            xcrun xcresulttool export attachments \
+              --path capturas/resultado.xcresult \
+              --output-path capturas/del-test 2>/dev/null \
+              || echo "(no se pudieron extraer los adjuntos del test)"
+            find capturas/del-test -type f | head -10
+            rm -rf capturas/resultado.xcresult
+          fi
 
       - name: Subir las capturas
         if: always()

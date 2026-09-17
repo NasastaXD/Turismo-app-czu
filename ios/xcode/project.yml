@@ -30,6 +30,11 @@ targets:
       - path: .
         includes:
           - "*.swift"
+        excludes:
+          # El test de interfaz pertenece a su propio target. Sin excluirlo,
+          # `*.swift` podria arrastrarlo aca y el mismo archivo en dos targets
+          # es un error de compilacion.
+          - "Pruebas/**"
         group: Swift
 
       - path: PrivacyInfo.xcprivacy
@@ -112,10 +117,34 @@ targets:
         embed: false
         codeSign: false
 
+  # Las pruebas de interfaz existen por una razon practica: son la unica forma
+  # confiable de que la app quede ACTIVA al frente en un simulador de CI.
+  # `simctl launch` la deja en ForegroundInactive y la captura sale con el
+  # escritorio; `XCUIApplication().launch()` la activa de verdad.
+  TurismoUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Pruebas
+    dependencies:
+      - target: Turismo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo.pruebas
+        TEST_TARGET_NAME: Turismo
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
+
 schemes:
   Turismo:
     build:
       targets:
         Turismo: all
+        TurismoUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - TurismoUITests
     run:
       config: Debug
