@@ -24,6 +24,9 @@ permissions:
 jobs:
   captura:
     runs-on: macos-15
+    # Con cache la corrida entera es de unos 4 minutos. 25 deja margen de sobra
+    # para una corrida en frio y corta en seco cualquier paso que se cuelgue.
+    timeout-minutes: 25
 
     steps:
       - name: Traer el codigo
@@ -135,16 +138,28 @@ jobs:
 
       - name: Instalar y arrancar la app
         working-directory: ios/xcode
+        # Techo corto: instalar y lanzar son cosa de segundos. La primera vez
+        # `simctl launch` se colgo sin devolver nunca, y sin techo el job se
+        # habria quedado horas ahi.
+        timeout-minutes: 5
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
         run: |
-          xcrun simctl install "$UDID" dd/Build/Products/Debug-iphonesimulator/Turismo.app
-          # Sin segundo plano: `launch` devuelve el pid y vuelve. La app corre
-          # dentro del simulador, no como hija de este shell.
-          xcrun simctl launch "$UDID" net.caaguazu.turismo
+          set -x
+          # `timeout` tambien en cada comando: asi el log dice cual de los dos
+          # se colgo, en lugar de que el paso entero muera sin decir donde.
+          timeout 120 xcrun simctl install "$UDID" \
+            dd/Build/Products/Debug-iphonesimulator/Turismo.app
+
+          # --terminate-running-process por si una corrida anterior dejo la app
+          # viva en este simulador: sin eso, `launch` se queda esperando.
+          timeout 120 xcrun simctl launch --terminate-running-process \
+            "$UDID" net.caaguazu.turismo
+
           echo "app lanzada, esperando que el mapa cargue"
 
       - name: Sacar las capturas
+        timeout-minutes: 5
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
         # Dos capturas y no una: si la primera sale en blanco y la segunda con
