@@ -39,7 +39,7 @@ object DecodificadorTolerante {
             try {
                 Analizador.decodeFromJsonElement(elemento, item)
             } catch (e: Throwable) {
-                Registro.aviso(ETIQUETA, "un elemento de $origen no encaja con el modelo, se omite: ${e.message}")
+                Bitacora.aviso(ETIQUETA, "un elemento de $origen no encaja con el modelo, se omite: ${e.message}")
                 null
             }
         }

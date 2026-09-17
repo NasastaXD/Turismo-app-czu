@@ -17,7 +17,6 @@ import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.create
 import platform.Foundation.dataTaskWithRequest
 import platform.Foundation.setHTTPMethod
-import platform.Foundation.setTimeoutInterval
 import platform.Foundation.setValue
 import kotlin.coroutines.resume
 
@@ -51,7 +50,9 @@ internal actual suspend fun pedirHttp(
     // NSURLSession tiene un solo timeout por pedido, no uno de conexion y otro
     // de lectura como HttpURLConnection. Se usa el de lectura, que es el mayor:
     // usar el de conexion cortaria descargas legitimamente lentas.
-    solicitud.setTimeoutInterval(esperaLecturaMs / 1000.0)
+    //
+    // Es una propiedad y no un setter: `setTimeoutInterval(...)` no resuelve.
+    solicitud.timeoutInterval = esperaLecturaMs / 1000.0
 
     val tarea = NSURLSession.sharedSession.dataTaskWithRequest(solicitud) { datos, respuesta, error ->
         if (!continuacion.isActive) return@dataTaskWithRequest

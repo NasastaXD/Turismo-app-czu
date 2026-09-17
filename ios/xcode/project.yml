@@ -49,6 +49,10 @@ targets:
       path: Generado/Info.plist
       properties:
         CFBundleDisplayName: Turismo
+        # La URL base nunca va quemada en el codigo, aunque hoy solo exista
+        # una. Del lado Android vive en un buildConfigField; el equivalente de
+        # iOS es esto, y `Marcadores` la lee de aca.
+        URL_BASE: https://caaguazu.net/wp-json/czu-app/v1/
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}

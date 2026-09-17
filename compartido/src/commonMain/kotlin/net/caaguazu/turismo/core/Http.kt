@@ -1,6 +1,5 @@
 package net.caaguazu.turismo.core
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
@@ -36,9 +35,9 @@ class Http(private val cache: Cache) {
      */
     data class Cuerpo(val texto: String, val deCache: Boolean)
 
-    // Dispatchers.IO envuelve todo y no solo el pedido: la cache tambien toca
+    // El despachador envuelve todo y no solo el pedido: la cache tambien toca
     // disco, y leerla en el hilo que dibuja se siente como tirones.
-    suspend fun obtener(url: String): Resultado<Cuerpo> = withContext(Dispatchers.IO) {
+    suspend fun obtener(url: String): Resultado<Cuerpo> = withContext(despachadorIo) {
         val guardado = cache.leer(url)
 
         var intento = pedirHttp(url, guardado?.etag, ESPERA_CONEXION_MS, ESPERA_LECTURA_MS)
