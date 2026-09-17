@@ -69,21 +69,44 @@ jobs:
       - name: Juntar los recursos de Compose
         run: |
           set -x
+
+          # Que tareas de recursos existen, preguntado a Gradle y no recordado:
+          # el nombre cambio entre versiones del plugin de Compose y ya hubo
+          # una vuelta perdida por dar una ruta por buena.
+          ./gradlew :ios:tasks --all --no-daemon 2>/dev/null \
+            | grep -iE "resource" || echo "(ninguna tarea de recursos en :ios)"
+
+          # La tarea que Compose Multiplatform agrega para iOS. Va con
+          # `|| true` porque si no existe con ese nombre, lo que manda es el
+          # listado de arriba y el `find` de abajo.
+          ./gradlew :ios:syncComposeResourcesForIos --no-daemon || true
+
           DESTINO=ios/xcode/Generado/compose-resources
           rm -rf "$DESTINO"
           mkdir -p "$DESTINO"
 
-          # Se buscan en lugar de escribir la ruta a mano: la salida de Gradle
-          # para los Compose Resources de iOS cambio de lugar entre versiones
-          # del plugin, y una ruta quemada se rompe en silencio — el sintoma
-          # seria justo la caida que esto arregla. Si algun dia no aparece
-          # nada, el `find` queda en el log y se ve.
-          find ios/build compartido/build -type d -name "compose-resources" \
-            2>/dev/null | tee /tmp/recursos.txt
+          # Los recursos de las dependencias no salen del codigo de :ios —que
+          # no tiene ninguno— sino de una variante publicada aparte:
+          # maplibre-compose declara `iosSimulatorArm64ResourcesElements`. Asi
+          # que se busca ancho: en el arbol de compilacion y en la cache de
+          # Gradle, por los dos nombres que usa el plugin.
+          echo "--- carpetas compose-resources ---"
+          find . -type d -name "compose-resources" 2>/dev/null | tee /tmp/con-guion.txt
+          echo "--- carpetas composeResources ---"
+          find . -type d -name "composeResources" 2>/dev/null | tee /tmp/sin-guion.txt
+          echo "--- archivos .cvr donde sea ---"
+          find . ~/.gradle/caches/modules-2 -name "*.cvr" 2>/dev/null | head -20
 
+          # `compose-resources/` ya tiene la forma que espera el bundle, asi
+          # que se copia su contenido tal cual.
           while read -r CARPETA; do
             [ -n "$CARPETA" ] && cp -R "$CARPETA/." "$DESTINO/" || true
-          done < /tmp/recursos.txt
+          done < /tmp/con-guion.txt
+
+          # `composeResources/` es el nivel de adentro: va como subcarpeta.
+          while read -r CARPETA; do
+            [ -n "$CARPETA" ] && cp -R "$CARPETA" "$DESTINO/" || true
+          done < /tmp/sin-guion.txt
 
           echo "archivos juntados: $(find "$DESTINO" -type f | wc -l | tr -d ' ')"
           find "$DESTINO" -name "*.cvr" | head -10
