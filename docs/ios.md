@@ -123,16 +123,37 @@ explícita contra dar por bueno lo que no se comprobó.
   **(longitud, latitud)** —el orden de GeoJSON, no el que se dice en voz
   alta— y por eso el código usa argumentos nombrados.
 
-**No verificado todavía:** que el módulo `:ios` compile. Kotlin/Native no
-cruza a iOS desde Linux, y el entorno donde se escribe este proyecto es
-Linux. Para eso está el workflow **"Verificar iOS"**, que corre en un
-runner macOS y hace cuatro cosas: compila `:compartido` para iOS, **corre
-sus pruebas en el simulador de verdad**, compila `:ios`, y enlaza el
-framework que Xcode va a consumir. Mientras ese workflow no esté en verde,
-`:ios` es código que nadie comprobó.
+**Verificado también, y esto es lo importante: el mapa se dibuja.**
 
-Y lo que ningún CI puede decir: **nadie vio este mapa dibujado en un
-iPhone.** Eso lo comprueba una persona con el proyecto de Xcode armado.
+![El mapa de Caaguazú en un iPhone simulado](imagenes/mapa-en-iphone.png)
+
+Esa captura sale del workflow **"Captura de iOS"**, que arma el proyecto de
+Xcode con XcodeGen, compila la app, arranca un simulador de iPhone, la corre
+y fotografía. En ella se ve, y cada cosa comprueba algo distinto:
+
+- **La red de calles, el agua y los nombres de lugar** — el `.pmtiles` de
+  2 MB leyéndose del bundle, sin servidor de tiles.
+- **Los nombres en Poppins** — los glifos resolvieron, o sea que la carpeta
+  del mapa entró al bundle con su estructura intacta. Era el fallo silencioso
+  que más preocupaba.
+- **`© OpenStreetMap`** abajo a la derecha — la ODbL cumplida.
+- **El pin oscuro al centro** — viene de `/mapa/markers`, traído por red con
+  NSURLSession y decodificado con los modelos compartidos. El camino de datos
+  completo, de punta a punta.
+
+Lo que sigue sin comprobar: cómo se siente en un **iPhone de verdad**, con
+los dedos. Un simulador no dice nada del tamaño real de los textos ni de si
+el mapa se arrastra con soltura. Eso lo comprueba una persona.
+
+**Lo que costó llegar hasta acá**, porque la próxima vez conviene saberlo: el
+mapa compiló y arrancó mucho antes de que se pudiera ver, y cinco cosas
+distintas lo tapaban. En orden: el simulador Intel, que no existe para este
+framework; el `import` del framework, que faltaba y que además no podía
+llamarse igual que la app; la clave `CADisableMinimumFrameDurationOnPhone`,
+sin la cual Compose Multiplatform se niega a arrancar; los Compose Resources
+de las dependencias, que no viajaban en el bundle; y un `NSLog` con un String
+de Kotlin, que mataba el proceso justo al anotar la primera línea. Ninguna de
+las cinco se veía sin correr la app de verdad.
 
 ---
 
