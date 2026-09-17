@@ -39,6 +39,13 @@ object Idioma {
 
     data class Disponible(val codigo: String, val nombre: String)
 
+    /**
+     * El contexto de la aplicacion, para poder recargar los textos embebidos
+     * cuando el idioma cambia sin que nadie lo haya tocado en pantalla. Es el
+     * de la aplicacion, que vive tanto como el proceso: no hay nada que filtrar.
+     */
+    private var contextoApp: Context? = null
+
     /** Leerlo desde una composicion la suscribe: cambiar de idioma redibuja la app. */
     var actual by mutableStateOf(ORIGINAL)
         private set
@@ -55,6 +62,7 @@ object Idioma {
      * castellano, que es el original, y no en un idioma que no existe.
      */
     fun iniciar(contexto: Context) {
+        contextoApp = contexto.applicationContext
         val guardado = Ajustes.idioma
         actual = guardado ?: delSistema()
         Registro.info(ETIQUETA, "idioma inicial: $actual (guardado=$guardado)")
@@ -77,7 +85,14 @@ object Idioma {
         // original en vez de seguir pidiendo algo que ya no se sirve.
         if (lista.none { it.codigo == actual }) {
             Registro.aviso(ETIQUETA, "$actual ya no esta en la lista del panel; se vuelve a $ORIGINAL")
+            // Mover `actual` no alcanzaba. Habia que soltar tambien la eleccion
+            // guardada —si no, el proximo arranque volvia a pedir el idioma que
+            // el panel ya no sirve— y recargar los textos, que seguian siendo
+            // los del idioma abandonado: la interfaz quedaba en un idioma y el
+            // contenido en otro.
+            Ajustes.idioma = null
             actual = ORIGINAL
+            contextoApp?.let { cargarTextos(it) }
         }
     }
 

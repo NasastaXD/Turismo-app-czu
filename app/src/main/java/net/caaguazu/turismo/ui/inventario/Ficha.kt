@@ -199,7 +199,13 @@ private fun Contenido(ficha: Ficha) {
                     // avisa en vez de esconderla: a medio traducir sigue
                     // teniendo la foto, el mapa, el horario y el precio, que es
                     // la mayor parte de para que se abre.
-                    if (!ficha.traducido && ficha.idioma != Idioma.ORIGINAL) {
+                    //
+                    // Se compara con el idioma PEDIDO y no con el que devolvio
+                    // la ficha: cuando el panel no tiene nada traducido de esta
+                    // pieza contesta con el original, asi que mirar
+                    // `ficha.idioma` dejaba sin aviso justo el caso peor —una
+                    // ficha entera en castellano leida en ingles.
+                    if (!ficha.traducido && !Idioma.enOriginal) {
                         Texto(
                             texto = Textos.t("ficha.parcial"),
                             estilo = Letra.fecha,

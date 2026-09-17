@@ -102,7 +102,11 @@ private fun Explorar(
     }
 
     val filtros = pila.filtros
-    val (categorias, _) = cargar { Datos.api.categorias() }
+    // Un solo pedido de categorias para la pantalla y para la hoja de filtros.
+    // Antes cada una tenia el suyo, asi que entrar a Buscar disparaba dos GET
+    // simultaneos a la MISMA url — y las dos respuestas escribian a la vez el
+    // mismo archivo de cache, que es como queda una copia guardada truncada.
+    val (categorias, reintentarCategorias) = cargar { Datos.api.categorias() }
     val (resultados, reintentar) = cargar(aplicada, filtros) {
         Datos.api.inventario(
             categoria = filtros.categoria,
@@ -116,19 +120,34 @@ private fun Explorar(
     // El precio se filtra en el telefono: el contrato no tiene parametro para
     // el, y pedirle al panel que lo agregue para poder dibujar esto seria
     // esperar una version del servidor para mover un control.
+    val techoDePrecio = filtros.precioMaximo
     val items = ((resultados.value as? Estado.Listo)?.valor?.items.orEmpty())
-        .filter { item -> filtros.precioMaximo == null || (item.rangoPrecio ?: 0) <= filtros.precioMaximo }
+        .filter { item ->
+            // Sin dato de precio no se puede afirmar que entre en el techo.
+            // Tratar el hueco como 0 hacia que el chip "gratis" listara todo lo
+            // que ningun promotor tarifo, que es lo contrario de lo que se pidio.
+            val precio = item.rangoPrecio
+            techoDePrecio == null || (precio != null && precio <= techoDePrecio)
+        }
 
     Box(modifier.fillMaxSize().background(Tono.fondo)) {
         Cruce(pila.enMapa) { enMapa ->
             if (enMapa) {
                 VistaMapa(pila, items)
             } else {
-                VistaLista(pila, categorias.value, resultados.value, items, reintentar, alAbrirPerfil)
+                VistaLista(
+                    pila = pila,
+                    categorias = categorias.value,
+                    reintentarCategorias = reintentarCategorias,
+                    resultados = resultados.value,
+                    items = items,
+                    reintentar = reintentar,
+                    alAbrirPerfil = alAbrirPerfil,
+                )
             }
         }
 
-        HojaFiltros(pila)
+        HojaFiltros(pila, categorias.value)
     }
 }
 
@@ -140,6 +159,7 @@ private fun Explorar(
 private fun VistaLista(
     pila: PilaBusqueda,
     categorias: Estado<List<net.caaguazu.turismo.datos.Categoria>>,
+    reintentarCategorias: () -> Unit,
     resultados: Estado<*>,
     items: List<ItemInventario>,
     reintentar: () -> Unit,
@@ -190,7 +210,9 @@ private fun VistaLista(
                 Resultados(items) { id -> pila.ir(RutaBusqueda.Ficha(id)) }
             }
         } else {
-            Mosaico(categorias) { id -> pila.filtros = Filtros(categoria = id) }
+            Mosaico(categorias, reintentarCategorias) { id ->
+                pila.filtros = Filtros(categoria = id)
+            }
         }
     }
 }
@@ -205,30 +227,39 @@ private fun VistaLista(
 @Composable
 private fun Mosaico(
     categorias: Estado<List<net.caaguazu.turismo.datos.Categoria>>,
+    reintentar: () -> Unit,
     alElegir: (Int) -> Unit,
 ) {
-    val lista = (categorias as? Estado.Listo)?.valor.orEmpty()
-    if (lista.isEmpty()) return
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    // Los cuatro estados, como cualquier pantalla que trae datos. Antes esto se
+    // iba en silencio si la lista venia vacia, asi que un primer arranque sin
+    // senal y sin copia guardada dejaba la cara de reposo de Buscar en blanco:
+    // ni aviso, ni motivo, ni forma de reintentar.
+    Cargador(
+        estado = categorias,
+        reintentar = reintentar,
+        vacio = { it.isEmpty() },
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = Medida.margen,
-            end = Medida.margen,
-            bottom = Medida.colaDeLista,
-        ),
-        horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-        verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
-    ) {
-        itemsDeGrilla(lista, key = { it.id }) { categoria ->
-            TileEtiquetado(
-                imagen = categoria.portada,
-                etiqueta = categoria.nombre,
-                colorSinFoto = categoria.color,
-                proporcion = 16f / 13f,
-                alTocar = { alElegir(categoria.id) },
-            )
+    ) { lista ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = Medida.margen,
+                end = Medida.margen,
+                bottom = Medida.colaDeLista,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+            verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
+        ) {
+            itemsDeGrilla(lista, key = { it.id }) { categoria ->
+                TileEtiquetado(
+                    imagen = categoria.portada,
+                    etiqueta = categoria.nombre,
+                    colorSinFoto = categoria.color,
+                    proporcion = 16f / 13f,
+                    alTocar = { alElegir(categoria.id) },
+                )
+            }
         }
     }
 }

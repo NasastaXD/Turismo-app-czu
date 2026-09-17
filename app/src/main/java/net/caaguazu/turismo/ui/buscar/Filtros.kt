@@ -44,8 +44,12 @@ private val ALTO_MAXIMO = 520.dp
  * resultados le quedaron.
  */
 @Composable
-fun BoxScope.HojaFiltros(pila: PilaBusqueda) {
-    val (categorias, _) = cargar { Datos.api.categorias() }
+fun BoxScope.HojaFiltros(
+    pila: PilaBusqueda,
+    // Las categorias llegan de la pantalla y no se piden de nuevo aca: eran el
+    // mismo GET, disparado dos veces a la vez cada vez que se entraba a Buscar.
+    categorias: Estado<List<net.caaguazu.turismo.datos.Categoria>>,
+) {
     val (zonas, _) = cargar { Datos.api.zonas() }
     val (etiquetas, _) = cargar { Datos.api.etiquetas() }
 
@@ -65,7 +69,7 @@ fun BoxScope.HojaFiltros(pila: PilaBusqueda) {
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             item {
-                val lista = (categorias.value as? Estado.Listo)?.valor.orEmpty()
+                val lista = (categorias as? Estado.Listo)?.valor.orEmpty()
                 if (lista.isNotEmpty()) {
                     GrupoFiltro(Textos.t("filtro.categoria")) {
                         FilaDeChips(

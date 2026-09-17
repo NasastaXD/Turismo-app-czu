@@ -258,5 +258,11 @@ private fun fotoPorCategoria(lugares: List<ItemInventario>): Map<Int, Imagen?> =
 private fun proximoEvento(items: List<ItemInventario>): ItemInventario? {
     val vigentes = items.filter { it.fechas?.terminado != true }
     return vigentes.firstOrNull { it.fechas?.enCurso == true }
-        ?: vigentes.minByOrNull { it.fechas?.inicio ?: "" }
+        // Sin fecha de inicio no hay forma de decir que es el proximo, asi que
+        // no compite: la cadena vacia de antes ordenaba antes que cualquier
+        // fecha, y un solo evento sin fecha se quedaba con el lugar grande de
+        // la portada — encima sin fecha que mostrar encima de la foto.
+        ?: vigentes
+            .filter { !it.fechas?.inicio.isNullOrBlank() }
+            .minByOrNull { it.fechas?.inicio.orEmpty() }
 }

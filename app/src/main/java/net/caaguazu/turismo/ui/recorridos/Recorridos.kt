@@ -154,21 +154,26 @@ private fun MiRecorrido(alAbrirFicha: (Int) -> Unit) {
                 }
             }
 
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(Medida.margen),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                // Google Maps corta en nueve paradas intermedias. Cuando no
-                // entra se dice, en vez de abrir un recorrido incompleto sin
-                // que nadie se entere.
-                if (!entra && puntos.size > 2) {
-                    Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.tinta)
+            // Google Maps corta en nueve paradas intermedias. Cuando no entra se
+            // dice, en vez de abrir un recorrido incompleto sin que nadie se
+            // entere — y el boton no se dibuja: antes iba siempre, asi que con
+            // una sola parada ubicada o con doce el toque no hacia nada.
+            if (entra || puntos.size > 2) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(Medida.margen),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (!entra) {
+                        Texto(Textos.t("rec.demasiadas"), Letra.chip, Tono.tinta)
+                    }
+                    if (entra) {
+                        PildoraPrimaria(
+                            texto = Textos.t("rec.abrir"),
+                            alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
-                PildoraPrimaria(
-                    texto = Textos.t("rec.abrir"),
-                    alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
         }
     }

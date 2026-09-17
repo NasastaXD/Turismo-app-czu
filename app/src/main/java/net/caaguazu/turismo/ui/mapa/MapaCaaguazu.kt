@@ -98,6 +98,14 @@ private fun LienzoMapa(
     // reconstruye porque la pantalla de arriba se recompuso.
     val tocar by rememberUpdatedState(alTocarMarcador)
 
+    // Los pines tambien se leen diferido, y eso no es una comodidad: el estilo
+    // carga asincrono, asi que el efecto de abajo puede llegar antes de que la
+    // fuente exista. Cuando pasa —y pasa siempre que la lista ya estaba lista
+    // al abrir el mapa, que es el camino normal— no habia nada que volviera a
+    // aplicarla y el mapa se quedaba sin un solo pin. Sembrando la fuente con
+    // lo que haya en ese momento, gane la carrera quien la gane, se dibujan.
+    val pines by rememberUpdatedState(marcadores)
+
     val vista = remember {
         MapLibre.getInstance(contexto)
         MapView(contexto).apply {
@@ -106,8 +114,9 @@ private fun LienzoMapa(
                 configurar(mapa)
                 mapa.setStyle(Style.Builder().fromJson(estilo)) { cargado ->
                     Registro.info(ETIQUETA, "estilo cargado con ${cargado.layers.size} capas")
-                    cargado.addSource(GeoJsonSource(FUENTE_PINES, geoJson(emptyList())))
+                    cargado.addSource(GeoJsonSource(FUENTE_PINES, geoJson(pines)))
                     cargado.addLayer(capaPines())
+                    Registro.detalle(ETIQUETA, "${pines.size} pines al sembrar la fuente")
                 }
                 mapa.addOnMapClickListener { punto ->
                     val enPantalla = mapa.projection.toScreenLocation(punto)
@@ -196,13 +205,32 @@ private fun capaPines(): CircleLayer =
         PropertyFactory.circleStrokeColor("#FFFFFF"),
     )
 
+/** El color del pin cuando la categoria no trae uno usable. */
+private const val COLOR_POR_OMISION = "#E9503F"
+
+private val HEXADECIMAL = Regex("^#?[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$")
+
+/**
+ * El color que manda el panel solo entra al GeoJSON si es un hexadecimal.
+ *
+ * Es texto libre del otro lado, y pegado sin revisar rompe el JSON entero en
+ * cuanto trae una comilla o una barra: MapLibre no puede leer la coleccion y
+ * desaparecen TODOS los pines, no el de la categoria mal cargada. Es justo lo
+ * que el proyecto no permite — un elemento roto no tumba la lista entera.
+ */
+private fun colorDePin(crudo: String?): String {
+    val limpio = crudo?.trim().orEmpty()
+    if (!HEXADECIMAL.matches(limpio)) return COLOR_POR_OMISION
+    return if (limpio.startsWith("#")) limpio else "#$limpio"
+}
+
 /** GeoJSON armado a mano: son cuatro campos y evita una dependencia entera. */
 private fun geoJson(pines: List<Pin>): String = buildString {
     append("""{"type":"FeatureCollection","features":[""")
     pines.forEachIndexed { indice, pin ->
         if (indice > 0) append(',')
         append("""{"type":"Feature","properties":{"id":${pin.id},"color":"""")
-        append(pin.color ?: "#E9503F")
+        append(colorDePin(pin.color))
         append(""""},"geometry":{"type":"Point","coordinates":[${pin.lng},${pin.lat}]}}""")
     }
     append("]}")

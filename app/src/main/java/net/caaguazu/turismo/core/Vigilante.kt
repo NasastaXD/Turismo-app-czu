@@ -38,9 +38,12 @@ class Vigilante(
             return Result.success()
         }
 
-        // Los textos tienen que estar cargados: un aviso con la clave entre
-        // angulos seria peor que no mandar nada.
-        Textos.cargarEmbebido(applicationContext, Idioma.actual)
+        // Los textos tienen que estar cargados, pero cargarlos de nuevo aca no
+        // era gratis: `cargarEmbebido` REEMPLAZA el mapa por el respaldo del
+        // APK, asi que con la app abierta —este trabajador corre en el mismo
+        // proceso— borraba de la pantalla todo lo que el panel habia mandado.
+        // Y era redundante: `App.onCreate` corre antes que cualquier trabajador.
+        if (!Textos.cargados) Textos.cargarEmbebido(applicationContext, Idioma.actual)
 
         revisarArticulos()
         revisarEventos()
@@ -64,12 +67,18 @@ class Vigilante(
         }
 
         val nuevos = pagina.items.filter { it.id !in vistos }
-        nuevos.take(MAX_AVISOS_POR_VUELTA).forEach { articulo ->
+        // Se anota solo lo que se aviso de verdad. Anotar los `nuevos` enteros
+        // marcaba como avisado lo que quedo afuera del tope, asi que de veinte
+        // articulos nuevos se avisaban cinco y los otros quince no se avisaban
+        // nunca. Los que sobran esperan la vuelta que viene, que es de lo que
+        // habla el tope: cinco por vuelta, no cinco y el resto al silencio.
+        val avisados = nuevos.take(MAX_AVISOS_POR_VUELTA)
+        avisados.forEach { articulo ->
             Avisos.avisarArticulo(applicationContext, articulo.id, articulo.titulo)
         }
-        if (nuevos.isNotEmpty()) {
-            Ajustes.articulosVistos = vistos + nuevos.map { it.id }
-            Registro.info(ETIQUETA, "${nuevos.size} articulos nuevos")
+        if (avisados.isNotEmpty()) {
+            Ajustes.articulosVistos = vistos + avisados.map { it.id }
+            Registro.info(ETIQUETA, "${avisados.size} de ${nuevos.size} articulos nuevos avisados")
         }
     }
 
@@ -90,7 +99,12 @@ class Vigilante(
             inicio in ahora..limite
         }
 
-        proximos.take(MAX_AVISOS_POR_VUELTA).forEach { evento ->
+        // Igual que con los articulos: solo se recuerda lo que salio. Marcar
+        // los que no entraron en el tope los dejaba sin aviso para siempre, y a
+        // un evento eso le pasa dentro de la ventana de dos dias — o se avisa
+        // en la vuelta siguiente o ya ocurrio.
+        val salieron = proximos.take(MAX_AVISOS_POR_VUELTA)
+        salieron.forEach { evento ->
             Avisos.avisarEvento(
                 contexto = applicationContext,
                 id = evento.id,
@@ -98,9 +112,9 @@ class Vigilante(
                 cuando = fechaLegible(evento.fechas?.inicio),
             )
         }
-        if (proximos.isNotEmpty()) {
-            Ajustes.eventosAvisados = avisados + proximos.map { it.id }
-            Registro.info(ETIQUETA, "${proximos.size} eventos proximos avisados")
+        if (salieron.isNotEmpty()) {
+            Ajustes.eventosAvisados = avisados + salieron.map { it.id }
+            Registro.info(ETIQUETA, "${salieron.size} de ${proximos.size} eventos proximos avisados")
         }
     }
 

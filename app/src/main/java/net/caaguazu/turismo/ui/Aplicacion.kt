@@ -3,6 +3,7 @@ package net.caaguazu.turismo.ui
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -18,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
+import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Vigilante
+import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.ui.articulos.Articulos
 import net.caaguazu.turismo.ui.buscar.Buscar
 import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
@@ -58,7 +61,19 @@ fun Aplicacion() {
     val oscuro = isSystemInDarkTheme()
     SideEffect { Tono.oscuro = oscuro }
 
-    BackHandler(enabled = true) { navegador.volver() }
+    // `volver` devuelve false cuando ya no queda nada que deshacer, y ese caso
+    // hay que atenderlo: un BackHandler activo se come el gesto, asi que
+    // ignorar el resultado dejaba al inicio sin forma de cerrar la app — el
+    // gesto de volver no hacia absolutamente nada, para siempre.
+    val actividad = LocalActivity.current
+    BackHandler(enabled = true) {
+        if (!navegador.volver()) actividad?.finish()
+    }
+
+    // Los textos del panel se piden desde aca y no desde la hoja que cambia el
+    // idioma: el idioma es parte de la cara que cruza, asi que ese gesto
+    // destruye la hoja —y con ella su alcance— antes de que el pedido termine.
+    LaunchedEffect(Idioma.actual) { Datos.refrescarTextos() }
 
     PedirAvisosAlArrancar()
 

@@ -95,8 +95,20 @@ object Marcadores {
 fun List<Marcador>.comoGeoJson(): String {
     val puntos = joinToString(",") { marcador ->
         """{"type":"Feature","id":${marcador.id},""" +
-            """"properties":{"tipo":"${marcador.tipo}","categoria":${marcador.categoria ?: -1}},""" +
+            """"properties":{"tipo":"${escapado(marcador.tipo)}","categoria":${marcador.categoria ?: -1}},""" +
             """"geometry":{"type":"Point","coordinates":[${marcador.lng},${marcador.lat}]}}"""
     }
     return """{"type":"FeatureCollection","features":[$puntos]}"""
 }
+
+/**
+ * `tipo` llega del panel y va dentro de una cadena JSON armada a mano.
+ *
+ * Sin escapar, una comilla o una barra rompen la coleccion entera y el mapa se
+ * queda sin UN solo pin, no sin el de ese marcador. Es la misma regla que en
+ * Android: un elemento roto no tumba la lista entera.
+ */
+private fun escapado(valor: String): String = valor
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+    .filter { it.code >= 0x20 }

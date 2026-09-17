@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,10 +30,8 @@ import net.caaguazu.turismo.BuildConfig
 import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Avisos
 import net.caaguazu.turismo.core.Idioma
-import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
-import kotlinx.coroutines.launch
 import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraHoja
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
@@ -67,7 +64,6 @@ fun PantallaPerfil(
     modifier: Modifier = Modifier,
 ) {
     val contexto = LocalContext.current
-    val alcance = rememberCoroutineScope()
     var toques by remember { mutableIntStateOf(0) }
     var eligiendoIdioma by remember { mutableStateOf(false) }
 
@@ -141,11 +137,13 @@ fun PantallaPerfil(
                     nombre = disponible.nombre,
                     elegido = disponible.codigo == Idioma.actual,
                     alTocar = {
+                        // Lo embebido queda cambiado aca mismo. Lo que el panel
+                        // tenga traducido lo trae `Aplicacion`, que reacciona al
+                        // idioma: pedirlo desde esta hoja no funcionaba, porque
+                        // cambiar de idioma cruza la cara y destruye la hoja
+                        // —con su alcance— antes de que el pedido vuelva.
                         Idioma.elegir(contexto, disponible.codigo)
                         eligiendoIdioma = false
-                        // Lo embebido ya quedo cambiado; esto trae encima lo
-                        // que el panel tenga traducido para el idioma nuevo.
-                        alcance.launch { Datos.refrescarTextos() }
                     },
                 )
             }

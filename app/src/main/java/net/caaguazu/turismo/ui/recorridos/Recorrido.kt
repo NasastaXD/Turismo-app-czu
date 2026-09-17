@@ -136,10 +136,25 @@ fun PantallaRecorrido(
                     }
                 }
 
-                if (puntos.size >= 2) {
+                // El tope de Google Maps vale igual para un recorrido prehecho:
+                // antes solo se miraba el minimo de dos paradas, asi que uno de
+                // doce dibujaba el boton y el toque no hacia nada ni decia nada.
+                val entra = puntos.size >= 2 &&
+                    puntos.size - 2 <= MapasExternos.MAX_PARADAS_INTERMEDIAS
+                if (entra) {
                     BarraAccion(
                         textoBoton = Textos.t("rec.abrir"),
                         alTocar = { MapasExternos.abrirRecorrido(contexto, puntos) },
+                    )
+                } else if (puntos.size > 2) {
+                    Texto(
+                        texto = Textos.t("rec.demasiadas"),
+                        estilo = Letra.chip,
+                        color = Tono.tinta,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Tono.papel)
+                            .padding(Medida.margen),
                     )
                 }
             }

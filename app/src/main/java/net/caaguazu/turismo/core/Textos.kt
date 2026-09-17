@@ -116,6 +116,14 @@ object Textos {
         )
     }
 
+    /**
+     * Si ya hay textos con los que dibujar.
+     *
+     * Lo pregunta el trabajador de avisos, que necesita textos pero no puede
+     * volver a cargarlos sin pisar lo que el panel haya mandado.
+     */
+    val cargados: Boolean get() = mapa.isNotEmpty()
+
     /** El unico camino por el que un texto llega a la pantalla. */
     fun t(clave: String): String = mapa[clave] ?: marcador(clave)
 

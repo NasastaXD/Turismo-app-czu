@@ -11,7 +11,6 @@ import net.caaguazu.turismo.core.Bitacora
 import net.caaguazu.turismo.core.Guardado
 import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Registro
-import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.core.Vigilante
 import net.caaguazu.turismo.datos.Datos
 import net.caaguazu.turismo.ui.tema.Tono
@@ -55,11 +54,12 @@ class App : Application() {
         Avisos.crearCanales(this)
         if (Ajustes.avisosActivos) Vigilante.programar(this)
 
-        // Los textos del servidor pisan al respaldo cuando llegan. No se espera:
-        // la app arranca con el embebido y se actualiza sola.
+        // La lista de idiomas, que no depende de ninguna pantalla. Los textos
+        // del panel los pide `Aplicacion` por idioma: si se pidieran aca
+        // tambien, el primer arranque haria el mismo pedido dos veces, y un
+        // cambio de idioma que llegara de `/idiomas` no se reflejaria.
         CoroutineScope(SupervisorJob()).launch {
             Datos.refrescarIdiomas()
-            Datos.refrescarTextos()
         }
     }
 
