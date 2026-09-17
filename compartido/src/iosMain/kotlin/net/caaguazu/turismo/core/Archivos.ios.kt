@@ -1,5 +1,6 @@
 package net.caaguazu.turismo.core
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDate
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSFileModificationDate
@@ -17,6 +18,7 @@ import platform.Foundation.writeToFile
  * cache es descartable, asi que un fallo de disco tiene que degradar a "no hay
  * copia guardada" y nunca tumbar la pantalla.
  */
+@OptIn(ExperimentalForeignApi::class)
 internal actual class Archivos actual constructor(raiz: String) {
 
     private val carpeta = raiz.trimEnd('/')
@@ -41,13 +43,16 @@ internal actual class Archivos actual constructor(raiz: String) {
         runCatching {
             val ruta = ruta(nombre)
             if (!gestor.fileExistsAtPath(ruta)) return null
-            NSString.create(contentsOfFile = ruta, encoding = NSUTF8StringEncoding) as String?
+            NSString.create(
+                contentsOfFile = ruta,
+                encoding = NSUTF8StringEncoding,
+                error = null,
+            ) as String?
         }.getOrNull()
 
     actual fun escribir(nombre: String, contenido: String) {
         runCatching {
-            @Suppress("CAST_NEVER_SUCCEEDS")
-            (contenido as NSString).writeToFile(
+            NSString.create(string = contenido).writeToFile(
                 path = ruta(nombre),
                 atomically = true,
                 encoding = NSUTF8StringEncoding,

@@ -34,6 +34,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.serialization.json)
+            // Para Http: `Dispatchers.IO` no esta en commonMain de coroutines
+            // sino en su `concurrentMain`, que cubre JVM y Native — o sea las
+            // dos plataformas de este modulo. Verificado en sus fuentes.
+            implementation(libs.kotlinx.coroutines.core)
             // Unicamente por @Immutable en los modelos. Es el mismo artefacto y
             // la misma version que :app ya tiene via foundation/ui, asi que del
             // lado Android no cambia nada del grafo de dependencias.
