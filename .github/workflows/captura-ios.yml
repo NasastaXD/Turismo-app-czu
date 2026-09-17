@@ -145,15 +145,21 @@ jobs:
         env:
           UDID: ${{ steps.simulador.outputs.udid }}
         run: |
+          # `set -x` y nada mas. NO va `timeout` alrededor de cada comando:
+          # `timeout` es de GNU coreutils y macOS no lo trae, asi que el
+          # envoltorio que estaba aca para robustecer el paso era lo que lo
+          # rompia — "timeout: command not found", codigo 127. El techo real es
+          # el `timeout-minutes` de arriba, que es nativo de Actions y no
+          # depende de que comandos traiga el sistema; combinado con `set -x`,
+          # si algo se cuelga el log deja dicho en cual de los dos comandos
+          # fue, que es la informacion que hacia falta.
           set -x
-          # `timeout` tambien en cada comando: asi el log dice cual de los dos
-          # se colgo, en lugar de que el paso entero muera sin decir donde.
-          timeout 120 xcrun simctl install "$UDID" \
+          xcrun simctl install "$UDID" \
             dd/Build/Products/Debug-iphonesimulator/Turismo.app
 
           # --terminate-running-process por si una corrida anterior dejo la app
           # viva en este simulador: sin eso, `launch` se queda esperando.
-          timeout 120 xcrun simctl launch --terminate-running-process \
+          xcrun simctl launch --terminate-running-process \
             "$UDID" net.caaguazu.turismo
 
           echo "app lanzada, esperando que el mapa cargue"
