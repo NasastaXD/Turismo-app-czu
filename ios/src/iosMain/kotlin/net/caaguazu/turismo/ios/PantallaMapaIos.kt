@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import net.caaguazu.turismo.core.Bitacora
 import net.caaguazu.turismo.core.Resultado
 import net.caaguazu.turismo.datos.Encuadre
 import net.caaguazu.turismo.datos.Marcador
@@ -105,8 +106,14 @@ fun PantallaMapaIos(modifier: Modifier = Modifier) {
     var marcadores by remember { mutableStateOf(emptyList<Marcador>()) }
 
     LaunchedEffect(Unit) {
-        val traidos = Marcadores.traer()
-        if (traidos is Resultado.Bien) marcadores = traidos.valor
+        // runCatching alrededor de todo: en Kotlin/Native una excepcion que se
+        // escapa de una corrutina termina el proceso, no solo la corrutina.
+        // Un fallo trayendo los pines tiene que dejar el mapa sin pines, no
+        // tumbar la app — es la misma regla que en Android, donde un elemento
+        // roto no tumba la lista entera.
+        runCatching { Marcadores.traer() }
+            .onSuccess { if (it is Resultado.Bien) marcadores = it.valor }
+            .onFailure { Bitacora.fallo("PantallaMapaIos", "no se pudieron traer los pines", it) }
     }
 
     Box(modifier.fillMaxSize()) {

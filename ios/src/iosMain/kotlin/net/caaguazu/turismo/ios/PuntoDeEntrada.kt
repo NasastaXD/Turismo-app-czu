@@ -56,6 +56,17 @@ private fun engancharBitacora() {
 
     Bitacora.destino = { nivel, etiqueta, mensaje, causa ->
         val porque = causa?.message?.let { " — $it" } ?: ""
-        NSLog("[%s] %s: %s%s", nivel.name, etiqueta, mensaje, porque)
+
+        // `%@` y un solo argumento, no `%s` con varios. Un String de Kotlin
+        // llega a NSLog convertido en NSString, o sea un objeto, y `%s` espera
+        // un puntero a char de C: leer un objeto como cadena de C es una falta
+        // de memoria que mata el proceso entero.
+        //
+        // Eso es exactamente lo que pasaba. La app arrancaba, la ventana se
+        // volvia key, Compose componia, el LaunchedEffect pedia los
+        // marcadores, Http anotaba la primera linea aca, y el proceso moria
+        // antes de la primera captura. Por eso nunca aparecio ni una linea de
+        // la bitacora en el registro: se caia al escribir la primera.
+        NSLog("%@", "[" + nivel.name + "] " + etiqueta + ": " + mensaje + porque)
     }
 }

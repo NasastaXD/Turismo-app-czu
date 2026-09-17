@@ -247,6 +247,16 @@ jobs:
             > capturas/registro-de-la-app.txt 2>&1 || true
           tail -40 capturas/registro-de-la-app.txt || true
 
+          # Los informes de caida del simulador viven en el disco del runner,
+          # no dentro del simulador. Sin esto, una caida se ve solo como "la
+          # app dejo de estar viva" y hay que deducir por que; con el informe,
+          # dice la senal y la pila. Costo cero y ahorra una vuelta entera.
+          mkdir -p capturas/caidas
+          find ~/Library/Logs/DiagnosticReports -iname "*Turismo*" -maxdepth 2 \
+            -exec cp {} capturas/caidas/ \; 2>/dev/null || true
+          echo "informes de caida encontrados: $(ls -1 capturas/caidas | wc -l | tr -d ' ')"
+          head -40 capturas/caidas/* 2>/dev/null || true
+
       - name: Subir las capturas
         if: always()
         uses: actions/upload-artifact@v4
