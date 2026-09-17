@@ -50,7 +50,9 @@ jobs:
           restore-keys: gradle-
 
       - name: Pruebas
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
+        # Tambien las de :compartido: ahi vive el contrato con el panel, y un
+        # release que las salte podria publicar modelos que no decodifican.
+        run: ./gradlew :app:testDebugUnitTest :compartido:testDebugUnitTest --no-daemon
 
       - name: Preparar la clave de firma
         # Si el secreto todavia no existe, no se escribe nada: build.gradle.kts

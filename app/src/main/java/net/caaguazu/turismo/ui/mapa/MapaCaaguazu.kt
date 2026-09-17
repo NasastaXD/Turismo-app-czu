@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -17,6 +18,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.caaguazu.turismo.core.Registro
 import net.caaguazu.turismo.core.Resultado
 import net.caaguazu.turismo.ui.tema.Tono
@@ -61,23 +64,38 @@ fun MapaCaaguazu(
 ) {
     val contexto = LocalContext.current
 
-    // Copiar el archivo y leer el estilo es trabajo de disco: se hace una sola vez.
-    val estilo = remember {
-        val archivo = BaseMapa.asegurarArchivo(contexto)
-        if (archivo is Resultado.Bien) {
-            (BaseMapa.estilo(contexto, archivo.valor) as? Resultado.Bien)?.valor
-        } else {
-            null
+    // Copiar el archivo y leer el estilo es trabajo de disco: la primera vez son
+    // 2 MB del .pmtiles saliendo de los assets. Esto vivia en un `remember`, o
+    // sea corriendo en el hilo que dibuja y en medio de la composicion, y el
+    // mapa aparece en mas de un lugar —entre ellos como cabecera de un item de
+    // lista en la pantalla de recorrido—, asi que se repetia por instancia.
+    //
+    // `produceState` lo saca del hilo principal. El estado es `Resultado?`, con
+    // null para "todavia cargando": son tres casos y no dos, y distinguirlos
+    // importa porque dibujar "no disponible" mientras carga seria avisar de un
+    // fallo que no ocurrio.
+    val estilo by produceState<Resultado<String>?>(initialValue = null, contexto) {
+        value = withContext(Dispatchers.IO) {
+            when (val archivo = BaseMapa.asegurarArchivo(contexto)) {
+                is Resultado.Bien -> BaseMapa.estilo(contexto, archivo.valor)
+                is Resultado.Mal -> archivo
+            }
         }
     }
 
     Box(modifier.fillMaxSize().background(Tono.banda)) {
-        if (estilo == null) {
-            MapaNoDisponible(Modifier.align(Alignment.Center))
-            return@Box
+        when (val listo = estilo) {
+            // Cargando: el hueco de la banda ya dice que algo viene. Sin texto
+            // ni indicador, que para un segundo de disco serian un parpadeo.
+            null -> Unit
+
+            is Resultado.Mal -> MapaNoDisponible(Modifier.align(Alignment.Center))
+
+            is Resultado.Bien -> {
+                LienzoMapa(listo.valor, marcadores, alTocarMarcador)
+                AtribucionMapa(Modifier.align(Alignment.BottomStart).padding(8.dp))
+            }
         }
-        LienzoMapa(estilo, marcadores, alTocarMarcador)
-        AtribucionMapa(Modifier.align(Alignment.BottomStart).padding(8.dp))
     }
 }
 

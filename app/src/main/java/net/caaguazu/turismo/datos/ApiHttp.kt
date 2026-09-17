@@ -44,8 +44,12 @@ class ApiHttp(
     suspend fun etiquetas() =
         pedirLista(ruta("etiquetas") { conIdioma() }, Etiqueta.serializer())
 
+    // Con idioma, igual que categorias y etiquetas: `Zona.nombre` es texto
+    // traducible. Y no es solo que volviera sin traducir — la clave de la cache
+    // es la URL, asi que sin el parametro las zonas en ingles pisaban en disco
+    // a las de castellano, y al volver el idioma quedaban las del otro.
     suspend fun zonas() =
-        pedirLista("zonas", Zona.serializer())
+        pedirLista(ruta("zonas") { conIdioma() }, Zona.serializer())
 
     suspend fun inventario(
         categoria: Int? = null,

@@ -35,7 +35,16 @@ class Cache(raiz: String) {
     fun guardar(url: String, cuerpo: String, etag: String?) {
         val base = huellaDeUrl(url)
         archivos.escribir("$base.json", cuerpo)
-        if (etag != null) archivos.escribir("$base.etag", etag)
+
+        // Si la respuesta no trae ETag, el viejo se BORRA en lugar de quedarse.
+        // Dejarlo apuntaba a un cuerpo que ya no esta: el proximo pedido
+        // mandaba ese If-None-Match, el servidor podia contestar 304, y se
+        // servia como vigente una copia que no le corresponde.
+        if (etag != null) {
+            archivos.escribir("$base.etag", etag)
+        } else {
+            archivos.borrar("$base.etag")
+        }
         podar()
     }
 
