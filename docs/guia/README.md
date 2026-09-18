@@ -8,13 +8,20 @@ No reemplaza a `docs/publicar-en-tiendas.md` ni a `docs/ios.md`, que son la
 auditoría técnica: qué está resuelto en el código, qué falta y qué está
 verificado. La guía traduce eso a pasos.
 
-El PDF se genera del HTML de al lado, que es la fuente y lo que se edita:
+El PDF se genera del HTML de al lado, que es la fuente y lo que se edita.
+La ruta del HTML va como URL absoluta: con una ruta relativa, Chromium no
+resuelve el archivo y saca un PDF en blanco sin decir nada.
 
 ```sh
 chromium --headless --no-pdf-header-footer \
   --print-to-pdf="docs/guia/Publicar la app - Play Store y App Store.pdf" \
-  docs/guia/publicar-paso-a-paso.html
+  "file://$PWD/docs/guia/publicar-paso-a-paso.html"
 ```
+
+Al terminar, **mirar el PDF**, no solo comprobar que se escribió. Dos veces
+ya apareció un error de maquetación que el HTML no mostraba: un relleno que
+no se heredaba y un índice numerado desde 1 sobre secciones numeradas desde
+0. Ninguno de los dos se ve sin abrirlo.
 
 Sin tipografías externas a propósito: se usan las que trae cualquier
 sistema, así que se renderiza igual sin red.

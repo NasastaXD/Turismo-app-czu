@@ -1,7 +1,7 @@
 # Qué falta para publicar — Play Store y App Store
 
-Estado a partir de una auditoría del código el 2026-09-16. Se actualiza a
-mano cuando algo de esta lista se resuelve.
+Estado a partir de una auditoría del código el 2026-09-16, revisada el
+2026-09-18. Se actualiza a mano cuando algo de esta lista se resuelve.
 
 ---
 
@@ -29,6 +29,34 @@ mano cuando algo de esta lista se resuelve.
   Play.
 - **Ícono adaptable real** (no el de ejemplo de Android Studio): un pin de
   mapa, coherente con el resto de la iconografía.
+
+### Cerrado en la revisión del 2026-09-18
+
+- **El ícono faltaba en Android 7.0 y 7.1.** Solo existía
+  `mipmap-anydpi-v26`, y ese calificador excluye por completo a API 24 y 25,
+  que entran por `minSdk`. En esos teléfonos no había ninguna configuración
+  que coincidiera y el sistema mostraba el ícono gris por omisión. Se
+  agregaron los cinco PNG de densidad, generados del mismo vector; ver
+  `docs/iconos.md`. Comprobado en el APK compilado: `mipmap/ic_launcher`
+  ahora tiene seis configuraciones (`mdpi` a `xxxhdpi` más `anydpi-v26`),
+  leído con `aapt2 dump resources`.
+- **Los dos permisos de ubicación se quitaron de la fusión.** MapLibre los
+  declara en su propio manifiesto para su componente de "mi posición", que
+  la app no usa — comprobado que ningún archivo toca `locationComponent` ni
+  `LocationEngine`. Quedaban listados en la ficha de Play como "Ubicación" y
+  obligaban a declararlos en seguridad de datos. Con `tools:node="remove"`
+  desaparecen: comprobado con `aapt2 dump badging` sobre el APK nuevo.
+- **`-PparaTienda=false` apagaba los splits igual que `=true`.** Era
+  `hasProperty`, que solo mira si la propiedad existe. Ahora se lee el valor.
+  No afectaba a ningún workflow —los dos pasan `=true`— pero era una trampa
+  puesta para quien viniera después.
+- **Queda dicho, sin cambiar nada:** `coil-network-okhttp` arrastra OkHttp y
+  Okio al APK. `CLAUDE.md` dice "sin cliente HTTP externo", y para la API es
+  cierto —`Http` es `HttpURLConnection`—, pero las imágenes sí traen uno por
+  transitividad. Coil 3.2.0 no publica un motor sobre `HttpURLConnection`
+  (`coil-network-android` quedó en `3.0.0-alpha02`), así que sacarlo
+  significa escribir el motor a mano: unas 40 líneas. Es una decisión del
+  dueño, no un bug, y no se toca sin que se pida.
 
 ### Pendiente, y es una decisión, no un bug
 
@@ -101,11 +129,37 @@ Kotlin/Native no cruza a iOS desde Linux.
 **La app Android no cambió de forma** y no ve Compose Multiplatform por
 ningún lado. Eso es deliberado: hay un `.aab` a punto de entrar a Play.
 
-Falta bastante más de lo que hay: el proyecto de Xcode (requiere un Mac),
-la capa de red, `Textos`, y las pantallas. Y quedan **dos preguntas
-abiertas** que están en `docs/ios.md` y que convienen decidir antes de
-seguir: con qué se hace HTTP en iOS, y qué se hace con los avisos, que en
-iOS no pueden ser tan confiables como en Android.
+Las dos preguntas que estaban abiertas se cerraron: **HTTP en iOS va sobre
+NSURLSession** con `expect`/`actual` (el ETag, el reintento corto y la caída
+a la copia guardada son Kotlin puro y se comparten), y **los avisos quedan
+fuera de la primera versión de iOS**.
+
+El proyecto de Xcode existe, y como especificación: `ios/xcode/project.yml`,
+que XcodeGen convierte en `.xcodeproj` en un comando. Eso es lo que permite
+armarlo en un runner y lo que hace realista compilar sin una Mac propia. El
+workflow **"Captura de iOS"** arranca un simulador y saca la foto del mapa
+dibujado con sus pines — está en `docs/imagenes/mapa-en-iphone.png`.
+
+Lo que falta para poder mandar algo a Apple es **`Textos` y las pantallas**.
+Hoy la app de iOS es el mapa, y una app que hace tan poco cae justo en la
+regla de *funcionalidad mínima*, que es de las que Apple más usa para
+rechazar. No es un problema técnico: es que todavía no está terminada.
+
+Cerrado en la revisión del 2026-09-18, del lado de iOS:
+
+- **El ícono no existía.** App Store Connect rechaza una subida sin él
+  (`ITMS-90717` si además tiene canal alfa). Se agregó el catálogo con el
+  PNG de 1024×1024, opaco y sin redondear, del mismo vector que el de
+  Android. El workflow comprueba que `actool` lo dejó dentro del `.app`.
+- **No se podía compilar para un teléfono**, que es el único camino a la
+  tienda: la firma estaba apagada para todas las configuraciones y no solo
+  para el simulador, y el framework de Kotlin se buscaba únicamente en la
+  carpeta que usa el simulador en Debug. Ahora las rutas van por SDK y por
+  configuración, y el workflow compila también con `-sdk iphoneos` para que
+  no vuelva a romperse sin que nadie se entere.
+- **`ITSAppUsesNonExemptEncryption: false`** declarado en el Info.plist: la
+  app solo usa HTTPS, que es un uso exento. Sin esa clave, App Store Connect
+  pregunta por el cifrado en cada subida.
 
 **Además, aparte del código:**
 

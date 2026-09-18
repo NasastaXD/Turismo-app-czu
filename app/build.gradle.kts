@@ -77,7 +77,12 @@ android {
     // splits habilitados — AGP lo rechaza directamente, ver
     // https://issuetracker.google.com/402800800 — asi que se apagan con
     // -PparaTienda=true, que es como se arma el .aab: `./gradlew :app:bundleRelease -PparaTienda=true`.
-    val paraTienda = project.hasProperty("paraTienda")
+    //
+    // Se lee el VALOR y no solo la presencia: con `hasProperty`,
+    // `-PparaTienda=false` apagaba los splits igual que `=true`, que es lo
+    // contrario de lo que dice.
+    val valorParaTienda = project.findProperty("paraTienda")?.toString()?.lowercase()
+    val paraTienda = valorParaTienda != null && valorParaTienda !in setOf("false", "0", "no")
 
     splits {
         abi {

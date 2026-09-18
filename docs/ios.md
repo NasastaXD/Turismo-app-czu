@@ -161,21 +161,14 @@ las cinco se veía sin correr la app de verdad.
 
 ### En el código, por orden de lo que bloquea más
 
-1. **El proyecto de Xcode.** No existe en el repo: generarlo requiere un
-   Mac. Son un `Info.plist`, un `UIViewControllerRepresentable` de dos
-   líneas alrededor de `puntoDeEntrada()`, y la carpeta `map/` agregada al
-   bundle **como referencia de carpeta, no como grupo** — si Xcode aplana
-   la estructura, las rutas de los glifos no resuelven.
-2. **La capa de red.** `Http` usa `HttpURLConnection`, que no existe en
-   iOS. Ver la pregunta abierta de abajo.
-3. **`Textos`.** Todo texto visible sale de `Textos.t(...)`, y `Textos`
+1. **`Textos`.** Todo texto visible sale de `Textos.t(...)`, y `Textos`
    todavía no cruzó. Hasta que cruce, el estado de error de la pantalla de
    iOS es una superficie vacía en lugar de un mensaje. Es el pendiente más
    visible del módulo, no un olvido.
-4. **`Ajustes`, `Cache`, `Guardado`, `Registro`.** Los cuatro tocan
-   archivos o preferencias del sistema; cada uno necesita `expect`/`actual`
-   con `NSUserDefaults` y `NSFileManager` del lado iOS.
-5. **Las pantallas.** Son Compose y cruzan, pero hay que sacarlas de `:app`
+2. **`Ajustes`, `Guardado`.** Los dos que quedan tocan preferencias del
+   sistema y necesitan `expect`/`actual` con `NSUserDefaults`. `Cache`,
+   `Http` y el enganche de `Registro` ya cruzaron.
+3. **Las pantallas.** Son Compose y cruzan, pero hay que sacarlas de `:app`
    a un módulo compartido de interfaz, y ahí sí se tocan cosas: `Coil` es
    multiplataforma en la 3.x, los `ImageVector` cruzan tal cual, y el
    `HtmlSencillo` habrá que revisarlo.
@@ -192,26 +185,48 @@ las cinco se veía sin correr la app de verdad.
 
 ---
 
-## 5. Dos preguntas abiertas
+## 5. Las dos preguntas, ya decididas
 
-No las resuelvo solo porque las dos cambian el proyecto más allá de iOS.
+**El cliente HTTP: `expect`/`actual` sobre NSURLSession**, sin dependencia
+nueva. La medida que decidió: `Http` son 131 líneas y lo atado a la JVM era
+**una** función privada de unas 35 (`pedir()`). El ETag con 304, el
+reintento corto y la caída a la copia guardada son Kotlin puro y se
+comparten. Agregar Ktor para no duplicar 35 líneas era un mal canje.
 
-**El cliente HTTP.** Hoy no hay ninguno: `HttpURLConnection` alcanza, y
-"sin dependencias evitables" es una regla del proyecto. Para iOS hay dos
-caminos: agregar **Ktor** (una dependencia nueva, pero un solo `Http` para
-las dos plataformas) o resolverlo con `expect`/`actual` sobre
-**NSURLSession** (ninguna dependencia nueva, pero dos implementaciones de
-ETag, reintento y timeouts que hay que mantener en paralelo). Me inclino
-por el segundo, que es el que respeta la regla; el primero es bastante
-menos trabajo.
+**Los avisos: fuera de la primera versión de iOS.** El equivalente de
+WorkManager en iOS, `BGAppRefreshTask`, es explícitamente *best-effort*: el
+sistema decide si corre y cuándo. Sale sin avisos y sin el interruptor,
+antes que con uno que promete lo que no puede cumplir. No se toca el "no hay
+push".
 
-**Los avisos.** Acá no hay una opción buena. El diseño actual —sin push,
-revisando cada seis horas— depende de WorkManager, que en Android
-**garantiza** que la revisión corra sobreviviendo a Doze y al reinicio. El
-equivalente de iOS, `BGAppRefreshTask`, es explícitamente *best-effort*: el
-sistema decide si corre y cuándo, según cuánto se use la app. En la
-práctica, en iOS los avisos van a llegar tarde o no llegar. Las salidas
-son: aceptar que en iOS sean menos confiables y decirlo, o introducir push
-(APNs) — que contradice de frente el "no hay push, no hay servicio
-externo, nadie del otro lado sabe quién tiene la app instalada" que es una
-decisión explícita del proyecto, no una consecuencia.
+---
+
+## 6. Cerrado en la revisión del 2026-09-18
+
+Tres cosas que el camino a la App Store necesitaba y que no estaban:
+
+- **El ícono.** No había ninguno: la app se instalaba con el cuadrado gris
+  de iOS, y App Store Connect rechaza una subida sin él. Se agregó
+  `ios/xcode/Recursos/Assets.xcassets`, con un PNG de 1024×1024 opaco y sin
+  redondear (con canal alfa es `ITMS-90717`), generado del mismo vector que
+  el de Android. El workflow comprueba que `actool` dejó los derivados
+  dentro del `.app`.
+- **No se podía compilar para un teléfono.** Dos causas, las dos en
+  `project.yml`: `CODE_SIGNING_ALLOWED: NO` estaba en `settings.base`, o sea
+  para todas las configuraciones y no solo para el simulador, así que un
+  archivado salía sin firmar; y el framework de Kotlin se buscaba en una
+  única ruta fija, `iosSimulatorArm64/debugFramework`. Ahora la ruta va por
+  SDK y por configuración —cuatro combinaciones— y el enlace se hace con
+  `-framework TurismoKit` en `OTHER_LDFLAGS`, porque una dependencia
+  declarada no puede ser condicional. El workflow compila también con
+  `-sdk iphoneos` y comprueba con `lipo` que el binario es arm64 de
+  teléfono: es la mitad del camino que antes nadie miraba.
+- **`ITSAppUsesNonExemptEncryption: false`** en el Info.plist. La app solo
+  usa HTTPS, que es un uso exento de la normativa de exportación; sin la
+  clave, App Store Connect pregunta por el cifrado en cada subida.
+
+Lo que sigue sin comprobarse, y hay que decirlo: **nada de esto se archivó
+ni se subió de verdad**. Que compile y enlace para `iphoneos` sin firmar es
+lo más lejos que llega un runner sin cuenta de desarrollador. Firmar,
+archivar y que App Store Connect acepte el paquete son tres pasos que
+necesitan la cuenta y una Mac.

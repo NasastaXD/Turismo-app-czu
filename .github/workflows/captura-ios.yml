@@ -160,6 +160,14 @@ jobs:
 
           echo "PMTiles: $(du -h "$APP/map/caaguazu.pmtiles" | cut -f1)"
 
+          # Y el icono. App Store Connect rechaza una subida sin el, asi que
+          # comprobar que `actool` corrio y dejo los PNG derivados adentro es
+          # comprobar algo que de otro modo se descubre al subir.
+          echo "--- iconos dentro del .app ---"
+          ls -1 "$APP" | grep -i appicon || true
+          test -n "$(ls -1 "$APP" | grep -i appicon)" \
+            || { echo "FALTA el icono: el catalogo no se compilo"; exit 1; }
+
       - name: Arrancar un simulador
         id: simulador
         run: |
@@ -301,3 +309,31 @@ jobs:
           name: captura-ios
           path: capturas/
           retention-days: 30
+
+      # El camino a la App Store no es el simulador: es un telefono. Hasta
+      # ahora nada comprobaba esa mitad, y estaba rota — la firma apagada para
+      # todo y el framework buscado solo en la carpeta del simulador. Va al
+      # final a proposito: si falla, la captura ya quedo subida.
+      #
+      # Sin firmar, que es lo unico que un runner sin cuenta de desarrollador
+      # no puede hacer. Compilar y enlazar si, y es donde estaba el problema.
+      - name: Comprobar que tambien compila para un telefono
+        run: |
+          set -o pipefail
+          ./gradlew :ios:linkDebugFrameworkIosArm64 --no-daemon
+          cd ios/xcode
+          xcodebuild \
+            -project Turismo.xcodeproj \
+            -scheme Turismo \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath dd-telefono \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+          echo "--- lo que salio para telefono ---"
+          ls -la dd-telefono/Build/Products/Debug-iphoneos/
+          APP=dd-telefono/Build/Products/Debug-iphoneos/Turismo.app
+          # Que el binario sea de verdad arm64 de telefono y no otra cosa.
+          lipo -info "$APP/Turismo"

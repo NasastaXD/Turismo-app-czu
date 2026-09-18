@@ -40,6 +40,12 @@ targets:
       - path: PrivacyInfo.xcprivacy
         buildPhase: resources
 
+      # El icono. App Store Connect rechaza una subida sin el, y hasta
+      # ahora el proyecto no tenia ninguno: la app se instalaba en el
+      # simulador con el cuadrado gris de iOS.
+      - path: Recursos/Assets.xcassets
+        buildPhase: resources
+
       # Los recursos de Compose que traen las dependencias — maplibre-compose
       # empaqueta los textos de su atribucion como Compose Resources. Sin
       # ellos la app se caia con MissingResourceException buscando
@@ -73,6 +79,11 @@ targets:
         URL_BASE: https://caaguazu.net/wp-json/czu-app/v1/
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
+        # Solo HTTPS, que es de los usos exentos de la normativa de
+        # exportacion de EE.UU. Declararlo aca evita que App Store Connect
+        # pregunte por el cifrado en cada subida, que es la respuesta que
+        # habria que dar a mano cada vez.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UIUserInterfaceStyle: Automatic
         # Compose Multiplatform comprueba esta clave al arrancar y lanza
@@ -94,6 +105,7 @@ targets:
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_USER_SCRIPT_SANDBOXING: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # Sin simulador Intel, y no es una preferencia: maplibre-compose no
         # publica la variante iosX64, asi que el framework de Kotlin no tiene
         # porcion x86_64 y Swift no encuentra el modulo al compilar para ella.
@@ -101,21 +113,39 @@ targets:
         # Intel con "cannot find 'PuntoDeEntradaKt' in scope", que no dice nada
         # sobre la causa real. Consecuencia: esto no compila en una Mac Intel.
         "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
-        FRAMEWORK_SEARCH_PATHS:
+        # El framework se enlaza por bandera y no como dependencia declarada,
+        # porque la ruta depende del SDK y de la configuracion y una
+        # dependencia no puede ser condicional. Antes habia una sola, fija al
+        # simulador en Debug: compilar para un telefono buscaba el framework
+        # donde no estaba, y ese es justo el unico camino a la App Store.
+        OTHER_LDFLAGS:
           - $(inherited)
-          - $(SRCROOT)/../build/bin/iosSimulatorArm64/debugFramework
-        # El CI compila para el simulador, que no necesita firma. Un build para
-        # un telefono real la exige y la resuelve Xcode con la cuenta de
-        # desarrollador.
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGNING_REQUIRED: NO
+          - -framework
+          - TurismoKit
+        # Solo el simulador va sin firma. Estaba puesto para todo, asi que un
+        # archivado para la tienda salia sin firmar y Xcode no decia por que.
+        "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+        "CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]": NO
 
-    dependencies:
-      # Estatico, por eso `embed: false`: un framework dinamico habria que
-      # firmarlo y embeberlo aparte, y no gana nada para un solo consumidor.
-      - framework: ../build/bin/iosSimulatorArm64/debugFramework/TurismoKit.framework
-        embed: false
-        codeSign: false
+      # Cuatro rutas y no una: Kotlin/Native saca un framework por objetivo y
+      # por modo. `./gradlew :ios:linkDebugFrameworkIosSimulatorArm64` arma el
+      # primero; `:ios:linkReleaseFrameworkIosArm64` es el que necesita un
+      # archivado para la tienda.
+      configs:
+        Debug:
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosSimulatorArm64/debugFramework
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosArm64/debugFramework
+        Release:
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosSimulatorArm64/releaseFramework
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosArm64/releaseFramework
 
   # Las pruebas de interfaz existen por una razon practica: son la unica forma
   # confiable de que la app quede ACTIVA al frente en un simulador de CI.
@@ -132,8 +162,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo.pruebas
         TEST_TARGET_NAME: Turismo
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGNING_REQUIRED: NO
+        "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+        "CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]": NO
         "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
 
 schemes:
