@@ -29,7 +29,24 @@ object Registro {
     private const val ARCHIVO_PREVIO = "registro-previo.txt"
     private const val LIMITE_BYTES = 512L * 1024L
 
-    private val reloj = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
+    /**
+     * Uno por hilo, y no uno compartido.
+     *
+     * `SimpleDateFormat` no es seguro entre hilos: guarda estado en un
+     * `Calendar` propio. Y aca se registra desde todos lados a la vez —la
+     * interfaz, el despachador de red, el trabajador de avisos, el capturador
+     * de caidas—, asi que uno solo devolvia horas mezcladas o lanzaba desde
+     * dentro del propio registro. Lo segundo era lo peor: la excepcion salia
+     * por el mismo camino que estaba anotando el fallo original y lo tapaba.
+     *
+     * Subclase anonima y no `ThreadLocal.withInitial`, que en Android recien
+     * existe desde API 26 y el minimo del proyecto es 24.
+     */
+    private val reloj = object : ThreadLocal<SimpleDateFormat>() {
+        override fun initialValue() = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
+    }
+
+    private fun ahora(): String = reloj.get()!!.format(Date())
 
     @Volatile private var destino: File? = null
     private val candado = Any()
@@ -108,13 +125,13 @@ object Registro {
 
     private fun escribir(nivel: Char, etiqueta: String, mensaje: String) {
         // La hora se toma ahora, no cuando le toque el turno a la escritura.
-        val linea = "${reloj.format(Date())} $nivel/$etiqueta: $mensaje\n"
+        val linea = "${ahora()} $nivel/$etiqueta: $mensaje\n"
         runCatching { escritor.execute { volcar(linea) } }
     }
 
     /** Escritura sincrona. Solo para la caida, donde no hay un despues. */
     private fun escribirYa(nivel: Char, etiqueta: String, mensaje: String) {
-        volcar("${reloj.format(Date())} $nivel/$etiqueta: $mensaje\n")
+        volcar("${ahora()} $nivel/$etiqueta: $mensaje\n")
     }
 
     private fun volcar(linea: String) {

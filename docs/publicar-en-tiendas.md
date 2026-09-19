@@ -1,7 +1,7 @@
 # Qué falta para publicar — Play Store y App Store
 
-Estado a partir de una auditoría del código el 2026-09-16. Se actualiza a
-mano cuando algo de esta lista se resuelve.
+Estado a partir de una auditoría del código el 2026-09-16, revisada el
+2026-09-18. Se actualiza a mano cuando algo de esta lista se resuelve.
 
 ---
 
@@ -29,6 +29,34 @@ mano cuando algo de esta lista se resuelve.
   Play.
 - **Ícono adaptable real** (no el de ejemplo de Android Studio): un pin de
   mapa, coherente con el resto de la iconografía.
+
+### Cerrado en la revisión del 2026-09-18
+
+- **El ícono faltaba en Android 7.0 y 7.1.** Solo existía
+  `mipmap-anydpi-v26`, y ese calificador excluye por completo a API 24 y 25,
+  que entran por `minSdk`. En esos teléfonos no había ninguna configuración
+  que coincidiera y el sistema mostraba el ícono gris por omisión. Se
+  agregaron los cinco PNG de densidad, generados del mismo vector; ver
+  `docs/iconos.md`. Comprobado en el APK compilado: `mipmap/ic_launcher`
+  ahora tiene seis configuraciones (`mdpi` a `xxxhdpi` más `anydpi-v26`),
+  leído con `aapt2 dump resources`.
+- **Los dos permisos de ubicación se quitaron de la fusión.** MapLibre los
+  declara en su propio manifiesto para su componente de "mi posición", que
+  la app no usa — comprobado que ningún archivo toca `locationComponent` ni
+  `LocationEngine`. Quedaban listados en la ficha de Play como "Ubicación" y
+  obligaban a declararlos en seguridad de datos. Con `tools:node="remove"`
+  desaparecen: comprobado con `aapt2 dump badging` sobre el APK nuevo.
+- **`-PparaTienda=false` apagaba los splits igual que `=true`.** Era
+  `hasProperty`, que solo mira si la propiedad existe. Ahora se lee el valor.
+  No afectaba a ningún workflow —los dos pasan `=true`— pero era una trampa
+  puesta para quien viniera después.
+- **Queda dicho, sin cambiar nada:** `coil-network-okhttp` arrastra OkHttp y
+  Okio al APK. `CLAUDE.md` dice "sin cliente HTTP externo", y para la API es
+  cierto —`Http` es `HttpURLConnection`—, pero las imágenes sí traen uno por
+  transitividad. Coil 3.2.0 no publica un motor sobre `HttpURLConnection`
+  (`coil-network-android` quedó en `3.0.0-alpha02`), así que sacarlo
+  significa escribir el motor a mano: unas 40 líneas. Es una decisión del
+  dueño, no un bug, y no se toca sin que se pida.
 
 ### Pendiente, y es una decisión, no un bug
 
@@ -78,32 +106,60 @@ mano cuando algo de esta lista se resuelve.
 
 ## iOS (App Store)
 
-**No hay ninguna app de iOS en este repositorio.** Todo el proyecto es
-Android nativo (Kotlin + Jetpack Compose, MapLibre Android, WorkManager) —
-nada de eso corre en iOS tal cual. Publicar en el App Store no es una
-casilla más de esta lista: es un proyecto nuevo.
+**La decisión está tomada y hay código.** El detalle completo —la
+investigación, lo construido, lo verificado y lo que falta— está en
+[`docs/ios.md`](ios.md). El resumen:
 
-Antes de que tenga sentido preparar nada de código, hay una decisión de
-arquitectura que no me corresponde tomar sola:
+Se eligió **Compose Multiplatform**: se comparten datos, contrato *y*
+pantallas. Lo que lo hizo posible fue una decisión que ya estaba tomada en
+este proyecto por otro motivo: **no hay Material3**, así que el sistema
+visual es `compose.foundation`/`compose.ui` puro y cruza sin despegarse de
+nada atado a Android.
 
-1. **Nativo en Swift/SwiftUI, de cero.** Máxima calidad y aprovecha
-   MapLibre iOS (existe, con soporte de PMTiles también), pero es rehacer
-   las nueve pantallas y toda la capa de datos en otro lenguaje.
-2. **Kotlin Multiplatform (KMP)**: mover la capa de datos y la lógica que
-   ya existe (modelos, `ApiHttp`, `Http`, `Ajustes`, etc.) a un módulo
-   compartido, y escribir la interfaz de iOS en SwiftUI aparte. Reutiliza
-   lo que menos cambia (el contrato con el panel) y no toca el sistema
-   visual, que es Compose puro y no se comparte.
-3. **Un framework cruzado** (Flutter, React Native): reescribe todo de
-   cero en otra base, sin reutilizar nada de este repo, y choca de frente
-   con varias decisiones ya tomadas acá (sin Material3, mapa vectorial
-   embebido con soporte nativo de pmtiles, R8/ProGuard propio).
+Lo que decidió la viabilidad fue el mapa: **MapLibre iOS lee `pmtiles://`
+de forma nativa desde la 6.10**, así que los 2 MB embebidos cruzan sin
+servidor y sin una línea de Swift. Si eso no hubiera existido, se caía la
+premisa central del proyecto y con ella el sentido de compartir código.
 
-Dado cómo está armado este proyecto — separación limpia entre datos y UI,
-"un solo modelo por entidad", sin capas de por medio — la opción 2 es la
-que menos trabajo tira a la basura. Pero es una decisión de meses de
-trabajo y de stack, no algo para arrancar sin que alguien la tome a
-propósito.
+Hay dos módulos nuevos, `:compartido` (el contrato, ya compartido de verdad
+con `:app`) y `:ios` (la cáscara con el mapa), y un workflow **"Verificar
+iOS"** en un runner macOS, que es la única forma de comprobar que compilan:
+Kotlin/Native no cruza a iOS desde Linux.
+
+**La app Android no cambió de forma** y no ve Compose Multiplatform por
+ningún lado. Eso es deliberado: hay un `.aab` a punto de entrar a Play.
+
+Las dos preguntas que estaban abiertas se cerraron: **HTTP en iOS va sobre
+NSURLSession** con `expect`/`actual` (el ETag, el reintento corto y la caída
+a la copia guardada son Kotlin puro y se comparten), y **los avisos quedan
+fuera de la primera versión de iOS**.
+
+El proyecto de Xcode existe, y como especificación: `ios/xcode/project.yml`,
+que XcodeGen convierte en `.xcodeproj` en un comando. Eso es lo que permite
+armarlo en un runner y lo que hace realista compilar sin una Mac propia. El
+workflow **"Captura de iOS"** arranca un simulador y saca la foto del mapa
+dibujado con sus pines — está en `docs/imagenes/mapa-en-iphone.png`.
+
+Lo que falta para poder mandar algo a Apple es **`Textos` y las pantallas**.
+Hoy la app de iOS es el mapa, y una app que hace tan poco cae justo en la
+regla de *funcionalidad mínima*, que es de las que Apple más usa para
+rechazar. No es un problema técnico: es que todavía no está terminada.
+
+Cerrado en la revisión del 2026-09-18, del lado de iOS:
+
+- **El ícono no existía.** App Store Connect rechaza una subida sin él
+  (`ITMS-90717` si además tiene canal alfa). Se agregó el catálogo con el
+  PNG de 1024×1024, opaco y sin redondear, del mismo vector que el de
+  Android. El workflow comprueba que `actool` lo dejó dentro del `.app`.
+- **No se podía compilar para un teléfono**, que es el único camino a la
+  tienda: la firma estaba apagada para todas las configuraciones y no solo
+  para el simulador, y el framework de Kotlin se buscaba únicamente en la
+  carpeta que usa el simulador en Debug. Ahora las rutas van por SDK y por
+  configuración, y el workflow compila también con `-sdk iphoneos` para que
+  no vuelva a romperse sin que nadie se entere.
+- **`ITSAppUsesNonExemptEncryption: false`** declarado en el Info.plist: la
+  app solo usa HTTPS, que es un uso exento. Sin esa clave, App Store Connect
+  pregunta por el cifrado en cada subida.
 
 **Además, aparte del código:**
 
@@ -123,6 +179,8 @@ propósito.
 - **Android**: technically listo para cargar a Play Console. Lo que falta
   es todo lo que no es código — cuenta, ficha de tienda, y la decisión
   sobre rotar el keystore.
-- **iOS**: no hay para qué preparar código todavía. Lo que hace falta
-  primero es elegir el camino (nativo, KMP, o cruzado) antes de escribir
-  una sola línea.
+- **iOS**: el camino está elegido (Compose Multiplatform) y el contrato
+  ya se comparte de verdad con la app Android. Falta la mayor parte del
+  trabajo, y sobre todo un Mac: el proyecto de Xcode no se puede generar
+  desde acá. Antes de seguir conviene decidir las dos preguntas abiertas de
+  `docs/ios.md` — HTTP y avisos.

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- El mapa vive dentro del APK. La red solo se usa para contenido. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,6 +13,33 @@
     -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!--
+      MapLibre declara los dos permisos de ubicacion en su propio manifiesto,
+      para su componente de "mi posicion". La app no lo usa —el mapa se dibuja
+      sin saber donde esta quien lo mira, y es una decision del proyecto—, asi
+      que se quitan de la fusion.
+
+      No es cosmetico: un permiso declarado sale listado en la ficha de Play
+      como "Ubicacion" y obliga a declararlo en el formulario de seguridad de
+      datos. Pedirle la ubicacion a alguien para no usarla es lo peor de los
+      dos mundos.
+
+      Comprobado que ningun codigo toca `locationComponent` ni `LocationEngine`
+      antes de quitarlos: si algun dia se activa "mi posicion", estas dos
+      lineas se borran y el permiso vuelve por si solo.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+        tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
+        tools:node="remove" />
+
+    <!--
+      Dos juegos de icono, y no es redundancia: el adaptativo de
+      `mipmap-anydpi-v26` solo aplica desde API 26, asi que en Android 7.0 y
+      7.1 —que entran por minSdk 24— no habia ninguna configuracion que
+      coincidiera y el telefono mostraba el icono gris por omision. Los PNG
+      de `mipmap-*dpi` son el recorte visible del mismo adaptativo.
+    -->
     <application
         android:name=".App"
         android:allowBackup="true"

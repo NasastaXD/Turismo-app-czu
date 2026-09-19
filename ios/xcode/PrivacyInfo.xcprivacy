@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  El manifiesto de privacidad que exige Apple. Si falta o esta mal, la carga a
+  App Store Connect se rechaza automaticamente, antes de cualquier revision
+  humana.
+
+  Las tres primeras claves dicen la verdad de esta app y son faciles: no hay
+  seguimiento, no hay dominios de seguimiento y no se recolecta ningun dato.
+  No hay cuentas, no hay analitica, no hay publicidad, y lo que la app guarda
+  no sale del telefono.
+
+  La cuarta clave es la que hay que revisar cuando el codigo cambie: declara
+  funciones del sistema que Apple obliga a justificar. Apple valida esto
+  contra lo que la app realmente usa, asi que sobra tan mal como falta.
+  Hoy estan declaradas mirando lo que MapLibre necesita para leer el mapa
+  embebido; cuando `Ajustes` y `Cache` crucen a iOS hay que volver aca.
+-->
+<plist version="1.0">
+<dict>
+  <key>NSPrivacyTracking</key>
+  <false/>
+
+  <key>NSPrivacyTrackingDomains</key>
+  <array/>
+
+  <key>NSPrivacyCollectedDataTypes</key>
+  <array/>
+
+  <key>NSPrivacyAccessedAPITypes</key>
+  <array>
+    <dict>
+      <!-- Marcas de tiempo de archivos: el mapa se lee del bundle de la app. -->
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <!-- C617.1: dentro del contenedor de la propia app. -->
+        <string>C617.1</string>
+      </array>
+    </dict>
+    <dict>
+      <!-- Preferencias del sistema, para el idioma elegido y los favoritos. -->
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <!-- CA92.1: solo para leer y escribir lo de la propia app. -->
+        <string>CA92.1</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>
