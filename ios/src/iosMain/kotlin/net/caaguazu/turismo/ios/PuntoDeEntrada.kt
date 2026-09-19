@@ -1,7 +1,15 @@
 package net.caaguazu.turismo.ios
 
 import androidx.compose.ui.window.ComposeUIViewController
+import net.caaguazu.turismo.core.ArranqueIos
 import net.caaguazu.turismo.core.Bitacora
+import net.caaguazu.turismo.core.Guardado
+import net.caaguazu.turismo.core.Idioma
+import net.caaguazu.turismo.core.RegistroVisible
+import net.caaguazu.turismo.core.Textos
+import net.caaguazu.turismo.core.configurarImagenes
+import net.caaguazu.turismo.datos.Datos
+import net.caaguazu.turismo.ui.Aplicacion
 import platform.UIKit.UIViewController
 
 /**
@@ -23,20 +31,39 @@ import platform.UIKit.UIViewController
  * Xcode ya se llama Turismo, y Swift no puede importar un modulo homonimo del
  * que se esta compilando.
  *
- * El proyecto de Xcode todavia no existe en el repo: generarlo requiere un Mac,
- * y este entorno es Linux.
+ * **Este archivo es toda la cascara de iOS.** Lo que dibuja es `Aplicacion()`,
+ * que vive en :interfaz y es exactamente la misma funcion que dibuja la app de
+ * Android. Si este archivo empieza a crecer, es que algo que deberia
+ * compartirse se esta escribiendo dos veces.
  */
 fun puntoDeEntrada(): UIViewController {
     engancharBitacora()
-    return ComposeUIViewController { PantallaMapaIos() }
+
+    // El orden importa y es el mismo que en `App.onCreate` de Android:
+    // primero las carpetas y la URL base, despues el idioma —que decide cual de
+    // los tres juegos embebidos se carga—, y recien despues los textos.
+    ArranqueIos.iniciar()
+    configurarImagenes()
+
+    Idioma.iniciar()
+    Textos.cargarEmbebido(Idioma.actual)
+    Datos.iniciar()
+    Guardado.iniciar()
+
+    val controlador = ComposeUIViewController { Aplicacion() }
+    // Se guarda para poder presentar la hoja de compartir, que en iOS exige un
+    // controlador desde el cual presentarla. Es lo que usan "compartir el
+    // registro" y "agendar".
+    ArranqueIos.raiz = controlador
+    return controlador
 }
 
 /**
  * El registro del lado iOS.
  *
  * `Bitacora` no escribe nada hasta que una plataforma la engancha, asi que sin
- * esto todo lo que anotan `Http` y `Cache` se perderia — justo lo que hace
- * falta para diagnosticar si los pines llegaron o no.
+ * esto se perderia todo lo que anotan `Http`, `Cache` y las pantallas — justo
+ * lo que hace falta para diagnosticar.
  *
  * Va a `println` y NO a NSLog, y esto costo dos caidas: **un String de Kotlin
  * pasado como vararg de Objective-C no se convierte a NSString**. NSLog recibe
@@ -54,12 +81,12 @@ fun puntoDeEntrada(): UIViewController {
  *
  * `println` es de Kotlin y no cruza a Objective-C, asi que no puede pasar. Se
  * pierde el registro unificado del sistema —`log show` no ve stdout— y a
- * cambio no se pierde la app. Para diagnosticar hay dos vias mejores que ya
- * estan en el workflow: los informes de caida y la consola atada.
+ * cambio no se pierde la app.
  *
- * Esto es el equivalente de lo que hace `App` en Android, donde engancha al
- * `Registro` de siempre. Aca no hay archivo rotativo ni pantalla de
- * diagnostico: cuando haga falta, es el lugar donde van.
+ * Ademas se guardan las ultimas lineas en memoria para la pantalla de
+ * diagnostico, que ahora tambien cruzo. No es un archivo rotativo como el de
+ * Android —eso es trabajo para mas adelante— pero alcanza para ver que paso en
+ * esta corrida y compartirlo.
  */
 private fun engancharBitacora() {
     // Idempotente: `puntoDeEntrada` se puede llamar mas de una vez si Swift
@@ -68,6 +95,35 @@ private fun engancharBitacora() {
 
     Bitacora.destino = { nivel, etiqueta, mensaje, causa ->
         val porque = causa?.message?.let { " — $it" } ?: ""
-        println("[" + nivel.name + "] " + etiqueta + ": " + mensaje + porque)
+        val linea = "[" + nivel.name + "] " + etiqueta + ": " + mensaje + porque
+        println(linea)
+        AnilloDeRegistro.anotar(linea)
     }
+
+    RegistroVisible.texto = { AnilloDeRegistro.todo() }
+    RegistroVisible.borrar = { AnilloDeRegistro.vaciar() }
+}
+
+/**
+ * Las ultimas lineas del registro, en memoria.
+ *
+ * Con tope, y por la misma razon que la memoria de avisos lo tiene: sin el,
+ * una app abierta toda la tarde termina guardando megabytes de texto que nadie
+ * va a leer. Se conservan las ultimas, que son las que explican lo que acaba de
+ * pasar.
+ */
+private object AnilloDeRegistro {
+
+    private const val MAX_LINEAS = 500
+
+    private val lineas = ArrayDeque<String>(MAX_LINEAS)
+
+    fun anotar(linea: String) {
+        if (lineas.size >= MAX_LINEAS) lineas.removeFirst()
+        lineas.addLast(linea)
+    }
+
+    fun todo(): String = lineas.joinToString("\n")
+
+    fun vaciar() = lineas.clear()
 }

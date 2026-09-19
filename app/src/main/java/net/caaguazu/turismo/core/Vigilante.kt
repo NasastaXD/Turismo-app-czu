@@ -43,7 +43,7 @@ class Vigilante(
         // APK, asi que con la app abierta —este trabajador corre en el mismo
         // proceso— borraba de la pantalla todo lo que el panel habia mandado.
         // Y era redundante: `App.onCreate` corre antes que cualquier trabajador.
-        if (!Textos.cargados) Textos.cargarEmbebido(applicationContext, Idioma.actual)
+        if (!Textos.cargados) Textos.cargarEmbebido(Idioma.actual)
 
         revisarArticulos()
         revisarEventos()
@@ -152,7 +152,7 @@ class Vigilante(
                 )
                 .build()
 
-            intentar(ETIQUETA, "programar la revision periodica") {
+            intentarCompartido(ETIQUETA, "programar la revision periodica") {
                 WorkManager.getInstance(contexto).enqueueUniquePeriodicWork(
                     TRABAJO,
                     ExistingPeriodicWorkPolicy.KEEP,
@@ -163,7 +163,7 @@ class Vigilante(
 
         /** Se cancela al apagar los avisos: un trabajo que no va a avisar no corre. */
         fun cancelar(contexto: Context) {
-            intentar(ETIQUETA, "cancelar la revision periodica") {
+            intentarCompartido(ETIQUETA, "cancelar la revision periodica") {
                 WorkManager.getInstance(contexto).cancelUniqueWork(TRABAJO)
             }
         }

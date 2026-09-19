@@ -31,6 +31,13 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    // `expect class Archivos` sigue marcado como Beta y avisa una vez por
+    // archivo. Es la herramienta correcta para esto; el aviso solo tapa los
+    // que si importan.
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.serialization.json)

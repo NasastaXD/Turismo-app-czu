@@ -7,7 +7,7 @@ import java.io.File
  * cruzar a codigo compartido, asi que del lado Android no cambia nada de como
  * se guarda ni donde.
  */
-internal actual class Archivos actual constructor(raiz: String) {
+actual class Archivos actual constructor(raiz: String) {
 
     private val carpeta = File(raiz)
 

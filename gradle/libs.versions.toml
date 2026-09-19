@@ -40,6 +40,12 @@ maplibre-compose = { group = "org.maplibre.compose", name = "maplibre-compose", 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+# El nucleo de red de Coil, sin motor. Lo usa iOS: el motor se escribe a
+# mano sobre NSURLSession en unas cincuenta lineas, y asi iOS no arrastra
+# Ktor ni su motor Darwin —dos dependencias nuevas— solo para bajar fotos.
+# La interfaz que hay que implementar es UN metodo; verificado en el
+# artefacto, no supuesto.
+coil-network-core = { group = "io.coil-kt.coil3", name = "coil-network-core", version.ref = "coil" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 androidx-work = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }

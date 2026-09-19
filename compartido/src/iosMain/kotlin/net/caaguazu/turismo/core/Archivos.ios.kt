@@ -19,7 +19,7 @@ import platform.Foundation.writeToFile
  * copia guardada" y nunca tumbar la pantalla.
  */
 @OptIn(ExperimentalForeignApi::class)
-internal actual class Archivos actual constructor(raiz: String) {
+actual class Archivos actual constructor(raiz: String) {
 
     private val carpeta = raiz.trimEnd('/')
     private val gestor = NSFileManager.defaultManager

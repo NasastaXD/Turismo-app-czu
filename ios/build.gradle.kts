@@ -9,15 +9,18 @@ plugins {
  *
  * Es Compose Multiplatform: el mismo Kotlin y el mismo Compose que la app
  * Android, no una reescritura en Swift. Lo que Xcode consume de aca es un
- * framework; el proyecto de Xcode en si todavia no existe — generarlo requiere
- * un Mac, y este entorno es Linux.
+ * framework, y el proyecto de Xcode se genera de `ios/xcode/project.yml`.
+ *
+ * Este modulo es **solo la cascara**: un archivo con `puntoDeEntrada()`. Las
+ * pantallas, el sistema visual y los datos viven en :interfaz y son los mismos
+ * que usa :app. Si esto crece, es que algo se esta escribiendo dos veces.
  *
  * NADA de este modulo compila en Linux: Kotlin/Native no cruza a iOS sin macOS
  * y Xcode. La verificacion vive en el workflow `verificar-ios.yml`, que corre en
  * un runner macOS. Es la unica prueba de que esto compila, y por eso existe.
  *
- * :app no depende de este modulo ni al reves. La app que esta por entrar a Play
- * no ve Compose Multiplatform ni maplibre-compose por ningun lado.
+ * :app no depende de este modulo ni al reves. Las dos cascaras cuelgan de
+ * :interfaz y no se conocen entre si.
  */
 kotlin {
     // Sin iosX64: maplibre-compose 0.17.0 publica iosArm64, iosSimulatorArm64,
@@ -43,13 +46,11 @@ kotlin {
         // creado a mano no cuelga de la jerarquia, el codigo quedaria fuera de
         // la compilacion y el framework se armaria vacio sin que nada se queje.
         iosMain.dependencies {
-            implementation(project(":compartido"))
-
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
-
-            implementation(libs.maplibre.compose)
+            // Una sola dependencia, y es todo lo que esta cascara necesita:
+            // :interfaz trae consigo :compartido, Compose y maplibre-compose, y
+            // expone `Aplicacion()`, que es exactamente la misma funcion que
+            // dibuja la app de Android.
+            implementation(project(":interfaz"))
         }
     }
 }

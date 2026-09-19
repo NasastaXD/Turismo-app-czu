@@ -16,4 +16,4 @@ import kotlinx.coroutines.CoroutineDispatcher
  * es asincrono por su cuenta y lo unico realmente bloqueante que queda es leer
  * y escribir la cache, que son archivos chicos.
  */
-internal expect val despachadorIo: CoroutineDispatcher
+expect val despachadorIo: CoroutineDispatcher

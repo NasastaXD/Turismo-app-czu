@@ -12,7 +12,7 @@ package net.caaguazu.turismo.core
  * Deliberadamente chico y sin nada de cache adentro: si aparece una regla
  * nueva de la cache, va en `Cache` y se escribe una sola vez.
  */
-internal expect class Archivos(raiz: String) {
+expect class Archivos(raiz: String) {
 
     /** null si no existe o no se pudo leer. No lanza. */
     fun leer(nombre: String): String?
@@ -32,7 +32,7 @@ internal expect class Archivos(raiz: String) {
  * para ordenar de mas viejo a mas nuevo, asi que lo unico que importa es que
  * sea comparable consigo mismo.
  */
-internal data class Anotacion(
+data class Anotacion(
     val nombre: String,
     val bytes: Long,
     val modificado: Long,

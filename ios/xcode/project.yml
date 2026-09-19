@@ -63,7 +63,28 @@ targets:
       # preserva `map/glifos/{fontstack}/{range}.pbf`: si Xcode aplana la
       # estructura, el mapa dibuja pero sin una sola etiqueta —ni calles ni
       # nombres de lugares— y nada avisa por que.
-      - path: ../../app/src/main/assets/map
+      # La carpeta vive en `interfaz/src/androidMain/assets/` y no en un sitio
+      # neutro porque el codigo que la lee es el del modulo :interfaz, y en
+      # Android los assets de una biblioteca se fusionan al APK igual que los
+      # propios. Es el modulo que la usa el que la lleva; que la ruta diga
+      # "androidMain" es un costo de nombre, no de estructura.
+      - path: ../../interfaz/src/androidMain/assets/map
+        type: folder
+        buildPhase: resources
+
+      # Los textos de respaldo de la interfaz, los mismos tres archivos que
+      # lleva el APK. Tambien como referencia de carpeta: `Empaquetado` los
+      # busca con `inDirectory = "textos"`, asi que si Xcode aplana la
+      # estructura la app arranca con todas las claves entre angulos.
+      - path: ../../interfaz/src/androidMain/assets/textos
+        type: folder
+        buildPhase: resources
+
+      # Las tipografias. Poppins y Source Serif salen de aca en iOS y de
+      # `R.font` en Android, pero los archivos son los mismos: una sola copia,
+      # porque dos tipografias que se pueden desincronizar son dos apps que se
+      # ven distinto sin que nadie se entere.
+      - path: ../../interfaz/src/androidMain/res/font
         type: folder
         buildPhase: resources
 

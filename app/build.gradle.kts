@@ -125,33 +125,33 @@ android {
 }
 
 dependencies {
-    // El contrato con el panel vive aca: es lo mismo en Android y en iOS, y
-    // por eso salio de este modulo. Kotlin puro — no suma ninguna dependencia
-    // nueva a la app.
-    implementation(project(":compartido"))
+    // Las pantallas y el sistema visual, una sola vez para las dos
+    // plataformas. Trae consigo :compartido, Compose, MapLibre y Coil, asi que
+    // este modulo ya no los declara: lo que declare de mas seria una segunda
+    // version de la misma cosa esperando a desincronizarse.
+    implementation(project(":interfaz"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Sin Material3: el diseno es propio de punta a punta y su tema no se usa.
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.ui)
+    // Herramientas de vista previa, solo en depuracion.
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
 
-    implementation(libs.maplibre)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 
     // Para los avisos. Es la unica forma de que Android deje correr una revision
     // periodica sobreviviendo a Doze y al reinicio del telefono, y no arrastra
     // ningun servicio externo: sin ella, la alternativa seria Firebase.
     implementation(libs.androidx.work)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // Las pruebas del contrato arman su propio analizador para comprobar que
+    // los modelos aguantan la respuesta real del panel. El modulo ya no
+    // declara serialization —le llega de :interfaz como implementacion— asi
+    // que sus pruebas si lo necesitan a la vista.
+    testImplementation(libs.kotlinx.serialization.json)
 }

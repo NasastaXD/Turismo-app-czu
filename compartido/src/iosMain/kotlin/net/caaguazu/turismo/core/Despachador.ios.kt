@@ -9,4 +9,4 @@ import kotlinx.coroutines.Dispatchers
  * y escribir archivos chicos de cache — NSURLSession maneja la red por su
  * cuenta, sin ocupar este despachador.
  */
-internal actual val despachadorIo: CoroutineDispatcher = Dispatchers.Default
+actual val despachadorIo: CoroutineDispatcher = Dispatchers.Default

@@ -49,60 +49,78 @@ del propio MapLibre, no supuesto.
 
 ## 2. Lo construido
 
-Dos módulos nuevos. **La app Android no cambió de forma:** no depende de
-ninguno de los dos hacia abajo, y no ve CMP ni `maplibre-compose` por
-ningún lado. Eso es a propósito — hay un `.aab` a punto de entrar a Play y
-no es momento de reacomodarle el grafo de dependencias.
+**Cuatro módulos, y las dos apps son la misma app.**
 
-### `:compartido` — el contrato, una sola vez
+```
+:compartido   el contrato con el panel, la red, la caché y el disco.
+              Kotlin puro, sin Compose de interfaz.
+                     ▲
+:interfaz     el sistema visual y TODAS las pantallas, una sola vez.
+              Compose Multiplatform.
+              ▲                              ▲
+:app                                    :ios
+la cáscara de Android:                  la cáscara de iOS:
+Activity, Application,                  un archivo, `puntoDeEntrada()`.
+registro a Logcat, avisos
+con WorkManager.
+```
 
-Kotlin puro: ni Android, ni interfaz, ni Compose más allá de `@Immutable`.
+Las dos cáscaras son chicas a propósito. Si alguna empieza a crecer, es que
+algo que debería compartirse se está escribiendo dos veces.
 
-- `datos/Modelos.kt` — los modelos del contrato con el panel. **Salieron de
-  `:app`, no se copiaron**: hay una sola definición y el paquete no cambió,
-  así que para `:app` siguen estando donde estaban.
-- `core/Json.kt` — el analizador tolerante.
-- `core/Resultado.kt` — `Resultado`/`Falla`, el idioma de fallos del
-  proyecto. `intentar` se quedó en `:app`, porque necesita `Registro`, que
-  escribe a Logcat y a un archivo.
-- `datos/Encuadre.kt` — centro y zoom del mapa. Estaban sólo del lado
-  Android; una segunda copia en iOS se habría desviado de la primera sin
-  que nadie se enterara.
-- `ContratoCompartidoTest` — cinco pruebas que decodifican payloads reales
-  del contrato. Corren en la JVM **y en el simulador de iOS**, que es el
-  punto: la serialización no siempre se comporta igual fuera de la JVM, y
-  descubrirlo en un teléfono sería tarde.
+### Por qué fue posible mudar las pantallas casi sin tocarlas
 
-### `:ios` — la cáscara con el mapa
+De los 7.465 renglones de interfaz que había en `:app`, **la gran mayoría
+cruzó sin cambiar una línea**. Eso no fue suerte: el proyecto decidió hace
+tiempo **no usar Material3** y dibujar su propio sistema sobre
+`compose.foundation`. Justamente por eso las pantallas nunca estuvieron
+atadas a Android.
 
-- `BaseMapaIos.kt` — resuelve el estilo con las rutas del bundle ya
-  sustituidas. Es más simple que el lado Android: iOS lee el bundle como
-  archivos reales, así que PMTiles hace lectura por posición ahí mismo y no
-  hay que copiar nada al almacenamiento privado.
-- `PantallaMapaIos.kt` — el mapa de Caaguazú, con el mismo estilo, el mismo
-  recorte y el mismo encuadre que Android.
-- `PuntoDeEntrada.kt` — `puntoDeEntrada(): UIViewController`, lo único que
-  Xcode necesita llamar.
+Lo que sí hubo que resolver es chico y está junto, cada cosa en su archivo
+`.android.kt` / `.ios.kt` al lado de su `expect`:
 
-Dos detalles que valen la pena:
+| Qué | Android | iOS |
+|---|---|---|
+| `Preferencias` | `SharedPreferences` | `NSUserDefaults` |
+| `Empaquetado` (textos de respaldo) | assets del APK | el bundle |
+| `Sistema.idiomaDelTelefono` | `Locale` | `NSLocale` |
+| `Sistema.animacionesActivas` | escala de animación | *Reducir movimiento* |
+| `Sistema.abrirUrl` | `Intent.ACTION_VIEW` | `UIApplication.openURL` |
+| `Sistema.agendar` | `ACTION_INSERT` | un `.ics` a la hoja de compartir |
+| `Sistema.compartirTexto` | `ACTION_SEND` | `UIActivityViewController` |
+| `Sans` / `Serif` | `R.font` | los mismos `.ttf`, del bundle |
+| `LienzoMapa` | `MapView` en un `AndroidView` | `maplibre-compose` |
+| `estiloDelMapa` | copia el `.pmtiles` a disco | lee el bundle |
+| `ManejarVolver` | `BackHandler` | nada: iOS no lo tiene |
+| `FilaDeAvisos` | el interruptor | nada: sin avisos en la v1 |
 
-**La atribución.** `© OpenStreetMap` es obligatoria por la ODbL. La dibuja
-el overlay que `MaplibreMap` pone por omisión, y el texto sale del campo
-`attribution` del propio `estilo.json` — así se cumple la licencia sin que
-aparezca un literal en el código, que es lo que el proyecto prohíbe. Con
-una diferencia respecto de Android, que la muestra siempre visible: en iOS
-queda detrás de un botón que se despliega. Igualarlas es trabajo pendiente.
+### Tres cosas que se ganaron de paso
 
-**Los glifos.** El `estilo.json` referencia las tipografías como
-`asset://map/glifos/...`, y `asset://` es un esquema que sólo entiende
-MapLibre en Android. El lado iOS lo reemplaza por una ruta del bundle. Lo
-limpio sería una marca `__RUTA_GLIFOS__` simétrica a la de los tiles, pero
-eso obliga a tocar `estilo.json` y el lado Android, cuyo renderizado no se
-puede comprobar en este entorno —no hay emulador— con la app a punto de
-entrar a Play. Queda anotado como la corrección a hacer cuando haya con qué
-verificarla.
+- **El GeoJSON de los pines es uno solo.** Antes había dos versiones —la de
+  Android mandaba `color`, la de iOS mandaba `tipo` y `categoria`— y ya se
+  habían separado sin que nadie lo notara.
+- **Las fechas dejaron de depender de la plataforma.** Interpretar un ISO del
+  panel usaba `SimpleDateFormat`; ahora es aritmética propia en `:compartido`,
+  **con pruebas** que cubren el 29 de febrero, el año divisible por cien que
+  no es bisiesto, y el signo del desplazamiento horario. De esa función
+  dependen el botón de agendar y la ventana de avisos.
+- **Los guardianes ahora miran también el código de iOS.** `SinRedaccionTest`,
+  `SistemaDeDisenoTest` y `ClavesDeTextoTest` recorren los cinco juegos de
+  fuentes del proyecto. En la primera corrida pescaron un `"evento.ics"` que
+  parecía una clave de texto.
 
----
+### Dos dependencias, y por qué no fueron cuatro
+
+Coil 3 es multiplataforma pero no trae motor de red: en iOS lo esperado sería
+**Ktor más su motor Darwin**, dos dependencias nuevas para bajar fotos. En su
+lugar hay un `NetworkClient` propio de unas cincuenta líneas sobre la misma
+`NSURLSession` que ya usa `Http` — la interfaz que hay que implementar es **un
+solo método**, leído del artefacto y no supuesto. Lo único que se sumó es
+`coil-network-core`, de la misma familia que Coil.
+
+Es el mismo criterio que llevó a resolver `Http` con NSURLSession en vez de
+Ktor, y responde a una regla explícita del proyecto: no agregar una
+dependencia que se pueda evitar.
 
 ## 3. Qué está verificado y qué no
 
@@ -159,31 +177,26 @@ las cinco se veía sin correr la app de verdad.
 
 ## 4. Lo que falta
 
-### En el código, por orden de lo que bloquea más
+### En el código
 
-1. **`Textos`.** Todo texto visible sale de `Textos.t(...)`, y `Textos`
-   todavía no cruzó. Hasta que cruce, el estado de error de la pantalla de
-   iOS es una superficie vacía en lugar de un mensaje. Es el pendiente más
-   visible del módulo, no un olvido.
-2. **`Ajustes`, `Guardado`.** Los dos que quedan tocan preferencias del
-   sistema y necesitan `expect`/`actual` con `NSUserDefaults`. `Cache`,
-   `Http` y el enganche de `Registro` ya cruzaron.
-3. **Las pantallas.** Son Compose y cruzan, pero hay que sacarlas de `:app`
-   a un módulo compartido de interfaz, y ahí sí se tocan cosas: `Coil` es
-   multiplataforma en la 3.x, los `ImageVector` cruzan tal cual, y el
-   `HtmlSencillo` habrá que revisarlo.
+1. **El registro a disco.** En Android hay un archivo rotativo que la pantalla
+   de diagnóstico exporta; en iOS son las últimas 500 líneas en memoria. Sirve
+   para ver qué pasó en esta corrida, no para diagnosticar algo de ayer.
+2. **Los avisos**, que están fuera de la v1 por decisión tomada.
+3. **Mirarla en un iPhone.** Que compile y que se dibuje en un simulador no es
+   lo mismo que que se sienta bien en la mano.
 
 ### Fuera del código
 
-- [ ] Cuenta de **Apple Developer Program** (USD 99/año) — y sin Mac no hay
-      forma de subir un build, aunque el CI de Actions puede armarlo.
+- [ ] Cuenta de **Apple Developer Program** (USD 99/año).
 - [ ] Certificados de firma y perfiles de aprovisionamiento.
-- [ ] Ficha de App Store Connect: ícono, capturas, descripciones, con las
-      medidas de Apple. Texto de producto: lo escribe una persona.
+- [ ] Ficha de App Store Connect: capturas y descripciones, con las medidas de
+      Apple. Texto de producto: lo escribe una persona.
 - [ ] **App Privacy ("nutrition label")**: con la misma auditoría que la de
       Play, la respuesta es "Data Not Collected" en casi todo.
 
----
+Para compilarla en una Mac, los pasos exactos están en
+[`docs/compilar-en-mac.md`](compilar-en-mac.md).
 
 ## 5. Las dos preguntas, ya decididas
 

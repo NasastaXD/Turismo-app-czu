@@ -42,9 +42,17 @@ jobs:
           restore-keys: gradle-
 
       - name: Pruebas
-        # Tambien las de :compartido: ahi vive el contrato con el panel, y un
-        # release que las salte podria publicar modelos que no decodifican.
-        run: ./gradlew :app:testDebugUnitTest :compartido:testDebugUnitTest --no-daemon
+        # Los tres modulos. :compartido tiene el contrato con el panel —un
+        # release que lo saltara podria publicar modelos que no decodifican— y
+        # :interfaz tiene los cuatro guardianes: sin literales visibles, sin
+        # radios ni elevaciones fuera de los tokens, sin claves de texto a la
+        # deriva. Son lo que hace que las reglas del proyecto sigan siendo
+        # ciertas, asi que un release no se arma sin ellas.
+        run: |
+          ./gradlew --no-daemon \
+            :compartido:testDebugUnitTest \
+            :interfaz:testDebugUnitTest \
+            :app:testDebugUnitTest
 
       - name: Preparar la clave de firma
         # Misma clave que "Publicar APK": si el secreto todavia no existe, el
