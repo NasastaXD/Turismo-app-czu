@@ -14,6 +14,7 @@ import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.Buffer
 import platform.Foundation.NSData
+import platform.Foundation.NSDate
 import platform.Foundation.NSHTTPURLResponse
 import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSURL
@@ -22,6 +23,7 @@ import platform.Foundation.NSURLSessionConfiguration
 import platform.Foundation.dataTaskWithRequest
 import platform.Foundation.setHTTPMethod
 import platform.Foundation.setValue
+import platform.Foundation.timeIntervalSince1970
 import platform.posix.memcpy
 import kotlin.coroutines.resume
 
@@ -155,8 +157,7 @@ private fun NSHTTPURLResponse?.comoCabeceras(): NetworkHeaders {
     return constructor.build()
 }
 
-private fun ahoraMs(): Long =
-    (platform.Foundation.NSDate().timeIntervalSince1970 * 1000).toLong()
+private fun ahoraMs(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
 /**
  * Deja el motor puesto antes de que se dibuje la primera imagen.

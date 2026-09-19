@@ -1,5 +1,6 @@
 package net.caaguazu.turismo.core
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSLocale
 import platform.Foundation.NSString
 import platform.Foundation.NSTemporaryDirectory
@@ -28,6 +29,7 @@ import platform.UIKit.UIApplication
  * - **Compartir** es `UIActivityViewController`, que hay que presentar desde
  *   algun controlador. El de la raiz lo guarda `ArranqueIos`.
  */
+@OptIn(ExperimentalForeignApi::class)
 actual object Sistema {
 
     private const val ETIQUETA = "SistemaIos"
@@ -92,10 +94,12 @@ actual object Sistema {
                 activityItems = cosas,
                 applicationActivities = null,
             )
-            // En iPad la hoja se ancla a una vista o el sistema lanza una
-            // excepcion. La app es solo para iPhone, pero anclarla igual cuesta
-            // dos lineas y evita una caida si algun dia deja de serlo.
-            hoja.popoverPresentationController?.sourceView = desde.view
+            // Sin anclarla a una vista, que es lo que iPad exigiria: la
+            // propiedad `popoverPresentationController` es de una categoria de
+            // UIKit que las bindings no exponen sin mas, y la app declara
+            // `TARGETED_DEVICE_FAMILY = 1` —solo iPhone—, asi que el caso no
+            // puede ocurrir. Si algun dia se agrega iPad, esto es lo primero
+            // que hay que resolver.
             desde.presentViewController(hoja, animated = true, completion = null)
             true
         }.getOrElse {
