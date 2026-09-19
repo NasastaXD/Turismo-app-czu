@@ -47,6 +47,16 @@ object Textos {
      * tres resultados posibles.
      */
     fun cargarEmbebido(codigo: String = Idioma.ORIGINAL) {
+        // Idempotente: si ya estan cargados los de este idioma, no se vuelven a
+        // leer. Hace falta de verdad — la cascara los carga en el arranque para
+        // que el primer cuadro salga con palabras y no con claves entre
+        // angulos, y `Aplicacion` los sigue con un efecto sobre el idioma
+        // actual, que corre justo despues. Sin esta guarda, cada arranque leia
+        // los tres archivos dos veces, y peor: si el servidor hubiera
+        // contestado en el medio, la segunda pasada le tiraba los textos
+        // encima.
+        if (idioma == codigo && cargados) return
+
         idioma = codigo
         val piso = leerRecurso(Idioma.ORIGINAL)
         val propio = if (codigo == Idioma.ORIGINAL) emptyMap() else leerRecurso(codigo)
