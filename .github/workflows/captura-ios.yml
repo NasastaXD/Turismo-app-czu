@@ -13,9 +13,18 @@ on:
   workflow_dispatch:
   push:
     paths:
+    # `interfaz/**` es la mas importante de las cuatro y es la que faltaba: ahi
+    # viven las pantallas y el sistema visual, o sea casi todo lo que puede
+    # romper el lado de iOS. Sin ella, un cambio en una pantalla no disparaba
+    # nada y el primer aviso llegaba recien en el push siguiente que tocara otra
+    # carpeta. Paso: un arreglo de tres lineas en `interfaz/src/iosMain` no
+    # disparo ninguna corrida.
+      #
+      # Y el mapa ya no esta en `app/src/main/assets`: se mudo con el codigo que
+      # lo lee. La ruta vieja apuntaba a una carpeta que no existe.
+      - 'interfaz/**'
       - 'ios/**'
       - 'compartido/**'
-      - 'app/src/main/assets/map/**'
       - '.github/workflows/captura-ios.yml'
 
 permissions:
