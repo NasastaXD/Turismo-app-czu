@@ -135,6 +135,38 @@ dependencias resuelven a 1.12.0: viene de que `:compartido` declara el
 `androidx.compose.runtime` que usa `:app`. Estaba igual antes de esta mudanza
 y compila; alinearlo es trabajo pendiente, no un fallo.
 
+## 3. La app corriendo en un iPhone
+
+![La pantalla de inicio en un iPhone](imagenes/inicio-en-iphone.png)
+
+Esa captura sale del simulador en el CI, y **no es una maqueta**: es
+`Aplicacion()`, la misma función que dibuja la app de Android, corriendo en
+iOS. Cada cosa que se ve ahí es una pieza que cruzó:
+
+- **El título grande en Poppins.** Las tipografías se leen del bundle con
+  `Font(identity, getData = { ... })`, que es la apuesta que permitió no
+  agregar Compose Resources.
+- **El buscador como píldora de radio completo sobre relleno claro** — el
+  sistema visual entero: `Tono`, `Radio`, `Medida`, `Letra`.
+- **Las dos fotos, traídas de `caaguazu.net`.** O sea que el motor de red de
+  Coil escrito sobre NSURLSession funciona.
+- **El botón redondo de perfil, la barra inferior y la píldora oscura en la
+  sección activa.**
+
+Y los textos en inglés no son un error: el simulador está en inglés, así que
+`Sistema.idiomaDelTelefono` devolvió `"en"` y la app abrió leyendo `en.json`
+del bundle. "Inventario" sale en castellano porque esa clave falta en inglés y
+cae al original — las tres capas de `Textos`, funcionando.
+
+El registro del sistema de esa corrida no tiene un solo error: los TLS
+completaron y las conexiones al panel funcionaron. Lo que se ve vacío abajo es
+que el panel tenía poco contenido cargado, no un fallo de la app.
+
+Lo que esa captura **no** dice: cómo se siente en la mano. Eso sigue
+necesitando una persona con un iPhone.
+
+---
+
 ## 3. Qué está verificado y qué no
 
 Esto importa más que lo anterior, porque el proyecto tiene una regla
