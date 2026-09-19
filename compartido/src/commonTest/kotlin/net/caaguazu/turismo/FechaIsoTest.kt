@@ -16,6 +16,11 @@ import kotlin.test.assertNull
  * seis horas de diferencia.
  *
  * Los milisegundos esperados estan calculados aparte, no con esta funcion.
+ *
+ * Los nombres de las pruebas de `commonTest` **no llevan coma ni punto**:
+ * Kotlin/Native los rechaza —"Name contains illegal characters"— aunque la JVM
+ * los acepte sin chistar. Se descubre recien al compilar para iOS, que es una
+ * vuelta de CI en un Mac; no vale la pena gastarla dos veces por lo mismo.
  */
 class FechaIsoTest {
 
@@ -29,7 +34,7 @@ class FechaIsoTest {
     }
 
     @Test
-    fun `el desplazamiento se resta, no se suma`() {
+    fun `el desplazamiento se resta y no se suma`() {
         // 22:00 en Paraguay (UTC-3) es mas tarde en UTC, no mas temprano. Si el
         // signo estuviera invertido, esto daria 1789066800000 y todo evento
         // quedaria corrido seis horas.

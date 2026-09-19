@@ -25,7 +25,7 @@ class FechaIcsTest {
     }
 
     @Test
-    fun `una fecha con hora, minuto y segundo`() {
+    fun `una fecha con hora y minuto y segundo`() {
         assertEquals("20010909T014640Z", enFormatoIcs(1_000_000_000_000L))
     }
 
