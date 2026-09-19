@@ -122,6 +122,19 @@ Es el mismo criterio que llevó a resolver `Http` con NSURLSession en vez de
 Ktor, y responde a una regla explícita del proyecto: no agregar una
 dependencia que se pueda evitar.
 
+**Un aviso que queda abierto, y conviene tenerlo anotado:** al compilar para
+iOS, Gradle avisa que `coil-core` trae `skiko:0.9.4` y que Compose lo sube a
+`0.150.1`. Compila igual y es sólo un aviso. Pero si algún día las fotos no se
+dibujan en iPhone y sí en Android, **ese aviso es el primer sospechoso** —
+Skiko es el motor de dibujo, y una versión que no es la que Coil esperaba es
+exactamente la clase de cosa que rompe la decodificación de imágenes sin dar
+un error claro. No se toca ahora porque tocarlo a ciegas es peor.
+
+Lo mismo con el aviso de que el plugin de Compose es 1.11.1 y las
+dependencias resuelven a 1.12.0: viene de que `:compartido` declara el
+`androidx.compose.runtime` que usa `:app`. Estaba igual antes de esta mudanza
+y compila; alinearlo es trabajo pendiente, no un fallo.
+
 ## 3. Qué está verificado y qué no
 
 Esto importa más que lo anterior, porque el proyecto tiene una regla

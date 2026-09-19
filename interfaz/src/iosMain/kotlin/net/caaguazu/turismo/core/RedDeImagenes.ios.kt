@@ -1,6 +1,7 @@
 package net.caaguazu.turismo.core
 
 import coil3.ImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.SingletonImageLoader
 import coil3.network.NetworkClient
 import coil3.network.NetworkFetcher
@@ -108,7 +109,7 @@ internal class RedDeImagenes : NetworkClient {
                 continuacion.resume(
                     Respuesta(
                         codigo = http?.statusCode?.toInt() ?: 0,
-                        bytes = (datos as? NSData)?.comoBytes() ?: ByteArray(0),
+                        bytes = datos?.comoBytes() ?: ByteArray(0),
                         cabeceras = http.comoCabeceras(),
                     ),
                 )
@@ -164,9 +165,10 @@ private fun ahoraMs(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
  *
  * `setSafe` y no `setUnsafe`: si el cargador ya existiera, reemplazarlo a mitad
  * de camino tiraria la cache en memoria. Lo llama `puntoDeEntrada` antes de
- * componer nada.
+ * componer nada, y por eso es publica: la cascara vive en otro modulo.
  */
-internal fun configurarImagenes() {
+@OptIn(ExperimentalCoilApi::class)
+fun configurarImagenes() {
     SingletonImageLoader.setSafe { contexto ->
         ImageLoader.Builder(contexto)
             .components { add(NetworkFetcher.Factory(networkClient = { RedDeImagenes() })) }

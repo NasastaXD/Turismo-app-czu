@@ -29,7 +29,7 @@ object ArranqueIos {
      * Desde donde se presenta la hoja de compartir. Lo pone `puntoDeEntrada`
      * con el controlador que le entrega a Swift.
      */
-    internal var raiz: UIViewController? = null
+    var raiz: UIViewController? = null
 
     fun iniciar() {
         Entorno.carpetaDatos = carpetaDeDocumentos()
