@@ -77,7 +77,12 @@ android {
     // splits habilitados — AGP lo rechaza directamente, ver
     // https://issuetracker.google.com/402800800 — asi que se apagan con
     // -PparaTienda=true, que es como se arma el .aab: `./gradlew :app:bundleRelease -PparaTienda=true`.
-    val paraTienda = project.hasProperty("paraTienda")
+    //
+    // Se lee el VALOR y no solo la presencia: con `hasProperty`,
+    // `-PparaTienda=false` apagaba los splits igual que `=true`, que es lo
+    // contrario de lo que dice.
+    val valorParaTienda = project.findProperty("paraTienda")?.toString()?.lowercase()
+    val paraTienda = valorParaTienda != null && valorParaTienda !in setOf("false", "0", "no")
 
     splits {
         abi {
@@ -120,28 +125,33 @@ android {
 }
 
 dependencies {
+    // Las pantallas y el sistema visual, una sola vez para las dos
+    // plataformas. Trae consigo :compartido, Compose, MapLibre y Coil, asi que
+    // este modulo ya no los declara: lo que declare de mas seria una segunda
+    // version de la misma cosa esperando a desincronizarse.
+    implementation(project(":interfaz"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Sin Material3: el diseno es propio de punta a punta y su tema no se usa.
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.ui)
+    // Herramientas de vista previa, solo en depuracion.
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
 
-    implementation(libs.maplibre)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
 
     // Para los avisos. Es la unica forma de que Android deje correr una revision
     // periodica sobreviviendo a Doze y al reinicio del telefono, y no arrastra
     // ningun servicio externo: sin ella, la alternativa seria Firebase.
     implementation(libs.androidx.work)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // Las pruebas del contrato arman su propio analizador para comprobar que
+    // los modelos aguantan la respuesta real del panel. El modulo ya no
+    // declara serialization —le llega de :interfaz como implementacion— asi
+    // que sus pruebas si lo necesitan a la vista.
+    testImplementation(libs.kotlinx.serialization.json)
 }

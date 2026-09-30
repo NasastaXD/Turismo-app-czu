@@ -112,10 +112,10 @@ object Avisos {
             .setContentIntent(pendiente)
             .build()
 
-        val resultado = intentar(ETIQUETA, "enviar el aviso $id") {
+        val resultado = intentarCompartido(ETIQUETA, "enviar el aviso $id") {
             NotificationManagerCompat.from(contexto).notify(id, aviso)
         }
-        if (resultado is Resultado.Bien) {
+        if (resultado is Resultado.Bien<*>) {
             Registro.detalle(ETIQUETA, "aviso enviado: $canal/$id")
         }
     }
