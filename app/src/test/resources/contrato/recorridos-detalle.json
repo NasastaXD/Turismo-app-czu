@@ -107,9 +107,18 @@
     "costo_total": {
       "hay_pago": true,
       "detalle": [
-        "‹costo de la parada 1›",
-        "‹costo de la parada 2›",
-        "‹costo de la parada 3›"
+        {
+          "titulo": "‹Atractivo 1›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 2›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 3›",
+          "costo": "‹costo›"
+        }
       ]
     },
     "historia": {
@@ -284,10 +293,22 @@
     "costo_total": {
       "hay_pago": true,
       "detalle": [
-        "‹costo de la parada 1›",
-        "‹costo de la parada 2›",
-        "‹costo de la parada 3›",
-        "‹costo de la parada 4›"
+        {
+          "titulo": "‹Atractivo 1›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 2›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 3›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 4›",
+          "costo": "‹costo›"
+        }
       ]
     },
     "historia": {
@@ -470,10 +491,22 @@
     "costo_total": {
       "hay_pago": true,
       "detalle": [
-        "‹costo de la parada 1›",
-        "‹costo de la parada 2›",
-        "‹costo de la parada 3›",
-        "‹costo de la parada 4›"
+        {
+          "titulo": "‹Atractivo 1›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 2›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 3›",
+          "costo": "‹costo›"
+        },
+        {
+          "titulo": "‹Atractivo 4›",
+          "costo": "‹costo›"
+        }
       ]
     },
     "historia": {
