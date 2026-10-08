@@ -18,3 +18,7 @@ keystore.properties
 # Credenciales de firma: nunca al repositorio
 Document.txt
 *.b64
+
+# Xcode: el proyecto se genera desde ios/xcode/project.yml, no se versiona
+*.xcodeproj
+ios/xcode/Generado/

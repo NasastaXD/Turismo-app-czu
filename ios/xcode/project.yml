@@ -1,0 +1,201 @@
+# El proyecto de Xcode, como especificacion y no como .pbxproj.
+#
+# XcodeGen arma el .xcodeproj a partir de este archivo. Se hace asi porque un
+# .pbxproj son miles de lineas generadas que nadie puede revisar en una
+# diferencia, y porque el CI necesita poder armar el proyecto solo, sin que
+# nadie abra Xcode. Este archivo es la fuente: el .xcodeproj es descartable.
+#
+#   brew install xcodegen && cd ios/xcode && xcodegen generate
+
+name: Turismo
+
+options:
+  bundleIdPrefix: net.caaguazu
+  deploymentTarget:
+    # 15.0 cubre desde el iPhone 6s. Bajar mas no gana nada: Compose
+    # Multiplatform pide 13 como piso y los telefonos mas viejos que eso ya no
+    # reciben actualizaciones de iOS.
+    iOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+targets:
+  Turismo:
+    type: application
+    platform: iOS
+
+    sources:
+      # Los dos unicos archivos de Swift de la app. Si esto crece, algo se hizo
+      # mal: las pantallas van en Kotlin, compartidas con Android.
+      - path: .
+        includes:
+          - "*.swift"
+        excludes:
+          # El test de interfaz pertenece a su propio target. Sin excluirlo,
+          # `*.swift` podria arrastrarlo aca y el mismo archivo en dos targets
+          # es un error de compilacion.
+          - "Pruebas/**"
+        group: Swift
+
+      - path: PrivacyInfo.xcprivacy
+        buildPhase: resources
+
+      # El icono. App Store Connect rechaza una subida sin el, y hasta
+      # ahora el proyecto no tenia ninguno: la app se instalaba en el
+      # simulador con el cuadrado gris de iOS.
+      - path: Recursos/Assets.xcassets
+        buildPhase: resources
+
+      # Los recursos de Compose que traen las dependencias — maplibre-compose
+      # empaqueta los textos de su atribucion como Compose Resources. Sin
+      # ellos la app se caia con MissingResourceException buscando
+      # `compose-resources/composeResources/.../strings.commonMain.cvr`.
+      #
+      # La carpeta la arma el paso "Juntar los recursos de Compose" del
+      # workflow, que los busca en la salida de Gradle y los copia aca. Va
+      # como referencia de carpeta para que la estructura de adentro se
+      # preserve: es lo que la ruta del error espera.
+      - path: Generado/compose-resources
+        type: folder
+        buildPhase: resources
+
+      # El mapa, como REFERENCIA DE CARPETA y no como grupo. Es lo que
+      # preserva `map/glifos/{fontstack}/{range}.pbf`: si Xcode aplana la
+      # estructura, el mapa dibuja pero sin una sola etiqueta —ni calles ni
+      # nombres de lugares— y nada avisa por que.
+      # La carpeta vive en `interfaz/src/androidMain/assets/` y no en un sitio
+      # neutro porque el codigo que la lee es el del modulo :interfaz, y en
+      # Android los assets de una biblioteca se fusionan al APK igual que los
+      # propios. Es el modulo que la usa el que la lleva; que la ruta diga
+      # "androidMain" es un costo de nombre, no de estructura.
+      - path: ../../interfaz/src/androidMain/assets/map
+        type: folder
+        buildPhase: resources
+
+      # Los textos de respaldo de la interfaz, los mismos tres archivos que
+      # lleva el APK. Tambien como referencia de carpeta: `Empaquetado` los
+      # busca con `inDirectory = "textos"`, asi que si Xcode aplana la
+      # estructura la app arranca con todas las claves entre angulos.
+      - path: ../../interfaz/src/androidMain/assets/textos
+        type: folder
+        buildPhase: resources
+
+      # Las tipografias. Poppins y Source Serif salen de aca en iOS y de
+      # `R.font` en Android, pero los archivos son los mismos: una sola copia,
+      # porque dos tipografias que se pueden desincronizar son dos apps que se
+      # ven distinto sin que nadie se entere.
+      - path: ../../interfaz/src/androidMain/res/font
+        type: folder
+        buildPhase: resources
+
+    info:
+      # Generado por XcodeGen desde lo de abajo, para que project.yml sea la
+      # unica fuente. Queda fuera del repositorio.
+      path: Generado/Info.plist
+      properties:
+        CFBundleDisplayName: Turismo
+        # La URL base nunca va quemada en el codigo, aunque hoy solo exista
+        # una. Del lado Android vive en un buildConfigField; el equivalente de
+        # iOS es esto, y `Marcadores` la lee de aca.
+        URL_BASE: https://caaguazu.net/wp-json/czu-app/v1/
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        # Solo HTTPS, que es de los usos exentos de la normativa de
+        # exportacion de EE.UU. Declararlo aca evita que App Store Connect
+        # pregunte por el cifrado en cada subida, que es la respuesta que
+        # habria que dar a mano cada vez.
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UIUserInterfaceStyle: Automatic
+        # Compose Multiplatform comprueba esta clave al arrancar y lanza
+        # IllegalStateException si falta o es false — la app se caia por esto,
+        # con el mensaje diciendo exactamente que agregar. Sin ella, en un
+        # iPhone de pantalla rapida el dibujado queda limitado a 60 Hz.
+        CADisableMinimumFrameDurationOnPhone: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # La app no pide ni un permiso: no hay ubicacion, ni camara, ni
+        # calendario, ni notificaciones. El mapa se dibuja sin saber donde
+        # esta quien lo mira, y eso es una decision del proyecto.
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Sin simulador Intel, y no es una preferencia: maplibre-compose no
+        # publica la variante iosX64, asi que el framework de Kotlin no tiene
+        # porcion x86_64 y Swift no encuentra el modulo al compilar para ella.
+        # Sin esta linea, Xcode compila las dos arquitecturas y falla en la
+        # Intel con "cannot find 'PuntoDeEntradaKt' in scope", que no dice nada
+        # sobre la causa real. Consecuencia: esto no compila en una Mac Intel.
+        "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
+        # El framework se enlaza por bandera y no como dependencia declarada,
+        # porque la ruta depende del SDK y de la configuracion y una
+        # dependencia no puede ser condicional. Antes habia una sola, fija al
+        # simulador en Debug: compilar para un telefono buscaba el framework
+        # donde no estaba, y ese es justo el unico camino a la App Store.
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -framework
+          - TurismoKit
+        # Solo el simulador va sin firma. Estaba puesto para todo, asi que un
+        # archivado para la tienda salia sin firmar y Xcode no decia por que.
+        "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+        "CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]": NO
+
+      # Cuatro rutas y no una: Kotlin/Native saca un framework por objetivo y
+      # por modo. `./gradlew :ios:linkDebugFrameworkIosSimulatorArm64` arma el
+      # primero; `:ios:linkReleaseFrameworkIosArm64` es el que necesita un
+      # archivado para la tienda.
+      configs:
+        Debug:
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosSimulatorArm64/debugFramework
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosArm64/debugFramework
+        Release:
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosSimulatorArm64/releaseFramework
+          "FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]":
+            - $(inherited)
+            - $(SRCROOT)/../build/bin/iosArm64/releaseFramework
+
+  # Las pruebas de interfaz existen por una razon practica: son la unica forma
+  # confiable de que la app quede ACTIVA al frente en un simulador de CI.
+  # `simctl launch` la deja en ForegroundInactive y la captura sale con el
+  # escritorio; `XCUIApplication().launch()` la activa de verdad.
+  TurismoUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Pruebas
+    dependencies:
+      - target: Turismo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo.pruebas
+        TEST_TARGET_NAME: Turismo
+        "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": NO
+        "CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]": NO
+        "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
+
+schemes:
+  Turismo:
+    build:
+      targets:
+        Turismo: all
+        TurismoUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - TurismoUITests
+    run:
+      config: Debug
