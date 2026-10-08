@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.caaguazu.turismo.core.Textos
-import net.caaguazu.turismo.ui.Funciones
 import net.caaguazu.turismo.ui.Seccion
 import net.caaguazu.turismo.ui.tema.Elevacion
 import net.caaguazu.turismo.ui.tema.Letra
@@ -49,6 +48,8 @@ import net.caaguazu.turismo.ui.tema.Tono
 fun BarraInferior(
     seleccionada: () -> Seccion,
     alElegir: (Seccion) -> Unit,
+    conAsistente: () -> Boolean,
+    alAbrirAsistente: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val forma = RoundedCornerShape(Radio.hoja)
@@ -68,9 +69,12 @@ fun BarraInferior(
             verticalAlignment = Alignment.Top,
         ) {
             val secciones = Seccion.entries
-            if (Funciones.IA_ACTIVA) {
+            // Lo decide el panel (`GET /asistente`), no una constante: apagado
+            // o sin key cargada, el boton no existe. Un boton que no puede
+            // hacer nada no se dibuja.
+            if (conAsistente()) {
                 secciones.take(2).forEach { Boton(it, seleccionada, alElegir) }
-                BotonCentral()
+                BotonCentral(alAbrirAsistente)
                 secciones.drop(2).forEach { Boton(it, seleccionada, alElegir) }
             } else {
                 secciones.forEach { Boton(it, seleccionada, alElegir) }
@@ -131,8 +135,13 @@ private fun Boton(
     }
 }
 
+/**
+ * El asistente. No es una seccion —no se queda marcado— sino una puerta: abre
+ * la charla encima de lo que se estaba mirando.
+ */
 @Composable
-private fun BotonCentral() {
+private fun BotonCentral(alTocar: () -> Unit) {
+    val interaccion = recordarInteraccion()
     Box(
         modifier = Modifier
             .size(72.dp)
@@ -142,7 +151,9 @@ private fun BotonCentral() {
                 ambientColor = Tono.sombra,
                 spotColor = Tono.sombra,
             )
-            .background(Tono.contraste, CircleShape),
+            .background(Tono.contraste, CircleShape)
+            .cedeAlTocar(interaccion)
+            .clickable(interactionSource = interaccion, indication = null, onClick = alTocar),
         contentAlignment = Alignment.Center,
     ) {
         Texto(texto = Textos.t("nav.ia"), estilo = Letra.chip, color = Tono.sobreContraste)

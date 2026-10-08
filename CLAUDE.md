@@ -96,6 +96,16 @@ Cuatro secciones abajo: **inicio, buscar, artículos, recorridos**. El perfil no
 ocupa una: vive en un botón redondo en la cabecera de cada sección, porque se
 entra dos veces y no se vuelve.
 
+**El asistente es una puerta, no una sección.** Es el botón del medio de la
+barra, y aparece sólo si el panel lo tiene encendido (`GET /asistente`): un
+botón que no puede hacer nada no se dibuja. Abre una charla encima de lo que se
+estaba mirando, sin la barra —la entrada vive abajo y el teclado sube hasta
+ella—, y volver regresa a donde se estaba. Todo lo que contesta sale de lo
+publicado en el panel, y cada respuesta trae debajo las piezas de donde salió:
+se abren dentro del asistente, con las mismas pantallas de detalle, y volver
+desde una ficha regresa a la charla. El modelo, las claves y el historial viven
+en el servidor; la app pregunta, muestra y enlaza.
+
 **Buscar no es un índice, es una búsqueda.** El inventario dejó de ser un árbol
 por el que se baja —categorías, lista, ficha— y pasó a ser una sola pantalla que
 cambia de cara: mientras no se pidió nada, muestra las categorías como mosaico;

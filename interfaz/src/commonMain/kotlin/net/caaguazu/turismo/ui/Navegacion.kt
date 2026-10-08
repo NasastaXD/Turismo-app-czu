@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.ui.articulos.PilaArticulos
+import net.caaguazu.turismo.ui.asistente.PilaAsistente
 import net.caaguazu.turismo.ui.piezas.Icono
 import net.caaguazu.turismo.ui.recorridos.PilaRecorridos
 
@@ -145,10 +146,20 @@ class Navegador {
     var diagnosticoAbierto by mutableStateOf(false)
         private set
 
+    /**
+     * El asistente va encima de todo, como el perfil, y no es una quinta
+     * seccion: se entra a preguntar algo y se vuelve a donde se estaba.
+     */
+    var asistenteAbierto by mutableStateOf(false)
+        private set
+
     /** Cada seccion conserva donde estaba: cambiar de pestaña no reinicia nada. */
     val busqueda = PilaBusqueda()
     val articulos = PilaArticulos()
     val recorridos = PilaRecorridos()
+
+    /** La charla vive aca y no en la pantalla: cerrarla no la borra. */
+    val asistente = PilaAsistente()
 
     fun ir(destino: Seccion) {
         if (seccion == destino) {
@@ -180,6 +191,7 @@ class Navegador {
 
     fun abrirPerfil() { perfilAbierto = true }
     fun abrirDiagnostico() { diagnosticoAbierto = true }
+    fun abrirAsistente() { asistenteAbierto = true }
 
     /**
      * Identifica que pantalla se ve, para cruzar entre ellas.
@@ -199,6 +211,7 @@ class Navegador {
     private fun cara(): String = when {
         diagnosticoAbierto -> "diagnostico"
         perfilAbierto -> "perfil"
+        asistenteAbierto -> "asistente:" + (asistente.abierta?.let { it.tipo + it.id } ?: "charla")
         seccion == Seccion.BUSCAR -> "bus:" + busqueda.actual::class.simpleName
         seccion == Seccion.ARTICULOS -> "art:" + (articulos.abierto?.let { "detalle" } ?: "lista")
         seccion == Seccion.RECORRIDOS -> "rec:" + (recorridos.abierto?.let { "detalle" } ?: "lista")
@@ -209,15 +222,13 @@ class Navegador {
     fun volver(): Boolean = when {
         diagnosticoAbierto -> { diagnosticoAbierto = false; true }
         perfilAbierto -> { perfilAbierto = false; true }
+        // Primero la fuente abierta desde una respuesta, despues la charla.
+        asistenteAbierto && asistente.volver() -> true
+        asistenteAbierto -> { asistenteAbierto = false; true }
         seccion == Seccion.BUSCAR && busqueda.volver() -> true
         seccion == Seccion.ARTICULOS && articulos.volver() -> true
         seccion == Seccion.RECORRIDOS && recorridos.volver() -> true
         seccion != Seccion.INICIO -> { seccion = Seccion.INICIO; true }
         else -> false
     }
-}
-
-/** La IA llega al final del desarrollo; el boton central se enciende con este interruptor. */
-object Funciones {
-    const val IA_ACTIVA = false
 }

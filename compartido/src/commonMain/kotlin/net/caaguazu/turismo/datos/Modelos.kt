@@ -504,3 +504,59 @@ data class DetalleError(
     val codigo: String = "",
     val mensaje: String = "",
 )
+
+/* --------------------------------------------------------------------------
+ * Asistente
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Lo que devuelve `GET /asistente`. La app lo pide al arrancar y solo dibuja
+ * el boton si es `true`: apagado del lado del panel, o sin la key del
+ * proveedor cargada, el boton no existe. Un boton que no puede hacer nada no
+ * se dibuja.
+ */
+@Immutable
+@Serializable
+data class EstadoAsistente(
+    val disponible: Boolean = false,
+)
+
+/**
+ * El cuerpo de `POST /asistente`.
+ *
+ * `conversacion` va nula en la primera pregunta: es el servidor el que la
+ * crea y la devuelve. El historial no viaja desde aca —vive del otro lado—,
+ * asi que nadie puede meterle al asistente algo que no dijo.
+ */
+@Serializable
+data class PreguntaAsistente(
+    val mensaje: String,
+    val conversacion: String? = null,
+    val idioma: String,
+)
+
+/**
+ * La pieza de donde salio un dato de la respuesta. Abre con el mismo detalle
+ * que el resto de la app: `ficha` es `/inventario/{id}`, `articulo` es
+ * `/articulos/{id}` y `recorrido` es `/recorridos/{id}`.
+ */
+@Immutable
+@Serializable
+data class FuenteAsistente(
+    val tipo: String = "",
+    val id: Int = 0,
+    val titulo: String = "",
+    /** `sitio` o `evento` cuando es una ficha; vacio en lo demas. */
+    @SerialName("tipo_item") val tipoItem: String = "",
+)
+
+/** Lo que devuelve `POST /asistente`. */
+@Immutable
+@Serializable
+data class RespuestaAsistente(
+    /** Texto plano: el servidor ya le saco las marcas de cita y el Markdown. */
+    val respuesta: String = "",
+    val fuentes: List<FuenteAsistente> = emptyList(),
+    val conversacion: String = "",
+    val idioma: String = "",
+)

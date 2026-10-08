@@ -1,8 +1,11 @@
 package net.caaguazu.turismo
 
+import net.caaguazu.turismo.datos.FuenteAsistente
 import net.caaguazu.turismo.ui.Filtros
+import net.caaguazu.turismo.ui.Navegador
 import net.caaguazu.turismo.ui.PilaBusqueda
 import net.caaguazu.turismo.ui.RutaBusqueda
+import net.caaguazu.turismo.ui.Seccion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -65,5 +68,42 @@ class NavegacionTest {
 
         assertTrue(pila.volver())
         assertTrue("por ultimo cierra la ficha", pila.actual is RutaBusqueda.Explorar)
+    }
+
+    /**
+     * Una fuente abierta desde una respuesta vuelve a la charla, no a Buscar:
+     * es de donde se vino. Y la charla se cierra recien despues, volviendo a
+     * la seccion que estaba debajo, sin moverla.
+     */
+    @Test
+    fun `volver desde una fuente regresa a la charla y despues a la seccion`() {
+        val nav = Navegador()
+        nav.ir(Seccion.ARTICULOS)
+        nav.abrirAsistente()
+        nav.asistente.abrir(FuenteAsistente(tipo = "recorrido", id = 5))
+        nav.asistente.abrir(FuenteAsistente(tipo = "ficha", id = 12))
+
+        assertTrue(nav.volver())
+        assertEquals("primero cierra la parada", 5, nav.asistente.abierta?.id)
+
+        assertTrue(nav.volver())
+        assertEquals("despues el recorrido", null, nav.asistente.abierta)
+        assertTrue("la charla sigue abierta", nav.asistenteAbierto)
+
+        assertTrue(nav.volver())
+        assertFalse("recien ahora se cierra el asistente", nav.asistenteAbierto)
+        assertEquals("la seccion de debajo no se toco", Seccion.ARTICULOS, nav.seccion)
+    }
+
+    /** Cerrar el asistente no borra la charla: abrirlo de nuevo la encuentra. */
+    @Test
+    fun `cerrar el asistente conserva lo que se venia hablando`() {
+        val nav = Navegador()
+        nav.abrirAsistente()
+        nav.asistente.borrador = "y manana"
+
+        assertTrue(nav.volver())
+        nav.abrirAsistente()
+        assertEquals("y manana", nav.asistente.borrador)
     }
 }

@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**0 claves esperando texto.** Las 71 están escritas, en castellano, inglés y portugués.
+**0 claves esperando texto.** Las 76 están escritas, en castellano, inglés y portugués.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -25,6 +25,23 @@ No hace falta completarlas todas de una: una clave sin texto se muestra entre
 
 Nada por ahora. Las nueve claves que abrió el rework anterior —ocho de la hoja
 de filtros y `ficha.leerMas`— ya tienen texto.
+
+---
+
+## Lo que sumó el asistente
+
+Cinco claves, todas etiquetas de control de una a tres palabras, escritas en los
+tres idiomas: `asistente.titulo` (el título de la pantalla), `asistente.campo`
+(el marcador del campo), `asistente.enviar` (lo que lee el lector de pantalla en
+el botón de mandar), `asistente.pensando` (mientras espera la respuesta) y
+`asistente.nueva` (empezar una charla de cero).
+
+Lo demás se reutiliza: `nav.ia` es el botón del medio de la barra, que ya
+existía apagado; `ficha.fuentes` encabeza las fuentes de cada respuesta; y
+`estado.error` con `estado.reintentar` cubren la pregunta que no tuvo respuesta.
+
+La pantalla arranca vacía, sin texto de bienvenida: un saludo es copy de
+producto y lo escribe una persona. Si se quiere uno, va como clave nueva.
 
 ---
 

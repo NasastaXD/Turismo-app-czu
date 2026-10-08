@@ -134,6 +134,32 @@ class ApiHttp(
         Delta.serializer(),
     )
 
+    /**
+     * Si el panel tiene el asistente encendido. Pasa por la cache como todo
+     * GET: sin senal vale lo ultimo que se supo, y si estaba encendido, el
+     * boton sigue y la pregunta es la que avisa que no hay red.
+     */
+    suspend fun asistente() = pedir("asistente", EstadoAsistente.serializer())
+
+    /**
+     * Una pregunta al asistente.
+     *
+     * El idioma va en el cuerpo y no en la URL porque esto no pasa por la
+     * cache: decide en que idioma se leen las fuentes del lado del servidor.
+     */
+    suspend fun preguntar(mensaje: String, conversacion: String?): Resultado<RespuestaAsistente> {
+        val cuerpo = Analizador.encodeToString(
+            PreguntaAsistente.serializer(),
+            PreguntaAsistente(mensaje = mensaje, conversacion = conversacion, idioma = Idioma.actual),
+        )
+        return when (val respuesta = http.enviar(urlBase + "asistente", cuerpo)) {
+            is Resultado.Mal -> respuesta
+            is Resultado.Bien -> interpretar("asistente") {
+                Analizador.decodeFromString(RespuestaAsistente.serializer(), respuesta.valor)
+            }
+        }
+    }
+
     /* --------------------------------------------------------------------- */
 
     private suspend fun <T> pedir(ruta: String, serializador: KSerializer<T>): Resultado<T> =

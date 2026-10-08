@@ -16,15 +16,21 @@ internal actual suspend fun pedirHttp(
     etag: String?,
     esperaConexionMs: Int,
     esperaLecturaMs: Int,
+    cuerpo: String?,
 ): Resultado<RespuestaHttp> {
     var conexion: HttpURLConnection? = null
     return try {
         conexion = (URL(url).openConnection() as HttpURLConnection).apply {
-            requestMethod = "GET"
+            requestMethod = if (cuerpo != null) "POST" else "GET"
             connectTimeout = esperaConexionMs
             readTimeout = esperaLecturaMs
             setRequestProperty("Accept", "application/json")
             if (etag != null) setRequestProperty("If-None-Match", etag)
+        }
+        if (cuerpo != null) {
+            conexion.doOutput = true
+            conexion.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+            conexion.outputStream.use { it.write(cuerpo.toByteArray(Charsets.UTF_8)) }
         }
 
         val codigo = conexion.responseCode
