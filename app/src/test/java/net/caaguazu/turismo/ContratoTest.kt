@@ -109,9 +109,10 @@ class ContratoTest {
     }
 
     /**
-     * `costo_total` paso de string a objeto (`hay_pago` + `detalle[]`). Antes
-     * de este cambio de modelo, esto tumbaba la decodificacion entera del
-     * recorrido en vez de quedar en un campo vacio.
+     * `costo_total` paso de string a objeto (`hay_pago` + `detalle[]`), y cada
+     * elemento de `detalle` es a su vez un objeto `{titulo, costo}`: el modelo
+     * lo tenia como lista de textos, y un recorrido con una parada paga no
+     * decodificaba entero.
      */
     @Test
     fun `el costo total del recorrido decodifica como objeto`() {
@@ -121,6 +122,11 @@ class ContratoTest {
         assertTrue(
             "hay_pago en true deberia traer detalle",
             recorridos.all { r -> r.costoTotal?.let { !it.hayPago || it.detalle.isNotEmpty() } ?: true },
+        )
+        assertTrue(
+            "cada elemento del detalle trae titulo y costo",
+            recorridos.flatMap { it.costoTotal?.detalle.orEmpty() }
+                .let { d -> d.isNotEmpty() && d.all { it.titulo.isNotBlank() && it.costo.isNotBlank() } },
         )
 
         val paradas = recorridos.flatMap { it.paradas }.filter { it.disponible }

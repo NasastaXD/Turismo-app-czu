@@ -397,12 +397,20 @@ data class Historia(
     @SerialName("articulos_ref") val articulosRef: List<Int> = emptyList(),
 )
 
+/** Una parada con costo, como la manda el panel: el titulo y lo que dice su costo. */
+@Immutable
+@Serializable
+data class CostoParada(
+    val titulo: String = "",
+    val costo: String = "",
+)
+
 /** Los costos de las paradas son texto libre: no se suman, se listan. */
 @Immutable
 @Serializable
 data class CostoTotal(
     @SerialName("hay_pago") val hayPago: Boolean = false,
-    val detalle: List<String> = emptyList(),
+    val detalle: List<CostoParada> = emptyList(),
 )
 
 /**

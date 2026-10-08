@@ -103,12 +103,20 @@ fun PantallaRecorrido(
                                     "${recorrido.cantidadParadas} " + Textos.t("rec.paradas"),
                                 )
                             }
+                            // Una linea por parada con costo: el panel manda titulo y costo
+                            // por separado, y juntos en una sola linea no se leen.
                             recorrido.costoTotal?.takeIf { it.hayPago }?.let { costo ->
-                                Texto(
-                                    costo.detalle.joinToString(" · "),
-                                    Letra.fecha,
-                                    Tono.tintaSuave,
-                                )
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    costo.detalle.forEach { parada ->
+                                        Texto(
+                                            listOf(parada.titulo, parada.costo)
+                                                .filter { it.isNotBlank() }
+                                                .joinToString(" · "),
+                                            Letra.fecha,
+                                            Tono.tintaSuave,
+                                        )
+                                    }
+                                }
                             }
                             if (recorrido.resumen.isNotBlank()) {
                                 Texto(recorrido.resumen, Letra.descripcion, Tono.tintaSuave)

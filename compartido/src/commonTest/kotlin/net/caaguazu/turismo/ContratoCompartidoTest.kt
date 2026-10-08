@@ -6,6 +6,7 @@ import net.caaguazu.turismo.datos.Categoria
 import net.caaguazu.turismo.datos.Ficha
 import net.caaguazu.turismo.datos.ItemInventario
 import net.caaguazu.turismo.datos.Pagina
+import net.caaguazu.turismo.datos.Recorrido
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -47,6 +48,27 @@ class ContratoCompartidoTest {
         assertEquals(2, item.rangoPrecio)
         assertEquals("8 a 17", item.horarioResumen)
         assertNotNull(item.fechas?.inicio)
+    }
+
+    /**
+     * `costo_total.detalle` es una lista de objetos `{titulo, costo}`, no de
+     * textos. Con el modelo equivocado el recorrido entero no decodificaba, y
+     * lo hacia en silencio: sin red de por medio, la pantalla caia en error.
+     */
+    @Test
+    fun `el costo total de un recorrido trae titulo y costo por parada`() {
+        val recorrido = Analizador.decodeFromString(
+            Recorrido.serializer(),
+            """
+            {"id":7,"costo_total":{"hay_pago":true,"detalle":[
+              {"titulo":"a","costo":"Gs. 10.000"},{"titulo":"b","costo":"Gratis"}]}}
+            """.trimIndent(),
+        )
+
+        val costo = assertNotNull(recorrido.costoTotal)
+        assertTrue(costo.hayPago)
+        assertEquals(listOf("a", "b"), costo.detalle.map { it.titulo })
+        assertEquals(listOf("Gs. 10.000", "Gratis"), costo.detalle.map { it.costo })
     }
 
     /** Los nombres con guion bajo del panel tienen que caer en el campo correcto. */
