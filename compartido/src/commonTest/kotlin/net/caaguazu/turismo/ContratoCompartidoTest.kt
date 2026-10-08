@@ -52,8 +52,8 @@ class ContratoCompartidoTest {
 
     /**
      * `costo_total.detalle` es una lista de objetos `{titulo, costo}`, no de
-     * textos. Con el modelo equivocado el recorrido entero no decodificaba, y
-     * lo hacia en silencio: sin red de por medio, la pantalla caia en error.
+     * textos. Con el modelo equivocado el recorrido entero no decodificaba y la
+     * pantalla caia en error, aunque hubiera conexion y el panel respondiera bien.
      */
     @Test
     fun `el costo total de un recorrido trae titulo y costo por parada`() {
