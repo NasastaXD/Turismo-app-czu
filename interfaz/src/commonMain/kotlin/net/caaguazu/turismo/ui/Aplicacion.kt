@@ -9,18 +9,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.caaguazu.turismo.core.Idioma
 import net.caaguazu.turismo.core.Textos
 import net.caaguazu.turismo.datos.Datos
+import net.caaguazu.turismo.datos.FuenteAsistente
 import net.caaguazu.turismo.ui.articulos.Articulos
+import net.caaguazu.turismo.ui.articulos.PantallaArticulo
+import net.caaguazu.turismo.ui.asistente.PantallaAsistente
 import net.caaguazu.turismo.ui.buscar.Buscar
+import net.caaguazu.turismo.ui.inventario.PantallaFicha
 import net.caaguazu.turismo.ui.perfil.PantallaDiagnostico
 import net.caaguazu.turismo.ui.perfil.PantallaPerfil
 import net.caaguazu.turismo.ui.piezas.BarraInferior
 import net.caaguazu.turismo.ui.piezas.ConMovimientoDelSistema
 import net.caaguazu.turismo.ui.piezas.Cruce
 import net.caaguazu.turismo.ui.principal.Principal
+import net.caaguazu.turismo.ui.recorridos.PantallaRecorrido
 import net.caaguazu.turismo.ui.recorridos.Recorridos
 import net.caaguazu.turismo.ui.tema.Tono
 import net.caaguazu.turismo.ui.tema.recordarAnimacionesActivas
@@ -73,6 +81,16 @@ fun Aplicacion() {
 
     PedirAvisosAlArrancar()
 
+    // Si el panel tiene el asistente encendido. Hasta saberlo, el boton no
+    // esta: aparecer un segundo despues es mejor que estar y no funcionar.
+    LaunchedEffect(Unit) { navegador.asistente.consultarDisponible() }
+
+    // Las preguntas corren en el alcance del armazon y no en el de la
+    // pantalla: si alguien abre una fuente mientras espera, la pantalla de la
+    // charla sale de la composicion, y con su alcance se cancelaria una
+    // respuesta que el servidor ya esta pagando.
+    val alcance = rememberCoroutineScope()
+
     ConMovimientoDelSistema(recordarAnimacionesActivas()) {
         Column(Modifier.fillMaxSize().background(Tono.fondo)) {
             Box(Modifier.weight(1f)) {
@@ -83,6 +101,7 @@ fun Aplicacion() {
                             alVolver = navegador::volver,
                             alAbrirDiagnostico = navegador::abrirDiagnostico,
                         )
+                        navegador.asistenteAbierto -> Asistente(navegador, alcance)
                         else -> when (navegador.seccion) {
                             Seccion.INICIO -> Principal(
                                 alBuscar = { navegador.ir(Seccion.BUSCAR) },
@@ -121,10 +140,45 @@ fun Aplicacion() {
                 }
             }
 
-            BarraInferior(
-                seleccionada = { navegador.seccion },
-                alElegir = navegador::ir,
-            )
+            // Sin barra mientras se conversa: la entrada vive abajo y el
+            // teclado sube hasta ella. Con la barra en el medio, el teclado la
+            // taparia y la entrada quedaria flotando sobre un hueco.
+            if (!navegador.asistenteAbierto) {
+                BarraInferior(
+                    seleccionada = { navegador.seccion },
+                    alElegir = navegador::ir,
+                    conAsistente = { navegador.asistente.disponible },
+                    alAbrirAsistente = navegador::abrirAsistente,
+                )
+            }
         }
+    }
+}
+
+/**
+ * La charla, o la pieza que se abrio desde una de sus respuestas.
+ *
+ * Las fuentes se abren con las mismas pantallas de detalle que el resto de la
+ * app, pero dentro del asistente: volver desde una ficha regresa a la charla,
+ * que es de donde se vino, y no al inicio de Buscar.
+ */
+@Composable
+private fun Asistente(navegador: Navegador, alcance: CoroutineScope) {
+    val pila = navegador.asistente
+    val fuente = pila.abierta
+    when {
+        fuente == null -> PantallaAsistente(
+            pila = pila,
+            alPreguntar = { texto -> alcance.launch { pila.preguntar(texto) } },
+            alReintentar = { alcance.launch { pila.reintentar() } },
+            alVolver = navegador::volver,
+        )
+        fuente.tipo == "articulo" -> PantallaArticulo(id = fuente.id, alVolver = navegador::volver)
+        fuente.tipo == "recorrido" -> PantallaRecorrido(
+            id = fuente.id,
+            alAbrirFicha = { id -> pila.abrir(FuenteAsistente(tipo = "ficha", id = id)) },
+            alVolver = navegador::volver,
+        )
+        else -> PantallaFicha(id = fuente.id, alVolver = navegador::volver)
     }
 }

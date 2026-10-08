@@ -13,8 +13,8 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.5.1"
+        versionCode = 18
+        versionName = "1.6.0"
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
         // Son los mismos tres que ofrece el selector. El guarani sale de aca

@@ -49,10 +49,17 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.TurismoCaaguazu">
 
+        <!--
+          adjustResize: el teclado no corre la ventana entera hacia arriba, le
+          avisa a Compose cuanto ocupa y la entrada del asistente sube con
+          imePadding. Con el comportamiento por defecto la ventana se desplaza
+          y la cabecera de la charla se va de la pantalla.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.TurismoCaaguazu">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

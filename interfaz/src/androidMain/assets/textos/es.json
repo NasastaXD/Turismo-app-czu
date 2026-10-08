@@ -1,6 +1,11 @@
 {
   "accion.volver": "Volver",
   "app.nombre": "Caaguazú",
+  "asistente.campo": "Tu pregunta",
+  "asistente.enviar": "Enviar",
+  "asistente.nueva": "Nueva charla",
+  "asistente.pensando": "Pensando…",
+  "asistente.titulo": "Asistente",
   "avisos.articulo": "Nuevo artículo",
   "avisos.canal.articulos": "Artículos",
   "avisos.canal.eventos": "Eventos",

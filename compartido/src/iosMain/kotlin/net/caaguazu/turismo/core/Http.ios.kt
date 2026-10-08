@@ -17,6 +17,8 @@ import platform.Foundation.NSURLSessionConfiguration
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.create
 import platform.Foundation.dataTaskWithRequest
+import platform.Foundation.dataUsingEncoding
+import platform.Foundation.setHTTPBody
 import platform.Foundation.setHTTPMethod
 import platform.Foundation.setValue
 import kotlin.coroutines.resume
@@ -54,18 +56,39 @@ private val sesion: NSURLSession by lazy {
     NSURLSession.sessionWithConfiguration(configuracion)
 }
 
+/**
+ * La sesion de los pedidos que tardan, que hoy es solo la pregunta al
+ * asistente. Aparte de la comun porque el timeout vive en la sesion y no en el
+ * pedido (ver abajo): el servidor no manda un byte hasta tener la respuesta
+ * entera, y con la espera comun el telefono cortaria antes.
+ */
+private val sesionLarga: NSURLSession by lazy {
+    val configuracion = NSURLSessionConfiguration.defaultSessionConfiguration
+    configuracion.timeoutIntervalForRequest = Http.ESPERA_LECTURA_LARGA_MS / 1000.0
+    configuracion.timeoutIntervalForResource = Http.ESPERA_LECTURA_LARGA_MS * 1.5 / 1000.0
+    NSURLSession.sessionWithConfiguration(configuracion)
+}
+
 internal actual suspend fun pedirHttp(
     url: String,
     etag: String?,
     esperaConexionMs: Int,
     esperaLecturaMs: Int,
+    cuerpo: String?,
 ): Resultado<RespuestaHttp> = suspendCancellableCoroutine { continuacion ->
 
     val destino = NSURL(string = url)
     val solicitud = NSMutableURLRequest.requestWithURL(destino)
-    solicitud.setHTTPMethod("GET")
+    solicitud.setHTTPMethod(if (cuerpo != null) "POST" else "GET")
     solicitud.setValue("application/json", forHTTPHeaderField = "Accept")
     if (etag != null) solicitud.setValue(etag, forHTTPHeaderField = "If-None-Match")
+    if (cuerpo != null) {
+        solicitud.setValue("application/json; charset=utf-8", forHTTPHeaderField = "Content-Type")
+        // El String de Kotlin es un NSString del otro lado: el cast no copia nada.
+        @Suppress("CAST_NEVER_SUCCEEDS")
+        val bytes = (cuerpo as NSString).dataUsingEncoding(NSUTF8StringEncoding)
+        solicitud.setHTTPBody(bytes)
+    }
 
     // Los dos parametros de espera no se usan aca y es a proposito: el timeout
     // va configurado en la sesion, no por pedido. `requestWithURL` devuelve la
@@ -73,7 +96,8 @@ internal actual suspend fun pedirHttp(
     // subclase mutable no resuelve por su nombre — asi que el lugar correcto es
     // la configuracion de la sesion, que ademas se arma una sola vez.
 
-    val tarea = sesion.dataTaskWithRequest(solicitud) { datos, respuesta, error ->
+    val laSesion = if (esperaLecturaMs > Http.ESPERA_LECTURA_MS) sesionLarga else sesion
+    val tarea = laSesion.dataTaskWithRequest(solicitud) { datos, respuesta, error ->
         if (!continuacion.isActive) return@dataTaskWithRequest
 
         if (error != null) {

@@ -1,6 +1,11 @@
 {
   "accion.volver": "Back",
   "app.nombre": "Caaguazú",
+  "asistente.campo": "Your question",
+  "asistente.enviar": "Send",
+  "asistente.nueva": "New chat",
+  "asistente.pensando": "Thinking…",
+  "asistente.titulo": "Assistant",
   "avisos.articulo": "New article",
   "avisos.canal.articulos": "Articles",
   "avisos.canal.eventos": "Events",

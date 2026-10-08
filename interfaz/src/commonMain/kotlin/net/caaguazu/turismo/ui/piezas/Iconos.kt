@@ -198,4 +198,18 @@ object Icono {
     val chevron: ImageVector by lazy {
         trazo("chevron", "M9.5 5 L16.5 12 L9.5 19")
     }
+
+    /** Flecha hacia arriba: mandar lo escrito. */
+    val enviar: ImageVector by lazy {
+        trazo("enviar", "M12 19 V5.5 M6 11.5 L12 5.5 L18 11.5")
+    }
+
+    /** Hoja con un lapiz: empezar una charla de cero. */
+    val nueva: ImageVector by lazy {
+        trazo(
+            "nueva",
+            "M11 4.5 H6.5 C5.4 4.5 4.5 5.4 4.5 6.5 V17.5 C4.5 18.6 5.4 19.5 6.5 19.5 H17.5 " +
+                "C18.6 19.5 19.5 18.6 19.5 17.5 V13 M17.8 3.8 L20.2 6.2 L12.5 13.9 L9.5 14.5 L10.1 11.5 Z",
+        )
+    }
 }

@@ -26,6 +26,15 @@ class Http(private val cache: Cache) {
         /** Un corte breve de senal no deberia tumbar la pantalla si un segundo intento la resuelve. */
         const val ESPERA_REINTENTO_MS = 600L
 
+        /**
+         * Lo que se le espera al asistente. El servidor no manda un solo byte
+         * hasta tener la respuesta entera, y con el proveedor principal caido
+         * prueba el de respaldo: son hasta ~37 segundos del otro lado. Con la
+         * espera de lectura comun, el telefono cortaria antes de que llegue la
+         * respuesta que el servidor ya pago.
+         */
+        const val ESPERA_LECTURA_LARGA_MS = 50_000
+
         const val NO_MODIFICADO = 304
     }
 
@@ -40,14 +49,14 @@ class Http(private val cache: Cache) {
     suspend fun obtener(url: String): Resultado<Cuerpo> = withContext(despachadorIo) {
         val guardado = cache.leer(url)
 
-        var intento = pedirHttp(url, guardado?.etag, ESPERA_CONEXION_MS, ESPERA_LECTURA_MS)
+        var intento = pedirHttp(url, guardado?.etag, ESPERA_CONEXION_MS, ESPERA_LECTURA_MS, null)
         if (intento is Resultado.Mal) {
             // La mayoria de los fallos que se ven en el telefono son un corte
             // breve, no estar realmente sin senal. Un segundo intento corto es
             // mas barato que mostrar un error que un segundo mas tarde se hubiera
             // resuelto solo.
             delay(ESPERA_REINTENTO_MS)
-            intento = pedirHttp(url, guardado?.etag, ESPERA_CONEXION_MS, ESPERA_LECTURA_MS)
+            intento = pedirHttp(url, guardado?.etag, ESPERA_CONEXION_MS, ESPERA_LECTURA_MS, null)
         }
 
         when (intento) {
@@ -79,6 +88,30 @@ class Http(private val cache: Cache) {
         }
     }
 
+    /**
+     * Un POST de JSON, para lo que no es leer contenido: hoy, la pregunta al
+     * asistente.
+     *
+     * Sin cache y sin reintento, y las dos cosas a proposito. Una respuesta es
+     * de una pregunta y de un momento: servir la copia de otra seria contestar
+     * algo que nadie pregunto. Y cada pregunta le cuesta plata al servidor, asi
+     * que un reintento automatico podria pagar dos veces la misma; si falla,
+     * la pantalla ofrece reintentar y lo decide la persona.
+     */
+    suspend fun enviar(url: String, json: String): Resultado<String> = withContext(despachadorIo) {
+        when (val intento = pedirHttp(url, null, ESPERA_CONEXION_MS, ESPERA_LECTURA_LARGA_MS, json)) {
+            is Resultado.Mal -> intento
+            is Resultado.Bien -> {
+                val respuesta = intento.valor
+                if (respuesta.codigo in 200..299) {
+                    Resultado.Bien(respuesta.cuerpo)
+                } else {
+                    Resultado.Mal(fallaDe(respuesta.codigo, url))
+                }
+            }
+        }
+    }
+
     /** El codigo HTTP se traduce a algo con lo que la interfaz pueda decidir. */
     private fun fallaDe(codigo: Int, url: String): Falla {
         val falla = when (codigo) {
@@ -97,7 +130,7 @@ class Http(private val cache: Cache) {
 internal data class RespuestaHttp(val codigo: Int, val cuerpo: String, val etag: String?)
 
 /**
- * Un GET de JSON, una vez por plataforma.
+ * Un pedido de JSON, una vez por plataforma: GET, o POST si viene `cuerpo`.
  *
  * Devuelve `Resultado.Mal(SIN_RED)` para todo lo que sea un problema de
  * conexion —nombre que no resuelve, TLS, timeout— porque quien llama lo trata
@@ -109,4 +142,5 @@ internal expect suspend fun pedirHttp(
     etag: String?,
     esperaConexionMs: Int,
     esperaLecturaMs: Int,
+    cuerpo: String?,
 ): Resultado<RespuestaHttp>
