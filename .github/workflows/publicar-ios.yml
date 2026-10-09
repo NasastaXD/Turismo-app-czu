@@ -398,14 +398,27 @@ jobs:
       - name: Preparar la entrega
         id: entrega
         env:
+          HAY_FIRMA: ${{ steps.firma.outputs.hay }}
           NOMBRE: ${{ steps.version.outputs.nombre }}
           CODIGO: ${{ steps.version.outputs.codigo }}
         run: |
           mkdir -p entrega
 
-          if [ -f "$RUNNER_TEMP/entrega/Turismo.ipa" ]; then
-            cp "$RUNNER_TEMP/entrega/Turismo.ipa" "entrega/caaguazu-$NOMBRE-$CODIGO.ipa"
+          # Por comodin y no por nombre fijo: xcodebuild nombra el .ipa segun el
+          # producto, y si algun dia eso cambia, buscarlo por "Turismo.ipa"
+          # habria devuelto "no hay .ipa" en una corrida donde la firma funciono
+          # perfectamente. Un fallo que miente es peor que uno que grita.
+          IPA=$(find "$RUNNER_TEMP/entrega" -maxdepth 1 -name "*.ipa" 2>/dev/null | head -1)
+
+          if [ -n "$IPA" ]; then
+            cp "$IPA" "entrega/caaguazu-$NOMBRE-$CODIGO.ipa"
             echo "firmado=si" >> "$GITHUB_OUTPUT"
+          elif [ "$HAY_FIRMA" = "si" ]; then
+            # Habia con que firmar y aun asi no salio nada: eso es un fallo, no
+            # una corrida sin firma.
+            echo "Se preparo la firma pero no quedo ningun .ipa en la exportacion."
+            ls -la "$RUNNER_TEMP/entrega" 2>/dev/null || echo "(no existe la carpeta de exportacion)"
+            exit 1
           else
             echo "firmado=no" >> "$GITHUB_OUTPUT"
           fi
