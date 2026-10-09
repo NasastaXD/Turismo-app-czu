@@ -209,12 +209,26 @@ Comprobado en CI, en un runner macOS:
   [`docs/imagenes/inicio-en-iphone.png`](imagenes/inicio-en-iphone.png);
 - que compila y enlaza para **teléfono** (`-sdk iphoneos`), sin firmar;
 - que las siete comprobaciones del paquete fallan cuando deben: se probaron
-  contra un `.app` fabricado, una por una.
+  contra un `.app` fabricado, una por una;
+- que **archiva en Release**, que es lo que nadie había comprobado nunca en este
+  proyecto —los otros dos workflows trabajan en Debug— y que lo que queda
+  adentro del `.app` es lo que tiene que estar. La primera corrida verde dijo
+  esto:
 
-Pendiente de la primera corrida verde, que es la que está en curso:
+  ```
+  === el mapa ===            glifos: 6, PMTiles: 2.0M
+  === los textos ===         los tres idiomas estan
+  === las tipografias ===    7
+  === el icono ===           compilado
+  === la version ===         plist dice: 1.6.0 (18) / deberia: 1.6.0 (18)
+  === la arquitectura ===    Non-fat file: arm64
+  tamano del .app: 42M
+  ```
 
-- que **archive en Release** en un runner macOS. Es lo que nadie comprobó nunca
-  en este proyecto: los otros dos workflows trabajan en Debug.
+  Y dejó dos archivos: `Turismo-1.6.0-18.xcarchive.zip` (27 MB) y
+  `dSYMs-1.6.0-18.zip` (9,4 MB). El nombre con la versión correcta no es
+  cosmético: es la prueba de que el número salió de `version.properties` y llegó
+  hasta el `Info.plist`.
 
 No comprobado, y hace falta la cuenta o un teléfono — no hay forma de
 adelantarlo desde acá:

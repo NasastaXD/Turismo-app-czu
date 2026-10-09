@@ -175,9 +175,8 @@ Y después *Window → Organizer* en Xcode, que lo encuentra solo.
   el CI en cada cambio, con `lipo`.
 - El archivado en Release, con siete comprobaciones sobre lo que quedó adentro
   del paquete —mapa, tres idiomas, tipografías, icono, versión y arquitectura—,
-  cada una por un fallo que de otro modo se descubre después de subir. *Esto es
-  nuevo y su primera corrida está en curso; si el workflow aparece en rojo, es
-  lo primero que hay que mirar.*
+  cada una por un fallo que de otro modo se descubre después de subir. Corre en
+  el CI y la primera corrida salió en verde.
 
 ## Lo que todavía no
 

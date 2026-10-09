@@ -21,13 +21,6 @@ name: Publicar iOS (App Store)
 
 on:
   workflow_dispatch:
-  # TEMPORAL, se saca antes de cerrar la PR. `workflow_dispatch` solo se puede
-  # disparar sobre un workflow que ya existe en la rama principal, asi que sin
-  # esto no habria forma de comprobar este archivo hasta despues de mezclarlo
-  # — justo al reves de como conviene.
-  push:
-    branches:
-      - claude/apk-programming-wczoo7
 
 permissions:
   contents: read
