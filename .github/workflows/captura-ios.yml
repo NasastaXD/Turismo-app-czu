@@ -179,18 +179,43 @@ jobs:
 
       - name: Arrancar un simulador
         id: simulador
+        # El simulador no se elige por el primero que aparezca: se prefiere uno
+        # de la clase que App Store Connect exige para las capturas —"iPhone con
+        # Dynamic Island, pantalla mediana", o sea 1179x2556 y 1206x2622—, para
+        # que la foto de la corrida sirva para la ficha de la tienda y no solo
+        # para mirarla. Si ninguno de esos esta instalado, vale cualquier
+        # iPhone: una captura de la medida equivocada sigue sirviendo para ver
+        # que la app dibuja, que es el motivo original de este workflow.
+        #
+        # La lista es por nombre porque `simctl` no dice los pixeles de la
+        # pantalla. Los pixeles se miden despues, sobre la captura, que es la
+        # unica forma de saberlos de verdad.
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 -c '
           import json, sys
+          preferidos = [
+              "iPhone 17 Pro", "iPhone 16 Pro", "iPhone 15 Pro",
+              "iPhone 17", "iPhone 16", "iPhone 15",
+          ]
           equipos = json.load(sys.stdin)["devices"]
+          disponibles = []
           for entorno, lista in equipos.items():
               if "iOS" not in entorno:
                   continue
               for equipo in lista:
                   if equipo.get("isAvailable") and "iPhone" in equipo["name"]:
-                      print(equipo["udid"], equipo["name"], entorno.split(".")[-1])
-                      raise SystemExit
-          raise SystemExit("no hay ningun simulador de iPhone disponible")
+                      disponibles.append((equipo["udid"], equipo["name"], entorno.split(".")[-1]))
+          if not disponibles:
+              raise SystemExit("no hay ningun simulador de iPhone disponible")
+          def orden(equipo):
+              nombre = equipo[1]
+              # Coincidencia exacta primero: "iPhone 16" no deberia ganarle a
+              # "iPhone 16 Pro" por ser prefijo suyo.
+              if nombre in preferidos:
+                  return preferidos.index(nombre)
+              return len(preferidos)
+          disponibles.sort(key=orden)
+          print(*disponibles[0])
           ')
           echo "simulador elegido: $UDID"
           SOLO_UDID=$(echo "$UDID" | cut -d' ' -f1)
@@ -265,6 +290,44 @@ jobs:
           # queden completos. Si falla no se corta el paso: las capturas del
           # host ya estan, y el log dice por que fallo.
           wait "$(cat /tmp/pid-xcodebuild)" || true
+
+      - name: Medir las capturas
+        if: always()
+        # Para saber sin medir a mano si lo que salio sirve para la ficha de la
+        # App Store. Las medidas son las que acepta Apple hoy; la pagina de
+        # especificaciones las cambio mas de una vez, asi que lo que manda en el
+        # momento de subir es esa pagina y no esta lista.
+        #
+        # Esto no falla nunca a proposito: una captura de la medida equivocada
+        # sigue respondiendo la pregunta para la que existe este workflow —si la
+        # app dibuja—, y hacerla fallar por eso seria perder el registro y el
+        # resto de los artefactos por un asunto de la ficha de la tienda.
+        run: |
+          # Obligatoria: Dynamic Island, pantalla mediana.
+          MEDIANAS="1179x2556 1206x2622"
+          # Opcionales, pantalla grande; si faltan, Apple escala las medianas.
+          GRANDES="1260x2736 1290x2796 1320x2868"
+
+          {
+            echo "## Capturas de esta corrida"
+            echo
+            echo "| archivo | pixeles | sirve para la tienda |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for IMAGEN in capturas/*.png; do
+            [ -f "$IMAGEN" ] || continue
+            ANCHO=$(sips -g pixelWidth "$IMAGEN" | awk '/pixelWidth/ {print $2}')
+            ALTO=$(sips -g pixelHeight "$IMAGEN" | awk '/pixelHeight/ {print $2}')
+            MEDIDA="${ANCHO}x${ALTO}"
+
+            VEREDICTO="no: medida no listada"
+            case " $MEDIANAS " in *" $MEDIDA "*) VEREDICTO="si: obligatoria (mediana)" ;; esac
+            case " $GRANDES "  in *" $MEDIDA "*) VEREDICTO="si: opcional (grande)" ;; esac
+
+            echo "$(basename "$IMAGEN"): $MEDIDA — $VEREDICTO"
+            echo "| $(basename "$IMAGEN") | $MEDIDA | $VEREDICTO |" >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Guardar el registro de la app
         if: always()
