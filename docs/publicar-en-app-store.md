@@ -170,6 +170,14 @@ cambio, **prefiere un simulador cuya pantalla coincida con la medida obligatoria
 e imprime los píxeles de cada captura**, para que se sepa sin medir si sirven
 para la tienda o sólo para mirar. Las deja como artefacto de la corrida.
 
+Comprobado en una corrida real: arrancó el iPhone 16 Pro (iOS 18.5) al primer
+intento y las tres capturas salieron de **1206 × 2622**, la medida obligatoria.
+
+El arranque del simulador tiene límite de tiempo y, si uno no arranca, prueba el
+siguiente (hasta tres). Hace falta: una vez el iPhone 17 Pro sobre iOS 26 dejó
+colgado `simctl` 22 minutos hasta que lo cortó el timeout del job, y por eso
+ahora va último en la lista de preferidos.
+
 Eso resuelve el formato, no la elección: *qué* pantallas mostrar y en qué orden
 es una decisión de producto.
 
