@@ -179,26 +179,125 @@ jobs:
 
       - name: Arrancar un simulador
         id: simulador
+        # El simulador no se elige por el primero que aparezca: se prefiere uno
+        # de la clase que App Store Connect exige para las capturas —"iPhone con
+        # Dynamic Island, pantalla mediana", o sea 1179x2556 y 1206x2622—, para
+        # que la foto de la corrida sirva para la ficha de la tienda y no solo
+        # para mirarla. Si ninguno de esos esta instalado, vale cualquier
+        # iPhone: una captura de la medida equivocada sigue sirviendo para ver
+        # que la app dibuja, que es el motivo original de este workflow.
+        #
+        # La lista es por nombre porque `simctl` no dice los pixeles de la
+        # pantalla. Los pixeles se miden despues, sobre la captura, que es la
+        # unica forma de saberlos de verdad.
+        #
+        # **Y cada arranque va con limite de tiempo.** Esto no es precaucion
+        # teorica: con el iPhone 17 Pro sobre iOS 26, `simctl` se quedo colgado
+        # 22 minutos y al job lo corto su propio timeout. Antes el paso no tenia
+        # limite tampoco; lo que lo salvaba era que el primer iPhone de la lista
+        # arrancaba. Por eso el 17 va ultimo —medido, no supuesto— y por eso si
+        # uno no arranca se prueba el siguiente en lugar de esperar para siempre.
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/equipos.json"
+
+          python3 -c '
           import json, sys
+          # Los primeros son los que dan la medida que App Store Connect exige
+          # y que ademas se sabe que arrancan en este runner. El 17 queda al
+          # final: es el que colgo.
+          preferidos = [
+              "iPhone 16 Pro", "iPhone 16", "iPhone 15 Pro", "iPhone 15",
+              "iPhone 17 Pro", "iPhone 17",
+          ]
           equipos = json.load(sys.stdin)["devices"]
+          disponibles = []
           for entorno, lista in equipos.items():
               if "iOS" not in entorno:
                   continue
               for equipo in lista:
                   if equipo.get("isAvailable") and "iPhone" in equipo["name"]:
-                      print(equipo["udid"], equipo["name"], entorno.split(".")[-1])
-                      raise SystemExit
-          raise SystemExit("no hay ningun simulador de iPhone disponible")
-          ')
-          echo "simulador elegido: $UDID"
-          SOLO_UDID=$(echo "$UDID" | cut -d' ' -f1)
+                      disponibles.append((equipo["udid"], equipo["name"], entorno.split(".")[-1]))
+          if not disponibles:
+              raise SystemExit("no hay ningun simulador de iPhone disponible")
+          def orden(equipo):
+              nombre = equipo[1]
+              # Coincidencia exacta: "iPhone 16" no deberia ganarle a
+              # "iPhone 16 Pro" por ser prefijo suyo.
+              if nombre in preferidos:
+                  return preferidos.index(nombre)
+              return len(preferidos)
+          disponibles.sort(key=orden)
+          # Todos, no solo el primero: los de abajo son el respaldo si el de
+          # arriba no arranca. El ultimo de la cola es el comportamiento que
+          # tenia este workflow antes, asi que esto no puede ser peor.
+          for udid, nombre, entorno in disponibles:
+              # El udid y DESPUES todo lo demas como un solo texto: el nombre
+              # lleva espacios ("iPhone 16 Pro"), asi que dos campos separados
+              # los parte `read` y el log termina diciendo "iPhone (16 Pro ...)".
+              print(udid, nombre + " (" + entorno + ")")
+          ' < "$RUNNER_TEMP/equipos.json" > "$RUNNER_TEMP/candidatos.txt"
+
+          echo "--- candidatos, en orden de preferencia ---"
+          cat "$RUNNER_TEMP/candidatos.txt"
+
+          # Corre un comando y lo mata si pasa del limite. Hace falta escribirlo
+          # porque macOS no trae `timeout`: es de coreutils de GNU.
+          con_limite() {
+            local limite="$1"; shift
+            "$@" &
+            local trabajo=$!
+            # `pkill -P` antes del kill, y no es un detalle: matar solo al
+            # proceso directo deja vivos a sus hijos, y un nieto huerfano se
+            # queda con el stdout del paso abierto. Es el mismo
+            # "Terminate orphan process: (simctl)" que aparecio al final del
+            # job que se colgo.
+            ( sleep "$limite"; pkill -P "$trabajo" 2>/dev/null; kill -9 "$trabajo" 2>/dev/null ) &
+            local vigia=$!
+            local salida=0
+            wait "$trabajo" || salida=$?
+            kill "$vigia" 2>/dev/null || true
+            wait "$vigia" 2>/dev/null || true
+            return "$salida"
+          }
+
+          # Tres intentos como maximo: 3 x (45 + 120) son algo menos de nueve
+          # minutos, que entran de sobra en el timeout del job junto con todo lo
+          # demas. Probar los veinte simuladores de la imagen no serviria de
+          # nada: si tres no arrancan, el problema es del runner.
+          ELEGIDO=""
+          INTENTOS=0
+          MAX_INTENTOS=3
+          while read -r UDID DESCRIPCION; do
+            [ -n "$UDID" ] || continue
+            # El corte va ANTES de contar, para que INTENTOS sea la cantidad de
+            # intentos hechos de verdad. Contando primero, el mensaje de abajo
+            # decia "4 intentos" habiendo probado tres.
+            [ "$INTENTOS" -ge "$MAX_INTENTOS" ] && break
+            INTENTOS=$((INTENTOS + 1))
+
+            echo "--- intento $INTENTOS: $DESCRIPCION ---"
+            con_limite 45 xcrun simctl boot "$UDID" || true
+
+            # bootstatus espera hasta que el simulador termine de arrancar, en
+            # lugar de adivinar con un sleep. Es el que se colgaba.
+            if con_limite 120 xcrun simctl bootstatus "$UDID"; then
+              echo "arranco: $DESCRIPCION"
+              ELEGIDO="$UDID"
+              break
+            fi
+
+            echo "$DESCRIPCION no arranco dentro del limite; lo apago y sigo"
+            con_limite 30 xcrun simctl shutdown "$UDID" || true
+          done < "$RUNNER_TEMP/candidatos.txt"
+
+          if [ -z "$ELEGIDO" ]; then
+            echo "Ningun simulador de iPhone arranco en $INTENTOS intentos."
+            echo "Eso es del runner, no de la app: el .app ya se compilo bien."
+            exit 1
+          fi
+
+          SOLO_UDID="$ELEGIDO"
           echo "udid=$SOLO_UDID" >> "$GITHUB_OUTPUT"
-          xcrun simctl boot "$SOLO_UDID"
-          # bootstatus espera hasta que el simulador termine de arrancar, en
-          # lugar de adivinar con un sleep.
-          xcrun simctl bootstatus "$SOLO_UDID"
 
           # Abrir Simulator.app, y esto es lo que faltaba. Un simulador
           # booteado solo con `simctl boot` corre headless: la app arranca y
@@ -265,6 +364,44 @@ jobs:
           # queden completos. Si falla no se corta el paso: las capturas del
           # host ya estan, y el log dice por que fallo.
           wait "$(cat /tmp/pid-xcodebuild)" || true
+
+      - name: Medir las capturas
+        if: always()
+        # Para saber sin medir a mano si lo que salio sirve para la ficha de la
+        # App Store. Las medidas son las que acepta Apple hoy; la pagina de
+        # especificaciones las cambio mas de una vez, asi que lo que manda en el
+        # momento de subir es esa pagina y no esta lista.
+        #
+        # Esto no falla nunca a proposito: una captura de la medida equivocada
+        # sigue respondiendo la pregunta para la que existe este workflow —si la
+        # app dibuja—, y hacerla fallar por eso seria perder el registro y el
+        # resto de los artefactos por un asunto de la ficha de la tienda.
+        run: |
+          # Obligatoria: Dynamic Island, pantalla mediana.
+          MEDIANAS="1179x2556 1206x2622"
+          # Opcionales, pantalla grande; si faltan, Apple escala las medianas.
+          GRANDES="1260x2736 1290x2796 1320x2868"
+
+          {
+            echo "## Capturas de esta corrida"
+            echo
+            echo "| archivo | pixeles | sirve para la tienda |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for IMAGEN in capturas/*.png; do
+            [ -f "$IMAGEN" ] || continue
+            ANCHO=$(sips -g pixelWidth "$IMAGEN" | awk '/pixelWidth/ {print $2}')
+            ALTO=$(sips -g pixelHeight "$IMAGEN" | awk '/pixelHeight/ {print $2}')
+            MEDIDA="${ANCHO}x${ALTO}"
+
+            VEREDICTO="no: medida no listada"
+            case " $MEDIANAS " in *" $MEDIDA "*) VEREDICTO="si: obligatoria (mediana)" ;; esac
+            case " $GRANDES "  in *" $MEDIDA "*) VEREDICTO="si: opcional (grande)" ;; esac
+
+            echo "$(basename "$IMAGEN"): $MEDIDA — $VEREDICTO"
+            echo "| $(basename "$IMAGEN") | $MEDIDA | $VEREDICTO |" >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Guardar el registro de la app
         if: always()

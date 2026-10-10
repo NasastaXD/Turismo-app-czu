@@ -98,8 +98,13 @@ targets:
         # una. Del lado Android vive en un buildConfigField; el equivalente de
         # iOS es esto, y `Marcadores` la lee de aca.
         URL_BASE: https://caaguazu.net/wp-json/czu-app/v1/
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        # Los dos salen de los build settings de abajo y no de un literal, que
+        # es lo que permite que el workflow los pase por linea de comandos con
+        # el valor de `version.properties`. Escritos aca a mano, un
+        # `MARKETING_VERSION` pasado a xcodebuild no habria cambiado nada: el
+        # Info.plist manda sobre lo que ve la tienda.
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         # Solo HTTPS, que es de los usos exentos de la normativa de
         # exportacion de EE.UU. Declararlo aca evita que App Store Connect
         # pregunte por el cifrado en cada subida, que es la respuesta que
@@ -121,8 +126,14 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: net.caaguazu.turismo
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        # Respaldo para un build local en una Mac. El valor que llega a la
+        # tienda lo pasa "Publicar iOS" por linea de comandos leyendo
+        # `version.properties`, que es la unica fuente; estos dos estan aca
+        # para que `xcodegen && xcodebuild` a mano no arme una app con la
+        # version vacia. "Verificar iOS" falla si se desincronizan de ese
+        # archivo, asi que no pueden quedar viejos en silencio.
+        MARKETING_VERSION: "1.6.0"
+        CURRENT_PROJECT_VERSION: "18"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_USER_SCRIPT_SANDBOXING: NO

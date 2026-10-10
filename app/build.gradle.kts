@@ -1,9 +1,28 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// La version no se escribe aca: sale de `version.properties`, en la raiz, que
+// es el mismo archivo que lee el workflow de iOS para el Info.plist. Tenerla
+// en los dos lados ya habia dejado a iOS en 0.1.0 con Android en 1.6.0.
+//
+// Sin respaldo a proposito: si el archivo falta o le falta una clave, el build
+// se cae aca con el nombre del archivo en el mensaje. Un respaldo silencioso
+// publicaria una version equivocada, que es justo lo que no se puede deshacer.
+val version = Properties().apply {
+    rootProject.file("version.properties").inputStream().use { load(it) }
+}
+val versionDeLaApp = requireNotNull(version.getProperty("nombre")) {
+    "falta `nombre` en version.properties"
+}
+val codigoDeVersion = requireNotNull(version.getProperty("codigo")) {
+    "falta `codigo` en version.properties"
+}.toInt()
 
 android {
     namespace = "net.caaguazu.turismo"
@@ -13,8 +32,8 @@ android {
         applicationId = "net.caaguazu.turismo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.6.0"
+        versionCode = codigoDeVersion
+        versionName = versionDeLaApp
 
         // Solo los idiomas del proyecto: cada locale extra pesa en el APK.
         // Son los mismos tres que ofrece el selector. El guarani sale de aca

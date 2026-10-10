@@ -133,6 +133,38 @@ forma de que sea imposible confundir un hueco sin texto con texto terminado.
 
 ---
 
+## 7. Armar el paquete para la App Store
+
+**Esto normalmente no hace falta hacerlo a mano.** El workflow
+**"Publicar iOS (App Store)"** archiva en Release, comprueba lo que quedó
+adentro del paquete y deja el `.xcarchive` —y el `.ipa`, si están cargados los
+secretos de firma— como artefacto de la corrida. El `.xcarchive` se abre en el
+Organizador de Xcode y se sube desde ahí sin recompilar nada.
+
+Si querés hacerlo en la Mac igual, son dos comandos. Ojo con los dos cambios
+respecto del paso 3: **Release** y **Arm64** sin "Simulator".
+
+```sh
+./gradlew :ios:linkReleaseFrameworkIosArm64
+
+cd ios/xcode && xcodegen generate && xcodebuild \
+  -project Turismo.xcodeproj -scheme Turismo \
+  -configuration Release -sdk iphoneos \
+  -destination 'generic/platform=iOS' \
+  -archivePath ~/Desktop/Turismo.xcarchive \
+  archive
+```
+
+Y después *Window → Organizer* en Xcode, que lo encuentra solo.
+
+> La versión que se publica **no** se escribe en el proyecto de Xcode: sale de
+> `version.properties`, en la raíz, que es el mismo archivo que lee el build de
+> Android. Para subir la versión se edita ahí y en ningún otro lado. El número
+> que tiene `project.yml` es un respaldo para compilar en local, y el CI falla
+> si los dos se desincronizan.
+
+---
+
 ## Lo que ya está resuelto y no vas a tener que tocar
 
 - El icono, en todos los tamaños que pide Apple.
@@ -141,9 +173,18 @@ forma de que sea imposible confundir un hueco sin texto con texto terminado.
 - El identificador de la app, el mismo que en Android.
 - Que compile también para teléfono y no sólo para el simulador: lo comprueba
   el CI en cada cambio, con `lipo`.
+- El archivado en Release, con siete comprobaciones sobre lo que quedó adentro
+  del paquete —mapa, tres idiomas, tipografías, icono, versión y arquitectura—,
+  cada una por un fallo que de otro modo se descubre después de subir. Corre en
+  el CI y la primera corrida salió en verde.
 
 ## Lo que todavía no
 
-Mandarla a la App Store. La app de iPhone es nueva y conviene mirarla en un
-teléfono antes de que la mire un revisor de Apple — está explicado en la guía
-de publicación, sección 4.
+Mandarla a la App Store, porque hace falta la cuenta: sin certificado y perfil
+no hay `.ipa`. Los cuatro secretos que hay que cargar y el orden de las cosas en
+App Store Connect están en
+[`docs/publicar-en-app-store.md`](publicar-en-app-store.md).
+
+Y antes de eso: **mirarla en un teléfono**. La app de iPhone es nueva y conviene
+que la vea una persona antes de que la vea un revisor de Apple. TestFlight es
+gratis y no pasa por revisión para pruebas internas.

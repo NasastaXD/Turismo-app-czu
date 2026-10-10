@@ -1,0 +1,486 @@
+# Arma lo que se sube a App Store Connect: un archivado en Release para
+# telefono y, si hay con que firmar, el .ipa exportado.
+#
+# Es la contraparte de "Publicar bundle (Play Store)" y por el mismo motivo va
+# a mano y no por tag: un .ipa no se reparte por fuera de la tienda, asi que la
+# carga a App Store Connect siempre arranca con una persona. Un runner macOS
+# cuesta diez veces un runner Linux, y un release de iOS se hace una vez por
+# version, no una vez por push.
+#
+# Lo que este workflow comprueba y nadie comprobaba antes: que la app compile y
+# se archive en **Release**. "Verificar iOS" y "Captura de iOS" trabajan en
+# Debug, y Release no es lo mismo — busca el framework de Kotlin en otra carpeta
+# (`releaseFramework`), lo compila con las optimizaciones de Kotlin/Native y es
+# la unica configuracion que termina en un telefono ajeno. Encontrar eso roto el
+# dia que exista la cuenta de Apple seria encontrarlo en el peor momento.
+#
+# Sin secretos de firma cargados igual sirve: archiva sin firmar y sube el
+# .xcarchive. Lo que no puede hacer sin ellos es exportar el .ipa, porque un
+# .ipa sin firma no existe — Apple no lo acepta y el telefono no lo instala.
+name: Publicar iOS (App Store)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    # Apple Silicon: los objetivos del proyecto son iosArm64 e
+    # iosSimulatorArm64, y el simulador arm64 necesita un host arm64.
+    runs-on: macos-15
+    # Un archivado en Release con Kotlin/Native en frio es largo. 60 deja
+    # margen de sobra y corta en seco cualquier paso que se cuelgue.
+    timeout-minutes: 60
+
+    steps:
+      - name: Traer el codigo
+        uses: actions/checkout@v4
+
+      # La version sale de `version.properties`, el mismo archivo que lee
+      # `app/build.gradle.kts`. No se vuelve a comprobar que `project.yml`
+      # coincida porque aca no importa: los dos valores se le pasan a
+      # xcodebuild y pisan lo que diga el proyecto. De la desincronizacion se
+      # encarga "Verificar iOS", que corre en cada push.
+      - name: Leer la version
+        id: version
+        run: |
+          NOMBRE=$(grep -E '^nombre=' version.properties | head -1 | cut -d= -f2 | tr -d ' ')
+          CODIGO=$(grep -E '^codigo=' version.properties | head -1 | cut -d= -f2 | tr -d ' ')
+
+          test -n "$NOMBRE" && test -n "$CODIGO" \
+            || { echo "no se pudo leer version.properties"; exit 1; }
+
+          echo "version $NOMBRE, build $CODIGO"
+          echo "nombre=$NOMBRE" >> "$GITHUB_OUTPUT"
+          echo "codigo=$CODIGO" >> "$GITHUB_OUTPUT"
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Misma clave que "Verificar iOS" y "Captura de iOS" para compartir el
+      # trabajo ya hecho. ~/.konan es el compilador de Kotlin/Native, que se
+      # baja aparte y pesa cientos de MB.
+      - name: Cache de Gradle y de Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ios-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: ios-
+
+      # Hace falta aunque aca no se compile nada de Android: `:compartido` y
+      # `:interfaz` tienen androidTarget y `:app` esta en el settings, asi que
+      # Gradle configura los tres en cualquier invocacion y AGP exige la
+      # plataforma instalada.
+      - name: Preparar el SDK de Android
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - name: Pruebas
+        # Las mismas tres suites que exige un release de Android, por las
+        # mismas razones: `:compartido` tiene el contrato con el panel y
+        # `:interfaz` tiene los guardianes de redaccion, claves y sistema de
+        # diseno. Un release no se arma sin ellas.
+        run: |
+          ./gradlew --no-daemon \
+            :compartido:testDebugUnitTest \
+            :interfaz:testDebugUnitTest \
+            :app:testDebugUnitTest
+
+      - name: Pruebas del contrato corriendo en el simulador
+        # Y estas ademas, que en Android no existen: la serializacion no
+        # siempre se comporta igual en Kotlin/Native que en la JVM, y lo que se
+        # esta a punto de empaquetar es lo nativo.
+        run: ./gradlew :compartido:iosSimulatorArm64Test --no-daemon
+
+      - name: Compilar el framework de Release para telefono
+        # `linkReleaseFrameworkIosArm64`, y las dos palabras importan:
+        # Release porque es lo que busca la configuracion Release del proyecto,
+        # y IosArm64 porque el destino es un telefono y no el simulador. Tiene
+        # que existir antes de que Xcode lo busque: el proyecto lo referencia
+        # por ruta.
+        run: ./gradlew :ios:linkReleaseFrameworkIosArm64 --no-daemon
+
+      # Tiene que ir antes de generar el proyecto: XcodeGen exige que la
+      # carpeta exista cuando arma el .xcodeproj.
+      - name: Juntar los recursos de Compose
+        # Mismo procedimiento que "Captura de iOS", y por la misma razon: los
+        # recursos no salen del codigo de :ios —que no tiene ninguno— sino de
+        # variantes publicadas aparte por las dependencias. maplibre-compose
+        # empaqueta los textos de su atribucion como Compose Resources, y sin
+        # ellos la app se cae con MissingResourceException.
+        #
+        # Se busca ancho a proposito: el nombre de la tarea cambio entre
+        # versiones del plugin y la variante de recursos depende del objetivo
+        # —aca iosArm64 y no el simulador—, asi que lo que manda es lo que el
+        # arbol de compilacion tenga de verdad.
+        run: |
+          set -x
+
+          ./gradlew :ios:syncComposeResourcesForIos --no-daemon || true
+
+          DESTINO=ios/xcode/Generado/compose-resources
+          rm -rf "$DESTINO"
+          mkdir -p "$DESTINO"
+
+          echo "--- carpetas compose-resources ---"
+          find . -type d -name "compose-resources" 2>/dev/null | tee /tmp/con-guion.txt
+          echo "--- carpetas composeResources ---"
+          find . -type d -name "composeResources" 2>/dev/null | tee /tmp/sin-guion.txt
+
+          # `compose-resources/` ya tiene la forma que espera el bundle, asi
+          # que se copia su contenido tal cual.
+          while read -r CARPETA; do
+            [ -n "$CARPETA" ] && cp -R "$CARPETA/." "$DESTINO/" || true
+          done < /tmp/con-guion.txt
+
+          # `composeResources/` es el nivel de adentro: va como subcarpeta.
+          while read -r CARPETA; do
+            [ -n "$CARPETA" ] && cp -R "$CARPETA" "$DESTINO/" || true
+          done < /tmp/sin-guion.txt
+
+          echo "archivos juntados: $(find "$DESTINO" -type f | wc -l | tr -d ' ')"
+
+      - name: Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: Generar el proyecto de Xcode
+        working-directory: ios/xcode
+        run: |
+          xcodegen generate
+          ls -la Turismo.xcodeproj
+
+      # A partir de aca es donde hace falta la cuenta de Apple. Todo lo que
+      # sigue esta escrito para funcionar de las dos formas: con los secretos
+      # cargados firma de verdad, y sin ellos archiva sin firmar — que es lo
+      # unico que un runner sin cuenta de desarrollador no puede hacer, y no
+      # es razon para no comprobar todo lo demas.
+      - name: Preparar la firma, si hay con que
+        id: firma
+        env:
+          CERTIFICADO_B64: ${{ secrets.IOS_CERTIFICADO_P12_BASE64 }}
+          CERTIFICADO_CLAVE: ${{ secrets.IOS_CERTIFICADO_CLAVE }}
+          PERFIL_B64: ${{ secrets.IOS_PERFIL_BASE64 }}
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          if [ -z "$CERTIFICADO_B64" ] || [ -z "$PERFIL_B64" ] || [ -z "$TEAM_ID" ]; then
+            echo "Sin secretos de firma: se archiva SIN FIRMAR y no se exporta .ipa."
+            echo "Faltan IOS_CERTIFICADO_P12_BASE64, IOS_PERFIL_BASE64 o IOS_TEAM_ID."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Un llavero temporal y no el de inicio de sesion: vive lo que vive
+          # el runner, y asi la clave privada no queda en ningun sitio
+          # persistente ni depende de que el llavero por omision este
+          # desbloqueado, que en un runner no lo esta.
+          CLAVERO="$RUNNER_TEMP/firma.keychain-db"
+          CLAVE_DEL_LLAVERO=$(uuidgen)
+
+          security create-keychain -p "$CLAVE_DEL_LLAVERO" "$CLAVERO"
+          # Sin tiempo de espera: el bloqueo automatico en medio del archivado
+          # falla con "User interaction is not allowed", que no dice nada sobre
+          # la causa.
+          security set-keychain-settings -lut 21600 "$CLAVERO"
+          security unlock-keychain -p "$CLAVE_DEL_LLAVERO" "$CLAVERO"
+
+          echo "$CERTIFICADO_B64" | base64 -d > "$RUNNER_TEMP/certificado.p12"
+          security import "$RUNNER_TEMP/certificado.p12" \
+            -P "$CERTIFICADO_CLAVE" \
+            -A -t cert -f pkcs12 -k "$CLAVERO"
+          # Sin esto, codesign encuentra la clave pero no puede usarla sin una
+          # ventana de confirmacion que en un runner nadie va a tocar.
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$CLAVE_DEL_LLAVERO" "$CLAVERO" > /dev/null
+
+          # El llavero temporal primero, pero el de inicio de sesion detras: ahi
+          # viven los certificados intermedios de Apple.
+          security list-keychain -d user -s "$CLAVERO" login.keychain-db
+
+          echo "--- identidades de firma disponibles ---"
+          security find-identity -v -p codesigning "$CLAVERO"
+
+          # El perfil va donde Xcode lo busca, y su nombre se lee del propio
+          # perfil en vez de escribirse a mano: un nombre inventado en el
+          # ExportOptions falla recien al exportar, con un mensaje que habla de
+          # otra cosa.
+          PERFILES="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PERFILES"
+          echo "$PERFIL_B64" | base64 -d > "$RUNNER_TEMP/perfil.mobileprovision"
+
+          security cms -D -i "$RUNNER_TEMP/perfil.mobileprovision" \
+            > "$RUNNER_TEMP/perfil.plist"
+          UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/perfil.plist")
+          NOMBRE_PERFIL=$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/perfil.plist")
+          cp "$RUNNER_TEMP/perfil.mobileprovision" "$PERFILES/$UUID.mobileprovision"
+
+          echo "perfil: $NOMBRE_PERFIL ($UUID)"
+          echo "hay=si" >> "$GITHUB_OUTPUT"
+          echo "perfil=$NOMBRE_PERFIL" >> "$GITHUB_OUTPUT"
+
+      - name: Archivar en Release
+        id: archivado
+        working-directory: ios/xcode
+        env:
+          HAY_FIRMA: ${{ steps.firma.outputs.hay }}
+          PERFIL: ${{ steps.firma.outputs.perfil }}
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          NOMBRE: ${{ steps.version.outputs.nombre }}
+          CODIGO: ${{ steps.version.outputs.codigo }}
+        run: |
+          set -o pipefail
+
+          # MARKETING_VERSION y CURRENT_PROJECT_VERSION se pasan aca y llegan
+          # al Info.plist porque `project.yml` los declara como $(...) en vez
+          # de como literales. Escritos a mano en el plist, esta linea no
+          # habria cambiado nada: lo que la tienda lee es el plist.
+          COMUNES=(
+            -project Turismo.xcodeproj
+            -scheme Turismo
+            -configuration Release
+            -sdk iphoneos
+            -destination 'generic/platform=iOS'
+            -archivePath "$RUNNER_TEMP/Turismo.xcarchive"
+            MARKETING_VERSION="$NOMBRE"
+            CURRENT_PROJECT_VERSION="$CODIGO"
+          )
+
+          if [ "$HAY_FIRMA" = "si" ]; then
+            xcodebuild "${COMUNES[@]}" \
+              CODE_SIGN_STYLE=Manual \
+              DEVELOPMENT_TEAM="$TEAM_ID" \
+              PROVISIONING_PROFILE_SPECIFIER="$PERFIL" \
+              archive
+          else
+            # Sin firmar. Es exactamente la misma compilacion: lo que se apaga
+            # es el sellado del paquete, no nada de lo que se compila.
+            xcodebuild "${COMUNES[@]}" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              archive
+          fi
+
+          echo "--- lo que quedo en el archivado ---"
+          ls -la "$RUNNER_TEMP/Turismo.xcarchive/Products/Applications/"
+
+      - name: Comprobar lo que viaja dentro del archivado
+        env:
+          NOMBRE: ${{ steps.version.outputs.nombre }}
+          CODIGO: ${{ steps.version.outputs.codigo }}
+        # Las mismas comprobaciones que hace "Captura de iOS" sobre el .app del
+        # simulador, repetidas aca sobre el que de verdad va a la tienda. No es
+        # redundante: son dos configuraciones distintas con dos listas de
+        # recursos distintas, y la que nadie miraba nunca es esta.
+        run: |
+          APP="$RUNNER_TEMP/Turismo.xcarchive/Products/Applications/Turismo.app"
+          test -d "$APP" || { echo "no hay .app dentro del archivado"; exit 1; }
+
+          echo "=== el mapa ==="
+          test -f "$APP/map/caaguazu.pmtiles" \
+            || { echo "FALTA el .pmtiles dentro del .app"; exit 1; }
+          test -f "$APP/map/estilo.json" \
+            || { echo "FALTA el estilo dentro del .app"; exit 1; }
+          # El fallo mas silencioso de todos: si Xcode aplana la carpeta de
+          # glifos, el mapa dibuja igual y queda sin una sola etiqueta, ni
+          # calles ni nombres. Mejor fallar aca que publicarlo asi.
+          GLIFOS=$(find "$APP/map/glifos" -name "*.pbf" 2>/dev/null | wc -l | tr -d ' ')
+          echo "glifos empaquetados: $GLIFOS"
+          test "$GLIFOS" -gt 0 \
+            || { echo "FALTAN los glifos: Xcode aplano la estructura"; exit 1; }
+          echo "PMTiles: $(du -h "$APP/map/caaguazu.pmtiles" | cut -f1)"
+
+          echo "=== los textos de respaldo ==="
+          # Si Xcode los aplana, `Empaquetado` no los encuentra con
+          # `inDirectory = "textos"` y la app arranca con todas las claves
+          # entre angulos — es decir, ilegible, pero sin caerse.
+          for IDIOMA in es en pt; do
+            test -f "$APP/textos/$IDIOMA.json" \
+              || { echo "FALTA textos/$IDIOMA.json"; exit 1; }
+          done
+          echo "los tres idiomas estan"
+
+          echo "=== las tipografias ==="
+          FUENTES=$(find "$APP/font" -name "*.ttf" 2>/dev/null | wc -l | tr -d ' ')
+          echo "tipografias empaquetadas: $FUENTES"
+          # Poppins en sus pesos mas Source Serif. Sin ellas la app dibuja con
+          # la tipografia del sistema y deja de ser esta app.
+          test "$FUENTES" -gt 0 \
+            || { echo "FALTAN las tipografias"; exit 1; }
+
+          echo "=== el icono ==="
+          # App Store Connect rechaza una subida sin el (ITMS-90717).
+          ls -1 "$APP" | grep -i appicon || true
+          test -n "$(ls -1 "$APP" | grep -i appicon)" \
+            || { echo "FALTA el icono: el catalogo no se compilo"; exit 1; }
+
+          echo "=== la version que de verdad quedo en el plist ==="
+          # Esto es lo que comprueba que el paso de version sirvio para algo.
+          # Si `project.yml` volviera a escribir un literal, aca se veria 0.1.0
+          # y la comparacion fallaria antes de que nadie suba nada.
+          PLIST="$APP/Info.plist"
+          EN_PLIST_NOMBRE=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")
+          EN_PLIST_CODIGO=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")
+          echo "plist dice: $EN_PLIST_NOMBRE ($EN_PLIST_CODIGO)"
+          echo "deberia   : $NOMBRE ($CODIGO)"
+          test "$EN_PLIST_NOMBRE" = "$NOMBRE" && test "$EN_PLIST_CODIGO" = "$CODIGO" \
+            || { echo "La version del plist no es la de version.properties"; exit 1; }
+
+          echo "=== la arquitectura del binario ==="
+          # arm64 y nada mas. Una porcion de simulador colada en un archivado
+          # es un rechazo de App Store Connect.
+          lipo -info "$APP/Turismo"
+          lipo -info "$APP/Turismo" | grep -q "arm64" \
+            || { echo "el binario no es arm64"; exit 1; }
+          lipo -info "$APP/Turismo" | grep -q "x86_64" \
+            && { echo "el binario trae una porcion x86_64: eso es simulador"; exit 1; }
+
+          echo "=== el manifiesto de privacidad ==="
+          # Apple lo exige desde 2024 para las apps nuevas.
+          test -f "$APP/PrivacyInfo.xcprivacy" \
+            || { echo "FALTA PrivacyInfo.xcprivacy"; exit 1; }
+
+          echo "tamano del .app: $(du -sh "$APP" | cut -f1)"
+
+      - name: Exportar el .ipa
+        # Solo con firma: un .ipa sin firmar no es un artefacto valido. Apple
+        # no lo acepta y un telefono no lo instala, asi que exportarlo sin
+        # firma seria dejar un archivo que no sirve para nada con un nombre que
+        # sugiere lo contrario.
+        if: steps.firma.outputs.hay == 'si'
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          PERFIL: ${{ steps.firma.outputs.perfil }}
+        run: |
+          # `app-store-connect` es el nombre actual del metodo; `app-store` es
+          # el de antes de Xcode 15.3 y sigue aceptandose.
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>uploadSymbols</key><true/>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>net.caaguazu.turismo</key><string>$PERFIL</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Turismo.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/entrega"
+
+          ls -la "$RUNNER_TEMP/entrega"
+
+      - name: Preparar la entrega
+        id: entrega
+        env:
+          HAY_FIRMA: ${{ steps.firma.outputs.hay }}
+          NOMBRE: ${{ steps.version.outputs.nombre }}
+          CODIGO: ${{ steps.version.outputs.codigo }}
+        run: |
+          mkdir -p entrega
+
+          # Por comodin y no por nombre fijo: xcodebuild nombra el .ipa segun el
+          # producto, y si algun dia eso cambia, buscarlo por "Turismo.ipa"
+          # habria devuelto "no hay .ipa" en una corrida donde la firma funciono
+          # perfectamente. Un fallo que miente es peor que uno que grita.
+          IPA=$(find "$RUNNER_TEMP/entrega" -maxdepth 1 -name "*.ipa" 2>/dev/null | head -1)
+
+          if [ -n "$IPA" ]; then
+            cp "$IPA" "entrega/caaguazu-$NOMBRE-$CODIGO.ipa"
+            echo "firmado=si" >> "$GITHUB_OUTPUT"
+          elif [ "$HAY_FIRMA" = "si" ]; then
+            # Habia con que firmar y aun asi no salio nada: eso es un fallo, no
+            # una corrida sin firma.
+            echo "Se preparo la firma pero no quedo ningun .ipa en la exportacion."
+            ls -la "$RUNNER_TEMP/entrega" 2>/dev/null || echo "(no existe la carpeta de exportacion)"
+            exit 1
+          else
+            echo "firmado=no" >> "$GITHUB_OUTPUT"
+          fi
+
+          # El archivado va siempre, firmado o no: con firma es lo que se puede
+          # abrir en el Organizador de Xcode para subir desde una Mac sin
+          # recompilar, y sin firma es la prueba de que Release arma.
+          #
+          # Comprimido, porque un .xcarchive es una carpeta y un artefacto de
+          # Actions con miles de archivos sueltos tarda mas en subirse que el
+          # propio archivado en armarse.
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/Turismo.xcarchive" \
+            "entrega/Turismo-$NOMBRE-$CODIGO.xcarchive.zip"
+
+          # Los simbolos de depuracion, aparte. Sin ellos, un informe de caida
+          # que llegue desde la tienda es ilegible — es el equivalente del
+          # mapping.txt de R8 que acompana a cada release de Android.
+          DSYMS="$RUNNER_TEMP/Turismo.xcarchive/dSYMs"
+          if [ -d "$DSYMS" ]; then
+            ditto -c -k --sequesterRsrc --keepParent \
+              "$DSYMS" "entrega/dSYMs-$NOMBRE-$CODIGO.zip"
+          else
+            echo "(el archivado no trajo dSYMs)"
+          fi
+
+          ls -la entrega/
+
+      - name: Guardar la entrega
+        uses: actions/upload-artifact@v4
+        with:
+          name: caaguazu-ios
+          path: entrega/
+          retention-days: 90
+
+      - name: Que quedo y que falta
+        # Un resumen en la pagina de la corrida, para que no haya que leer el
+        # log entero para saber si lo que salio se puede subir o no.
+        env:
+          FIRMADO: ${{ steps.entrega.outputs.firmado }}
+          NOMBRE: ${{ steps.version.outputs.nombre }}
+          CODIGO: ${{ steps.version.outputs.codigo }}
+        run: |
+          {
+            echo "## Turismo $NOMBRE (build $CODIGO)"
+            echo
+            if [ "$FIRMADO" = "si" ]; then
+              echo "El \`.ipa\` esta firmado y listo para subir a App Store Connect."
+              echo "Se sube con Transporter o con el Organizador de Xcode;"
+              echo "el \`.xcarchive\` sirve para lo segundo sin recompilar."
+            else
+              echo "**Sin firmar.** Se archivo en Release y se comprobo el"
+              echo "contenido —mapa, textos, tipografias, icono, version y"
+              echo "arquitectura— pero no hay \`.ipa\`: para eso hacen falta los"
+              echo "secretos \`IOS_CERTIFICADO_P12_BASE64\`,"
+              echo "\`IOS_CERTIFICADO_CLAVE\`, \`IOS_PERFIL_BASE64\` y"
+              echo "\`IOS_TEAM_ID\`, que salen de una cuenta de Apple Developer."
+              echo
+              echo "Como cargarlos esta en \`docs/publicar-en-app-store.md\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar los reportes de prueba si algo fallo
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-ios-release
+          path: |
+            compartido/build/reports/tests/
+            interfaz/build/reports/tests/
+            app/build/reports/tests/
+          retention-days: 14

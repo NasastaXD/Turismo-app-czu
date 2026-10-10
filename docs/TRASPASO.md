@@ -120,7 +120,17 @@ tenga que recibir un `Context` de Android por parámetro.
 
 # iOS: generar el proyecto de Xcode (requiere `brew install xcodegen`).
 cd ios/xcode && xcodegen generate && open Turismo.xcodeproj
+
+# iOS: la biblioteca para el paquete de la tienda. Release, y Arm64 sin
+# "Simulator": son dos cosas distintas de la línea de arriba y las dos importan.
+./gradlew :ios:linkReleaseFrameworkIosArm64
 ```
+
+**La versión se edita en un solo archivo: `version.properties`, en la raíz.** La
+leen el build de Android y el workflow de iOS. `ios/xcode/project.yml` repite el
+número como respaldo para compilar en local, y "Verificar iOS" falla si los dos
+se desincronizan — que es exactamente lo que había pasado: iOS decía `0.1.0` con
+Android en `1.6.0`.
 
 **El `.xcodeproj` no está en el repositorio a propósito.** Se genera de
 `ios/xcode/project.yml`. Si necesitás cambiar algo del proyecto de Xcode,
@@ -215,9 +225,15 @@ no las pagues de nuevo.
 4. **Cargar Android a Play.** No falta nada de código: cuenta, ficha, textos,
    fotos y formularios. Está todo en `docs/guia/` (hay un PDF de 18 páginas en
    lenguaje sencillo, para él, no para vos).
-5. **Recién después, la App Store.** Y ojo con esto: **Apple rechaza apps que
-   hacen muy poco** (regla de *funcionalidad mínima*). Conviene que la vea
-   gente en TestFlight antes de mandarla.
+5. **Recién después, la App Store.** El camino al paquete ya está hecho: el
+   workflow **"Publicar iOS (App Store)"** archiva en Release y comprueba el
+   contenido del `.app`; lo único que falta es la cuenta de Apple, porque sin
+   certificado y perfil no hay `.ipa`. Los cuatro secretos que hay que cargar y
+   el orden de las cosas están en `docs/publicar-en-app-store.md`.
+
+   Lo de *funcionalidad mínima* ya **no** es el riesgo que era: cuando la app de
+   iOS era sólo el mapa, lo era; ahora comparte todas las pantallas con Android.
+   Aun así, TestFlight antes de mandarla.
 
 ---
 
@@ -231,6 +247,11 @@ El proyecto tiene una regla explícita: **se dice lo que no está verificado.**
   `captura-ios.yml`, que arranca un simulador y saca la captura). **En local ya
   no los necesitás para el ciclo normal**, pero siguen siendo la red de
   seguridad del repositorio: no los borres.
+- **`publicar-ios.yml` es el único que trabaja en Release.** Los otros dos
+  compilan en Debug, y Release no es lo mismo: busca el framework en otra
+  carpeta y lo compila con otras optimizaciones. Va a mano, porque un runner
+  macOS cuesta diez veces uno de Linux y un release de iOS se hace una vez por
+  versión.
 - Cuatro guardianes corren con las pruebas y **fallan la compilación**:
   `SinRedaccionTest`, `ClavesDeTextoTest`, `SistemaDeDisenoTest` y
   `NavegacionTest`. Ahora recorren los cinco juegos de fuentes del proyecto,
