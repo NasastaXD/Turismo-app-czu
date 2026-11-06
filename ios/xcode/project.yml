@@ -134,8 +134,8 @@ targets:
         # para que `xcodegen && xcodebuild` a mano no arme una app con la
         # version vacia. "Verificar iOS" falla si se desincronizan de ese
         # archivo, asi que no pueden quedar viejos en silencio.
-        MARKETING_VERSION: "1.6.0"
-        CURRENT_PROJECT_VERSION: "18"
+        MARKETING_VERSION: "1.7.0"
+        CURRENT_PROJECT_VERSION: "19"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_USER_SCRIPT_SANDBOXING: NO
