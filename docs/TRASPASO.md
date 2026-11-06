@@ -225,15 +225,20 @@ no las pagues de nuevo.
 4. **Cargar Android a Play.** No falta nada de código: cuenta, ficha, textos,
    fotos y formularios. Está todo en `docs/guia/` (hay un PDF de 18 páginas en
    lenguaje sencillo, para él, no para vos).
-5. **Recién después, la App Store.** El camino al paquete ya está hecho: el
-   workflow **"Publicar iOS (App Store)"** archiva en Release y comprueba el
-   contenido del `.app`; lo único que falta es la cuenta de Apple, porque sin
-   certificado y perfil no hay `.ipa`. Los cuatro secretos que hay que cargar y
-   el orden de las cosas están en `docs/publicar-en-app-store.md`.
+5. **Recién después, la App Store.** Ya no hace falta una Mac para nada: el
+   workflow **"Publicar iOS (App Store)"** elige Xcode 26, archiva en Release,
+   comprueba el `.app` y las APIs que Apple obliga a declarar, firma y **sube a
+   App Store Connect**; **"Capturas para la tienda"** saca las capturas en la
+   medida obligatoria y en los tres idiomas. Lo único que falta es la cuenta de
+   Apple y los siete secretos. Los pasos, pensados para hacerlos desde Windows,
+   están en `docs/app-store/GUIA.md`, con un script de PowerShell para el
+   certificado.
 
-   Lo de *funcionalidad mínima* ya **no** es el riesgo que era: cuando la app de
-   iOS era sólo el mapa, lo era; ahora comparte todas las pantallas con Android.
-   Aun así, TestFlight antes de mandarla.
+   Antes de mandarla a revisión hay dos cosas que no son de código: el panel
+   tenía, en noviembre de 2026, 0 artículos, 0 recorridos y 0 eventos; y el
+   asistente no avisa en la app que lo escrito va a una IA de terceros, que
+   Apple pide desde la guía 5.1.2(i). Las dos están explicadas en la guía.
+   Y TestFlight antes de mandarla.
 
 ---
 
