@@ -21,6 +21,7 @@ object Ajustes {
     private const val CLAVE_AVISOS = "avisos"
     private const val CLAVE_ARTICULOS_VISTOS = "articulos_vistos"
     private const val CLAVE_EVENTOS_AVISADOS = "eventos_avisados"
+    private const val CLAVE_ASISTENTE_ACEPTADO = "asistente_aceptado"
 
     /**
      * Tope de ids recordados por conjunto.
@@ -55,6 +56,18 @@ object Ajustes {
      * hace falta pedir el permiso de sistema una vez para que sea real.
      */
     fun avisosDecididos(): Boolean = Preferencias.tiene(CLAVE_AVISOS)
+
+    /**
+     * Si la persona acepto el aviso del asistente: que lo que escribe viaja al
+     * servidor y a un proveedor de IA externo. Se pregunta una sola vez; sin
+     * aceptarlo, el asistente no deja escribir.
+     */
+    var asistenteAceptado: Boolean
+        get() = Preferencias.booleano(CLAVE_ASISTENTE_ACEPTADO, false)
+        set(valor) {
+            Preferencias.ponerBooleano(CLAVE_ASISTENTE_ACEPTADO, valor)
+            Bitacora.info(ETIQUETA, "aviso del asistente ${if (valor) "aceptado" else "sin aceptar"}")
+        }
 
     /** Articulos de los que ya se aviso, o que ya existian al encender los avisos. */
     var articulosVistos: Set<Int>

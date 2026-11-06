@@ -93,7 +93,9 @@ targets:
       # unica fuente. Queda fuera del repositorio.
       path: Generado/Info.plist
       properties:
-        CFBundleDisplayName: Turismo
+        # El nombre debajo del icono. El mismo en Android (`app_name`) y en
+        # iPhone: dos nombres para la misma app serian dos apps.
+        CFBundleDisplayName: Caaguazú Go
         # La URL base nunca va quemada en el codigo, aunque hoy solo exista
         # una. Del lado Android vive en un buildConfigField; el equivalente de
         # iOS es esto, y `Marcadores` la lee de aca.

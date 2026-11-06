@@ -24,7 +24,7 @@ Antes de publicarlo hace falta:
 
 ## Qué es esta app
 
-Una guía turística del distrito de Caaguazú (Paraguay). Muestra lugares,
+**Caaguazú Go** es una guía turística del distrito de Caaguazú (Paraguay). Muestra lugares,
 eventos, artículos y recorridos publicados en caaguazu.net, un mapa del
 distrito y un asistente que responde preguntas sobre ese contenido. No tiene
 cuentas de usuario ni inicio de sesión.
@@ -61,7 +61,8 @@ en sus registros habituales.
 
 ## El asistente
 
-El asistente es opcional. Si se usa:
+El asistente es opcional, y antes de la primera pregunta la app avisa lo que
+sigue y pide aceptarlo. Si se usa:
 
 - **Lo que se escribe se manda a caaguazu.net**, junto con el idioma y un
   identificador de conversación al azar que crea el servidor. No va ningún dato

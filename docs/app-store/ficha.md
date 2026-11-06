@@ -18,7 +18,7 @@ Tres clases de campos:
 
 | Campo | Respuesta |
 |---|---|
-| Nombre | ‹hueco› — hasta 30 caracteres, y **tiene que ser único en toda la App Store**: si ya existe una app con ese nombre, no deja guardarlo |
+| Nombre | **Caaguazú Go** — hasta 30 caracteres, y **tiene que ser único en toda la App Store**: si ya existe una app con ese nombre, no deja guardarlo |
 | Subtítulo | ‹hueco› — hasta 30 caracteres. Aparece debajo del nombre |
 | Idioma principal | **Spanish (Mexico)** — ver la nota de abajo |
 | Bundle ID | `net.caaguazu.turismo` (aparece en la lista si el App ID ya está registrado) |
@@ -39,11 +39,10 @@ Tres clases de campos:
 > permiso. Vale la pena confirmarlo con los promotores antes, sobre todo las
 > fotos que parezcan sacadas de internet.
 
-> **El nombre en el teléfono no es el mismo en las dos apps.** En Android la app
-> se llama **Caaguazú** (`app_name`); en iPhone se llama **Turismo**
-> (`CFBundleDisplayName` en `ios/xcode/project.yml`). Es lo que aparece debajo
-> del ícono. Conviene decidir uno y usarlo en los dos lados. Es una línea en
-> cada plataforma; no lo cambié porque el nombre lo decide el dueño.
+> **El nombre debajo del ícono es «Caaguazú Go» en todos lados**: Android
+> (`app_name`), iPhone (`CFBundleDisplayName` en `ios/xcode/project.yml`) y el
+> espejo web. El título grande del inicio sigue diciendo «Caaguazú», que es el
+> lugar: es la clave `app.nombre` y se cambia desde el panel si se quiere.
 
 ---
 
@@ -155,7 +154,7 @@ diga exactamente lo que va a encontrar. **Leerlas antes de pegarlas**: si algo
 cambió en el panel o en la app, corregirlo.
 
 ```
-This app is a tourism guide to the district of Caaguazú, Paraguay. Places,
+Caaguazú Go is a tourism guide to the district of Caaguazú, Paraguay. Places,
 events, articles and routes are published by the local tourism team through the
 caaguazu.net editorial panel, and the app loads them from
 https://caaguazu.net/wp-json/czu-app/v1/.
@@ -168,9 +167,10 @@ No account or sign-in is needed. Every section is available on first launch.
   does not use or request location.
 - The round button in the middle of the bar opens an assistant that answers
   questions using only the content published in the app. Questions are sent to
-  our server, which uses a third-party AI provider to write the answer; this is
-  disclosed in the privacy policy and in App Privacy (Other User Content, not
-  linked, App Functionality). Each answer lists the published items it is based
+  our server, which uses a third-party AI provider to write the answer. Before
+  the first question the app shows a notice saying so, and the input field only
+  appears after tapping "Accept". It is also disclosed in the privacy policy
+  and in App Privacy (Other User Content, not linked, App Functionality). Each answer lists the published items it is based
   on, and they open inside the app.
 - Directions open in Google Maps (the app if installed, otherwise the
   website). "Schedule" on an event opens the system share sheet with an .ics
@@ -201,8 +201,7 @@ No hay que contestarlo: viene dentro de la app.
 
 Para no tener que buscarlos:
 
-- [ ] Nombre en la tienda (30) y subtítulo (30)
-- [ ] El nombre debajo del ícono: ¿Caaguazú o Turismo? (sección 1)
+- [ ] Subtítulo (30). El nombre es «Caaguazú Go»
 - [ ] Descripción (4000), texto promocional (170) y palabras clave (100), en
       cada idioma que se cargue
 - [ ] Responsable, correo de contacto y ciudad, en `privacidad.html` y

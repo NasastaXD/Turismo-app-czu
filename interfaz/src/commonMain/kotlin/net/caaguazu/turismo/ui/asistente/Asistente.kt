@@ -35,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import net.caaguazu.turismo.core.Ajustes
 import net.caaguazu.turismo.core.Bitacora
 import net.caaguazu.turismo.core.Falla
 import net.caaguazu.turismo.core.Resultado
@@ -45,7 +46,9 @@ import net.caaguazu.turismo.ui.piezas.BotonIcono
 import net.caaguazu.turismo.ui.piezas.CabeceraPantalla
 import net.caaguazu.turismo.ui.piezas.Glifo
 import net.caaguazu.turismo.ui.piezas.Icono
+import net.caaguazu.turismo.ui.piezas.PildoraPrimaria
 import net.caaguazu.turismo.ui.piezas.PildoraSuave
+import net.caaguazu.turismo.ui.piezas.Tarjeta
 import net.caaguazu.turismo.ui.piezas.Texto
 import net.caaguazu.turismo.ui.piezas.cedeAlTocar
 import net.caaguazu.turismo.ui.piezas.recordarInteraccion
@@ -95,6 +98,14 @@ class PilaAsistente {
     var disponible by mutableStateOf(false)
         private set
 
+    /**
+     * Si ya se acepto el aviso de que lo escrito sale del telefono. Se lee una
+     * vez al armar la pila y despues vive aca, para que la pantalla cambie en
+     * el momento en que se acepta.
+     */
+    var aceptado by mutableStateOf(Ajustes.asistenteAceptado)
+        private set
+
     val mensajes = mutableStateListOf<MensajeAsistente>()
 
     /** Lo escrito y todavia no mandado. Sobrevive a abrir una fuente. */
@@ -129,7 +140,9 @@ class PilaAsistente {
 
     suspend fun preguntar(texto: String) {
         val limpio = texto.trim()
-        if (limpio.isEmpty() || esperando) return
+        // Sin el aviso aceptado no sale nada del telefono, aunque alguien
+        // llegara a mandar sin pasar por la pantalla.
+        if (limpio.isEmpty() || esperando || !aceptado) return
         mensajes += MensajeAsistente(deLaPersona = true, texto = limpio)
         borrador = ""
         enviar(limpio)
@@ -174,6 +187,11 @@ class PilaAsistente {
         pendiente = null
         fallo = null
         borrador = ""
+    }
+
+    fun aceptar() {
+        Ajustes.asistenteAceptado = true
+        aceptado = true
     }
 
     fun abrir(fuente: FuenteAsistente) { abiertas += fuente }
@@ -243,6 +261,10 @@ fun PantallaAsistente(
             ),
             verticalArrangement = Arrangement.spacedBy(Medida.entreTarjetas),
         ) {
+            if (!pila.aceptado) {
+                item { Aviso(alAceptar = pila::aceptar) }
+            }
+
             itemsIndexed(pila.mensajes) { _, mensaje ->
                 if (mensaje.deLaPersona) {
                     Pregunta(mensaje.texto)
@@ -260,15 +282,47 @@ fun PantallaAsistente(
             }
         }
 
-        Entrada(
-            valor = pila.borrador,
-            alCambiar = { pila.borrador = it },
-            puedeEnviar = pila.borrador.isNotBlank() && !pila.esperando,
-            alEnviar = { alPreguntar(pila.borrador) },
-            // Con la charla vacia, lo unico que hay para hacer es escribir: el
-            // teclado sube solo y nadie tiene que buscar donde tocar.
-            enfocar = pila.mensajes.isEmpty(),
-        )
+        // La entrada aparece recien con el aviso aceptado: un campo a la vista
+        // invita a escribir antes de haber leido a donde va lo escrito. Y como
+        // se compone en ese momento, el teclado sube solo al aceptar.
+        if (pila.aceptado) {
+            Entrada(
+                valor = pila.borrador,
+                alCambiar = { pila.borrador = it },
+                puedeEnviar = pila.borrador.isNotBlank() && !pila.esperando,
+                alEnviar = { alPreguntar(pila.borrador) },
+                // Con la charla vacia, lo unico que hay para hacer es escribir:
+                // el teclado sube solo y nadie tiene que buscar donde tocar.
+                enfocar = pila.mensajes.isEmpty(),
+            )
+        }
+    }
+}
+
+/**
+ * El aviso de antes de la primera pregunta: lo que se escribe aca va al
+ * servidor del panel y de ahi a un proveedor de IA externo.
+ *
+ * Existe por la guia 5.1.2(i) de Apple, que desde noviembre de 2025 pide
+ * avisar —en la app, no solo en la politica de privacidad— cuando datos de una
+ * persona se comparten con una IA de terceros, y tener su permiso antes. Pero
+ * vale igual para Android: quien pregunta tiene que saber a donde va lo que
+ * escribe antes de escribirlo.
+ *
+ * Una vez, y no en cada charla. El boton es el verde porque es lo unico que la
+ * pantalla propone mientras el aviso esta: la entrada todavia no existe.
+ * "Ahora no" no hace falta como boton: es el de volver de la cabecera.
+ */
+@Composable
+private fun Aviso(alAceptar: () -> Unit) {
+    Tarjeta(Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(Medida.dentroTarjeta),
+            verticalArrangement = Arrangement.spacedBy(Medida.dentroTarjeta),
+        ) {
+            Texto(Textos.t("asistente.aviso"), Letra.descripcion, Tono.tinta)
+            PildoraPrimaria(texto = Textos.t("asistente.aceptar"), alTocar = alAceptar)
+        }
     }
 }
 

@@ -59,14 +59,16 @@ Desde noviembre de 2025, la guía **5.1.2(i)** de Apple dice que hay que
 "incluida una IA de terceros", y obtener permiso explícito antes**. El
 asistente manda lo que la persona escribe a un proveedor de IA externo.
 
-Hoy la pantalla del asistente arranca vacía, sin ningún aviso. La política de
-privacidad y la etiqueta de privacidad ya lo dicen (paso 11 y `ficha.md`), pero
-un revisor puede pedir que se diga **en la app, antes de la primera pregunta**.
+**Resuelto.** La primera vez que se abre el asistente aparece un aviso —que lo
+que se escribe va al servidor y a un servicio de IA externo, y que no se
+escriban datos personales— con un botón **Aceptar**. Hasta aceptarlo no hay
+campo para escribir, y no vuelve a aparecer. Vale para iPhone y Android.
 
-**Lo que recomiendo:** un aviso de una o dos líneas la primera vez que se abre
-el asistente, con un botón para aceptar, que no vuelva a aparecer. El mecanismo
-es poco código; **el texto lo tiene que escribir una persona**, por la regla del
-proyecto. Si lo escribís, el agente lo conecta.
+El texto lo escribió el agente, a pedido tuyo y como excepción a la regla de que
+el texto de producto lo escribe una persona. Está en las claves
+`asistente.aviso` y `asistente.aceptar`, en los tres idiomas, y **se puede
+cambiar desde el panel sin compilar de nuevo**, como cualquier otro texto de la
+app.
 
 La alternativa —apagar el asistente para la revisión y prenderlo después— **no
 conviene**: una función que aparece después de aprobada la app es justo lo que
@@ -123,7 +125,7 @@ Cuando la cuenta está activa, anotá tu **Team ID**: diez letras y números, en
 **developer.apple.com/account/resources/identifiers** → **+** → *App IDs* →
 *App* → Continue.
 
-- Description: `Turismo Caaguazu`
+- Description: `Caaguazu Go`
 - Bundle ID: **Explicit**, `net.caaguazu.turismo`
 - Capabilities: ninguna. La app no usa ninguna.
 
@@ -134,7 +136,9 @@ Register.
 **appstoreconnect.apple.com** → *Apps* → **+** → *New App*:
 
 - Platform: **iOS**
-- Name: el nombre en la tienda (único en toda la App Store, hasta 30 caracteres)
+- Name: **Caaguazú Go** (tiene que ser único en toda la App Store; si ya
+  estuviera tomado, App Store Connect no deja guardarlo y hay que agregarle algo,
+  por ejemplo «Caaguazú Go – Turismo»)
 - Primary language: **Spanish (Mexico)** — por qué, en `ficha.md`
 - Bundle ID: `net.caaguazu.turismo` (aparece en la lista por el paso 2)
 - SKU: `caaguazu-turismo`

@@ -6,6 +6,8 @@
   "asistente.nueva": "New chat",
   "asistente.pensando": "Thinking…",
   "asistente.titulo": "Assistant",
+  "asistente.aviso": "To answer you, your questions are sent to our server and to an external artificial intelligence service. Please don’t include personal information.",
+  "asistente.aceptar": "Accept",
   "avisos.articulo": "New article",
   "avisos.canal.articulos": "Articles",
   "avisos.canal.eventos": "Events",

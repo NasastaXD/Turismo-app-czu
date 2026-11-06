@@ -97,8 +97,10 @@ final class CapturasTiendaUITests: XCTestCase {
         tocar(app, Barra.recorridos, espera: espera / 2)
         fotografiar("07-recorridos")
 
-        // 8. El asistente. Vacio a proposito: una pregunta escrita aca seria
-        // texto de producto, y eso lo escribe una persona.
+        // 8. El asistente, como lo ve quien lo abre por primera vez: con el
+        // aviso de que lo escrito va a una IA externa, que es lo primero que va
+        // a mirar un revisor de Apple. Sin pregunta escrita: una pregunta aca
+        // seria texto de producto, y eso lo escribe una persona.
         app = abrir(argumentos, espera: espera)
         tocar(app, Barra.asistente, espera: 3)
         // La primera vez que aparece el teclado en un simulador nuevo, iOS
