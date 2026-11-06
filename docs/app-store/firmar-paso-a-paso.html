@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Firmar Caaguazú Go para iPhone</title>
+<!-- Fuente del PDF de al lado. Se genera con Chromium:
+     chromium --headless --no-pdf-header-footer --print-to-pdf="Firmar Caaguazu Go para iPhone.pdf" file://$PWD/firmar-paso-a-paso.html -->
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body { font: 11pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #222; margin: 0; }
+  h1 { font-size: 22pt; margin: 0 0 4px; }
+  .sub { color: #666; margin: 0 0 18px; }
+  h2 { font-size: 13pt; margin: 20px 0 6px; padding-top: 10px; border-top: 1px solid #ddd; }
+  .num { display: inline-block; width: 22px; height: 22px; border-radius: 11px; background: #1F1F21; color: #fff; text-align: center; font-size: 10pt; line-height: 22px; margin-right: 6px; }
+  code, pre { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; }
+  pre { background: #F0EFED; padding: 10px 12px; border-radius: 8px; white-space: pre-wrap; word-break: break-all; margin: 6px 0; }
+  .ojo { background: #FFF4E5; border-left: 4px solid #FF9F1C; padding: 8px 12px; border-radius: 4px; margin: 10px 0; }
+  ul { margin: 4px 0; padding-left: 20px; }
+  li { margin: 2px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 10pt; }
+  td { border-bottom: 1px solid #e5e5e5; padding: 5px 6px; vertical-align: top; }
+  .salto { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Firmar Caaguazú Go para iPhone</h1>
+<p class="sub">Desde Windows, sin Mac. Unos 15 minutos. Un script te va guiando y abre cada página.</p>
+
+<h2>Antes: dos programas y una sesión</h2>
+<ul>
+  <li><b>Git para Windows</b> — git-scm.com (trae OpenSSL, que usa el script).</li>
+  <li><b>GitHub CLI</b> — cli.github.com. Después, en PowerShell, una sola vez:</li>
+</ul>
+<pre>gh auth login</pre>
+<ul>
+  <li>En GitHub, que el PR <b>#32</b> (versión 1.7.0) esté mezclado.</li>
+</ul>
+
+<h2>El único comando</h2>
+<p>En PowerShell, dentro de la carpeta del repositorio:</p>
+<pre>cd docs\app-store
+powershell -ExecutionPolicy Bypass -File .\firmar-facil.ps1</pre>
+<p>El script abre cada página en el navegador y espera. Vos hacés lo de la web, apretás <b>Enter</b>, y él encuentra solo los archivos en <b>Descargas</b>.</p>
+
+<h2><span class="num">1</span>Team ID</h2>
+<p>Se abre tu cuenta de Apple. En <b>Membership details</b> copiá el <b>Team ID</b> (10 letras y números) y pegalo en la ventana.</p>
+
+<h2><span class="num">2</span>Registrar la app</h2>
+<p><b>App IDs → App</b>. Description: <code>Caaguazu Go</code>. Bundle ID: <b>Explicit</b> → <code>net.caaguazu.turismo</code> → Continue → Register. Enter.</p>
+
+<h2><span class="num">3</span>Certificado</h2>
+<p>Te pide tu correo y tu nombre, y se abre la carpeta con <code>solicitud.certSigningRequest</code>. En la página: <b>Apple Distribution</b> → Continue → subí ese archivo → Continue → <b>Download</b>. Enter.</p>
+
+<h2><span class="num">4</span>Perfil</h2>
+<p>En <b>Distribution</b> elegí <b>App Store Connect</b> → Continue → <code>net.caaguazu.turismo</code> → el certificado del paso 3 → nombre <code>Caaguazu App Store</code> → Generate → <b>Download</b>. Enter.</p>
+
+<h2><span class="num">5</span>Clave para subir a Apple</h2>
+<p><b>Team Keys → +</b>. Name: <code>GitHub</code>. Access: <b>App Manager</b> → Generate → <b>Download</b>. Enter. Después pegá el <b>Issuer ID</b>: el código largo con guiones que está arriba de la tabla de claves. El Key ID lo saca solo.</p>
+<div class="ojo">Apple deja bajar esa clave <b>una sola vez</b>. El script la copia a tu carpeta <code>firma-ios</code>.</div>
+
+<h2><span class="num">6</span>Cargar en GitHub</h2>
+<p>Lo hace solo. Tiene que decir <b>«cargado»</b> siete veces.</p>
+
+<h2><span class="num">7</span>Crear la app y compilar</h2>
+<p>Se abre App Store Connect. <b>Apps → + → New App</b>: nombre <b>Caaguazú Go</b>, idioma <b>Spanish (Mexico)</b>, el bundle de la lista, SKU <code>caaguazu-turismo</code>. Volvé a la ventana y apretá <b>Enter</b>: arranca la compilación. En ~25 minutos aparece en <b>TestFlight</b>.</p>
+
+<div class="ojo"><b>Guardá la carpeta <code>C:\Users\TU_USUARIO\firma-ios</code> en un pendrive</b> y no la mandes a nadie: ahí está la clave privada del certificado. Sin ella hay que hacer todo de nuevo.</div>
+
+<h2 class="salto">Si algo sale mal</h2>
+<table>
+  <tr><td><b>«No encuentro OpenSSL»</b></td><td>Falta Git para Windows. Instalalo y volvé a correr.</td></tr>
+  <tr><td><b>«Falta GitHub CLI» / «no tiene sesión»</b></td><td>Instalá GitHub CLI y corré <code>gh auth login</code>.</td></tr>
+  <tr><td><b>«El certificado no corresponde a esta clave privada»</b></td><td>Ese .cer se pidió con otra solicitud. Pedí uno nuevo subiendo la de <code>firma-ios</code>.</td></tr>
+  <tr><td><b>«Ya hay una clave privada»</b></td><td>No es error: la usa. Si querés empezar de cero, mové la carpeta <code>firma-ios</code> a otro lado.</td></tr>
+  <tr><td><b>Se cortó a la mitad</b></td><td>Volvé a correr el script: lo que ya está hecho no se repite.</td></tr>
+  <tr><td><b>La compilación falla en GitHub</b></td><td>Mandá una captura del paso en rojo de <b>Actions → Publicar iOS</b>.</td></tr>
+  <tr><td><b>«The bundle version must be higher»</b></td><td>Esa versión ya se subió: hay que subir <code>codigo</code> en <code>version.properties</code>.</td></tr>
+</table>
+
+<h2>Después</h2>
+<ul>
+  <li>Instalá <b>TestFlight</b> en el iPhone y probá la app.</li>
+  <li>Cargá contenido en el panel y corré <b>Actions → Capturas para la tienda</b>.</li>
+  <li>Completá la ficha con <code>docs/app-store/ficha.md</code> y mandala a revisión.</li>
+</ul>
+
+</body>
+</html>

@@ -28,7 +28,8 @@ Archivos de esta carpeta:
 | Archivo | Para qué |
 |---|---|
 | `GUIA.md` | esto |
-| `preparar-firma.ps1` | el certificado desde Windows (pasos 4 a 7) |
+| `firmar-facil.ps1` | **lo más rápido**: te guía por los pasos 1 a 8 y abre cada página (`Firmar Caaguazu Go para iPhone.pdf` lo explica) |
+| `preparar-firma.ps1` | el certificado desde Windows (pasos 4 a 7); lo usa el de arriba |
 | `ficha.md` | cada campo de App Store Connect con su respuesta |
 | `sitio/privacidad.html`, `sitio/soporte.html` | las dos páginas que Apple exige, listas para publicar |
 | `PARA-EL-AGENTE.md` | instrucciones para un agente que te ayude desde tu compu |
