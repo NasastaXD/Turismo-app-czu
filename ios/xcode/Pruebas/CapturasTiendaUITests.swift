@@ -62,8 +62,7 @@ final class CapturasTiendaUITests: XCTestCase {
         fotografiar("01-inicio")
 
         // 2 y 3. Una ficha: arriba, y despues de subir la hoja sobre la foto.
-        tocar(app, primerLugar)
-        Thread.sleep(forTimeInterval: espera / 2)
+        tocar(app, primerLugar, espera: espera / 2)
         fotografiar("02-ficha")
         // Un arrastre corto y lento, no `swipeUp()`. El deslizamiento entero
         // lanzaba la hoja hasta arriba y su contenido quedaba debajo de la
@@ -81,32 +80,27 @@ final class CapturasTiendaUITests: XCTestCase {
 
         // 4. Buscar, con el mosaico de categorias.
         app = abrir(argumentos, espera: espera)
-        tocar(app, Barra.buscar)
-        Thread.sleep(forTimeInterval: espera / 2)
+        tocar(app, Barra.buscar, espera: espera / 2)
         fotografiar("04-buscar")
 
         // 5. El mapa, que es la misma busqueda dibujada sobre el lienzo. Tarda
         // mas que el resto: hay que leer el .pmtiles y que MapLibre dibuje.
-        tocar(app, botonMapa)
-        Thread.sleep(forTimeInterval: espera)
+        tocar(app, botonMapa, espera: espera)
         fotografiar("05-mapa")
 
         // 6 y 7. Articulos y recorridos.
         app = abrir(argumentos, espera: espera)
-        tocar(app, Barra.articulos)
-        Thread.sleep(forTimeInterval: espera / 2)
+        tocar(app, Barra.articulos, espera: espera / 2)
         fotografiar("06-articulos")
 
         app = abrir(argumentos, espera: espera)
-        tocar(app, Barra.recorridos)
-        Thread.sleep(forTimeInterval: espera / 2)
+        tocar(app, Barra.recorridos, espera: espera / 2)
         fotografiar("07-recorridos")
 
         // 8. El asistente. Vacio a proposito: una pregunta escrita aca seria
         // texto de producto, y eso lo escribe una persona.
         app = abrir(argumentos, espera: espera)
-        tocar(app, Barra.asistente)
-        Thread.sleep(forTimeInterval: 3)
+        tocar(app, Barra.asistente, espera: 3)
         // La primera vez que aparece el teclado en un simulador nuevo, iOS
         // muestra su presentacion de "deslizar para escribir", en el idioma del
         // sistema y tapando media pantalla. Paso en la primera corrida. Es del
@@ -134,8 +128,24 @@ final class CapturasTiendaUITests: XCTestCase {
         return app
     }
 
-    private func tocar(_ app: XCUIApplication, _ donde: CGVector) {
+    /// Toca y espera. Si despues de esperar la pantalla quedo identica a la
+    /// de antes, el toque no entro, y se toca una vez mas.
+    ///
+    /// Paso en la segunda corrida (6/11/2026): en la primera tanda, con el
+    /// simulador recien arrancado, el toque al boton del mapa llego a la app
+    /// —el registro de XCUITest lo muestra sintetizado, sin error— y la app
+    /// siguio en buscar. En las otras dos tandas, el mismo toque abrio el mapa.
+    /// Comparar la pantalla no depende de cuanto se espere: con la barra de
+    /// estado fija en 9:41, dos fotos de la misma pantalla quieta son iguales
+    /// byte a byte.
+    private func tocar(_ app: XCUIApplication, _ donde: CGVector, espera: TimeInterval) {
+        let antes = XCUIScreen.main.screenshot().pngRepresentation
         app.coordinate(withNormalizedOffset: donde).tap()
+        Thread.sleep(forTimeInterval: espera)
+        if XCUIScreen.main.screenshot().pngRepresentation == antes {
+            app.coordinate(withNormalizedOffset: donde).tap()
+            Thread.sleep(forTimeInterval: espera)
+        }
     }
 
     private func fotografiar(_ nombre: String) {
