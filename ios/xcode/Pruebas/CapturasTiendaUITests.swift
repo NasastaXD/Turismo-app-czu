@@ -65,7 +65,17 @@ final class CapturasTiendaUITests: XCTestCase {
         tocar(app, primerLugar)
         Thread.sleep(forTimeInterval: espera / 2)
         fotografiar("02-ficha")
-        app.swipeUp()
+        // Un arrastre corto y lento, no `swipeUp()`. El deslizamiento entero
+        // lanzaba la hoja hasta arriba y su contenido quedaba debajo de la
+        // barra de estado, pisandose con la hora (primera corrida, 6/11/2026).
+        // Asi la hoja sube lo justo para mostrar la informacion y para.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.78))
+            .press(
+                forDuration: 0.1,
+                thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.56)),
+                withVelocity: .slow,
+                thenHoldForDuration: 0.5
+            )
         Thread.sleep(forTimeInterval: 2)
         fotografiar("03-ficha-abajo")
 
@@ -97,6 +107,17 @@ final class CapturasTiendaUITests: XCTestCase {
         app = abrir(argumentos, espera: espera)
         tocar(app, Barra.asistente)
         Thread.sleep(forTimeInterval: 3)
+        // La primera vez que aparece el teclado en un simulador nuevo, iOS
+        // muestra su presentacion de "deslizar para escribir", en el idioma del
+        // sistema y tapando media pantalla. Paso en la primera corrida. Es del
+        // sistema, no de la app, asi que se cierra si esta.
+        let continuar = app.buttons.matching(
+            NSPredicate(format: "label IN %@", ["Continue", "Continuar"])
+        ).firstMatch
+        if continuar.waitForExistence(timeout: 2) {
+            continuar.tap()
+            Thread.sleep(forTimeInterval: 1)
+        }
         fotografiar("08-asistente")
 
         app.terminate()
