@@ -6,6 +6,8 @@
   "asistente.nueva": "Nova conversa",
   "asistente.pensando": "Pensando…",
   "asistente.titulo": "Assistente",
+  "asistente.aviso": "Para responder, suas perguntas são enviadas ao nosso servidor e a um serviço externo de inteligência artificial. Não escreva dados pessoais.",
+  "asistente.aceptar": "Aceitar",
   "avisos.articulo": "Novo artigo",
   "avisos.canal.articulos": "Artigos",
   "avisos.canal.eventos": "Eventos",

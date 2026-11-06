@@ -89,10 +89,15 @@ Estado a partir de una auditoría del código el 2026-09-16, revisada el
       de analítica) — falta completar los datos de contacto, que alguien
       con criterio legal lo revise, y subirlo a algún lugar público (podría
       ser una página más de caaguazu.net).
-- [ ] **Formulario de Data Safety.** Con lo que audité, la respuesta
-      honesta es **"No collects any user data"** en todas las categorías:
-      no hay cuentas, no hay analítica, no hay publicidad, y todo lo que se
-      guarda queda en el teléfono sin subirse a ningún lado.
+- [ ] **Formulario de Data Safety.** Ya **no** es "No collects any user
+      data", por el asistente (1.6.0): lo que se escribe ahí sale del
+      teléfono, el servidor guarda la charla hasta 2 horas y la pasa a un
+      proveedor de IA. Se declara **App activity → Other user-generated
+      content**, recolectado, no compartido con fines propios del tercero,
+      opcional, para la funcionalidad de la app, cifrado en tránsito. Todo lo
+      demás sigue siendo "no": no hay cuentas, ni analítica, ni publicidad. El
+      razonamiento completo, que es el mismo para Apple, está en
+      [`docs/app-store/ficha.md`](app-store/ficha.md), sección 3.
 - [ ] **Clasificación de contenido** (cuestionario IARC dentro de la
       consola): es una app de información turística sin contenido para
       adultos, sin interacción entre usuarios y sin compras — debería salir
@@ -140,10 +145,19 @@ armarlo en un runner y lo que hace realista compilar sin una Mac propia. El
 workflow **"Captura de iOS"** arranca un simulador y saca la foto del mapa
 dibujado con sus pines — está en `docs/imagenes/mapa-en-iphone.png`.
 
-Lo que falta para poder mandar algo a Apple es **`Textos` y las pantallas**.
-Hoy la app de iOS es el mapa, y una app que hace tan poco cae justo en la
-regla de *funcionalidad mínima*, que es de las que Apple más usa para
-rechazar. No es un problema técnico: es que todavía no está terminada.
+**Eso ya quedó atrás.** Las pantallas se mudaron a un módulo `:interfaz`
+compartido, así que la app de iOS no es el mapa: es la misma app —las cuatro
+secciones, el buscador, las fichas, los artículos, los recorridos y el
+asistente— dibujada por las mismas funciones que la de Android. Con eso se
+cae también el riesgo de *funcionalidad mínima*, que era el más serio de los
+motivos de rechazo que tenía enfrente.
+
+Y existe el camino al paquete: el workflow **"Publicar iOS (App Store)"**
+archiva en Release para teléfono, comprueba lo que quedó adentro del `.app`
+—mapa, glifos, textos, tipografías, ícono, versión y arquitectura— y exporta
+el `.ipa` cuando están cargados los secretos de firma. El detalle, los cuatro
+secretos y el orden de las cosas en App Store Connect están en
+[`docs/publicar-en-app-store.md`](publicar-en-app-store.md).
 
 Cerrado en la revisión del 2026-09-18, del lado de iOS:
 
@@ -161,16 +175,23 @@ Cerrado en la revisión del 2026-09-18, del lado de iOS:
   app solo usa HTTPS, que es un uso exento. Sin esa clave, App Store Connect
   pregunta por el cifrado en cada subida.
 
-**Además, aparte del código:**
+**Además, aparte del código** — el detalle de cada punto está en
+[`docs/publicar-en-app-store.md`](publicar-en-app-store.md):
 
-- [ ] Cuenta de **Apple Developer Program** (USD 99/año).
-- [ ] Certificados de firma y perfiles de aprovisionamiento (Xcode).
-- [ ] Todo lo de la ficha de la tienda, otra vez: ícono, capturas,
-      descripciones — con las medidas propias de App Store Connect.
+- [ ] Cuenta de **Apple Developer Program** (USD 99/año). Preguntar por la
+      **exención de la cuota** si la app va a nombre de una entidad pública:
+      puede no pagarse.
+- [ ] Certificado de distribución y perfil de aprovisionamiento, y cargarlos
+      como los cuatro secretos que espera el workflow.
+- [ ] Todo lo de la ficha de la tienda, otra vez: capturas y descripciones,
+      con las medidas propias de App Store Connect. El ícono ya está en el
+      código.
 - [ ] La misma política de privacidad de arriba sirve para las dos tiendas.
 - [ ] **App Privacy ("nutrition label")** de Apple: con la misma auditoría,
       la respuesta es "Data Not Collected" en la mayoría de las
       categorías.
+- [ ] **TestFlight** antes de enviar a revisión. Nadie vio esta app en un
+      teléfono físico todavía, en ninguna de las dos plataformas.
 
 ---
 
@@ -179,8 +200,9 @@ Cerrado en la revisión del 2026-09-18, del lado de iOS:
 - **Android**: technically listo para cargar a Play Console. Lo que falta
   es todo lo que no es código — cuenta, ficha de tienda, y la decisión
   sobre rotar el keystore.
-- **iOS**: el camino está elegido (Compose Multiplatform) y el contrato
-  ya se comparte de verdad con la app Android. Falta la mayor parte del
-  trabajo, y sobre todo un Mac: el proyecto de Xcode no se puede generar
-  desde acá. Antes de seguir conviene decidir las dos preguntas abiertas de
-  `docs/ios.md` — HTTP y avisos.
+- **iOS**: también listo del lado del código. Las pantallas se comparten de
+  verdad —son las mismas funciones que dibuja Android—, el proyecto de Xcode
+  se genera solo en un runner y hay un workflow que archiva en Release y
+  comprueba el contenido del paquete. Lo que falta es la cuenta de Apple: sin
+  ella no se puede firmar, y sin firma no hay `.ipa`. Las dos preguntas que
+  estaban abiertas —HTTP y avisos— quedaron decididas.

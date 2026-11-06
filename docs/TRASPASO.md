@@ -120,7 +120,17 @@ tenga que recibir un `Context` de Android por parámetro.
 
 # iOS: generar el proyecto de Xcode (requiere `brew install xcodegen`).
 cd ios/xcode && xcodegen generate && open Turismo.xcodeproj
+
+# iOS: la biblioteca para el paquete de la tienda. Release, y Arm64 sin
+# "Simulator": son dos cosas distintas de la línea de arriba y las dos importan.
+./gradlew :ios:linkReleaseFrameworkIosArm64
 ```
+
+**La versión se edita en un solo archivo: `version.properties`, en la raíz.** La
+leen el build de Android y el workflow de iOS. `ios/xcode/project.yml` repite el
+número como respaldo para compilar en local, y "Verificar iOS" falla si los dos
+se desincronizan — que es exactamente lo que había pasado: iOS decía `0.1.0` con
+Android en `1.6.0`.
 
 **El `.xcodeproj` no está en el repositorio a propósito.** Se genera de
 `ios/xcode/project.yml`. Si necesitás cambiar algo del proyecto de Xcode,
@@ -215,9 +225,20 @@ no las pagues de nuevo.
 4. **Cargar Android a Play.** No falta nada de código: cuenta, ficha, textos,
    fotos y formularios. Está todo en `docs/guia/` (hay un PDF de 18 páginas en
    lenguaje sencillo, para él, no para vos).
-5. **Recién después, la App Store.** Y ojo con esto: **Apple rechaza apps que
-   hacen muy poco** (regla de *funcionalidad mínima*). Conviene que la vea
-   gente en TestFlight antes de mandarla.
+5. **Recién después, la App Store.** Ya no hace falta una Mac para nada: el
+   workflow **"Publicar iOS (App Store)"** elige Xcode 26, archiva en Release,
+   comprueba el `.app` y las APIs que Apple obliga a declarar, firma y **sube a
+   App Store Connect**; **"Capturas para la tienda"** saca las capturas en la
+   medida obligatoria y en los tres idiomas. Lo único que falta es la cuenta de
+   Apple y los siete secretos. Los pasos, pensados para hacerlos desde Windows,
+   están en `docs/app-store/GUIA.md`, con un script de PowerShell para el
+   certificado.
+
+   Antes de mandarla a revisión hay dos cosas que no son de código: el panel
+   tenía, en noviembre de 2026, 0 artículos, 0 recorridos y 0 eventos; y el
+   asistente no avisa en la app que lo escrito va a una IA de terceros, que
+   Apple pide desde la guía 5.1.2(i). Las dos están explicadas en la guía.
+   Y TestFlight antes de mandarla.
 
 ---
 
@@ -231,6 +252,11 @@ El proyecto tiene una regla explícita: **se dice lo que no está verificado.**
   `captura-ios.yml`, que arranca un simulador y saca la captura). **En local ya
   no los necesitás para el ciclo normal**, pero siguen siendo la red de
   seguridad del repositorio: no los borres.
+- **`publicar-ios.yml` es el único que trabaja en Release.** Los otros dos
+  compilan en Debug, y Release no es lo mismo: busca el framework en otra
+  carpeta y lo compila con otras optimizaciones. Va a mano, porque un runner
+  macOS cuesta diez veces uno de Linux y un release de iOS se hace una vez por
+  versión.
 - Cuatro guardianes corren con las pruebas y **fallan la compilación**:
   `SinRedaccionTest`, `ClavesDeTextoTest`, `SistemaDeDisenoTest` y
   `NavegacionTest`. Ahora recorren los cinco juegos de fuentes del proyecto,

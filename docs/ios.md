@@ -233,15 +233,41 @@ las cinco se veía sin correr la app de verdad.
 
 ### Fuera del código
 
-- [ ] Cuenta de **Apple Developer Program** (USD 99/año).
-- [ ] Certificados de firma y perfiles de aprovisionamiento.
-- [ ] Ficha de App Store Connect: capturas y descripciones, con las medidas de
-      Apple. Texto de producto: lo escribe una persona.
+Todo esto necesita la cuenta de Apple y nada de esto es código. El detalle de
+cada punto —y el orden, que importa— está en
+[`docs/publicar-en-app-store.md`](publicar-en-app-store.md).
+
+- [ ] Cuenta de **Apple Developer Program** (USD 99/año). Preguntar por la
+      **exención de la cuota** si la titularidad va a ser de una entidad
+      pública, y por si una cuenta *Individual* admite equipo: históricamente
+      no, y eso decide quién puede compilar.
+- [ ] Certificado de distribución y perfil de aprovisionamiento, cargados como
+      los cuatro secretos que espera **"Publicar iOS (App Store)"**.
+- [ ] Ficha de App Store Connect: capturas y descripciones. Las capturas salen
+      del workflow con la medida que Apple exige; el texto de producto **lo
+      escribe una persona**.
 - [ ] **App Privacy ("nutrition label")**: con la misma auditoría que la de
       Play, la respuesta es "Data Not Collected" en casi todo.
+- [ ] **TestFlight** antes de enviar a revisión. Es gratis y es la primera vez
+      que esta app se vería en un teléfono de verdad.
 
 Para compilarla en una Mac, los pasos exactos están en
 [`docs/compilar-en-mac.md`](compilar-en-mac.md).
+
+### La versión, que estaba mal
+
+iOS declaraba `0.1.0` en `project.yml` mientras Android iba en `1.6.0`. No era
+un detalle cosmético: la primera subida habría quedado etiquetada nueve releases
+atrás, y el número de versión de una app ya publicada no se corrige, se sube
+otra.
+
+Hoy el número vive en `version.properties`, en la raíz, y lo leen los dos: el
+build de Android y el workflow de iOS. `project.yml` declara
+`CFBundleShortVersionString` como `$(MARKETING_VERSION)` —con un literal,
+pasarle el valor a `xcodebuild` no habría cambiado nada, porque lo que lee la
+tienda es el plist— y **"Verificar iOS" falla si los dos archivos se
+desincronizan**. Es el guardián más barato del repositorio y cubre exactamente
+el fallo que ocurrió.
 
 ## 5. Las dos preguntas, ya decididas
 
@@ -283,8 +309,12 @@ Tres cosas que el camino a la App Store necesitaba y que no estaban:
   usa HTTPS, que es un uso exento de la normativa de exportación; sin la
   clave, App Store Connect pregunta por el cifrado en cada subida.
 
-Lo que sigue sin comprobarse, y hay que decirlo: **nada de esto se archivó
-ni se subió de verdad**. Que compile y enlace para `iphoneos` sin firmar es
-lo más lejos que llega un runner sin cuenta de desarrollador. Firmar,
-archivar y que App Store Connect acepte el paquete son tres pasos que
-necesitan la cuenta y una Mac.
+Lo que sigue sin comprobarse, y hay que decirlo: **no se firmó ni se subió
+nada de verdad**. Firmar y que App Store Connect acepte el paquete son dos
+pasos que necesitan la cuenta.
+
+Lo que sí dejó de ser cierto de ese párrafo es "nada de esto se archivó":
+el workflow **"Publicar iOS (App Store)"** archiva en Release y comprueba lo
+que quedó adentro del `.app`. Archivar sin firmar es lo más lejos que llega un
+runner sin cuenta de desarrollador, y resulta que es bastante más lejos de lo
+que se estaba llegando.

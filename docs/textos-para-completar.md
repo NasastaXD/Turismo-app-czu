@@ -1,6 +1,6 @@
 # Textos de la app — para completar
 
-**0 claves esperando texto.** Las 76 están escritas, en castellano, inglés y portugués.
+**0 claves esperando texto.** Las 78 están escritas, en castellano, inglés y portugués.
 
 Todo texto de interfaz de la app sale de aquí, no del código. Cambiar cualquiera
 de estos no requiere publicar un APK nuevo: se editan del lado del panel y la app
@@ -27,6 +27,18 @@ Nada por ahora. Las nueve claves que abrió el rework anterior —ocho de la hoj
 de filtros y `ficha.leerMas`— ya tienen texto.
 
 ---
+
+## El aviso del asistente — escrito por el agente, a pedido
+
+Dos claves: `asistente.aviso` (el aviso que aparece antes de la primera
+pregunta: que lo escrito va al servidor y a un servicio de IA externo, y que no
+se escriban datos personales) y `asistente.aceptar` (el botón).
+
+**Las escribió el agente, no una persona.** Es una excepción a la regla, pedida
+por el dueño del proyecto el 6 de noviembre de 2026: el aviso lo exige la guía
+5.1.2(i) de Apple para publicar en la App Store. Conviene que alguien las lea
+y, si hace falta, las cambie desde el panel: como todo texto de la app, se
+cambian sin publicar una versión nueva.
 
 ## Lo que sumó el asistente
 

@@ -12,8 +12,8 @@
 #   3. que el modulo :ios compile contra maplibre-compose;
 #   4. que el framework que Xcode va a consumir se enlace.
 #
-# No arma un .ipa: para eso hace falta el proyecto de Xcode, que todavia no
-# existe en el repo, mas cuenta de Apple Developer y certificados.
+# No arma un .ipa: eso lo hace "Publicar iOS", que archiva en Release y solo se
+# dispara a mano o por un tag. Este es el ciclo rapido de cada push.
 name: Verificar iOS
 
 on:
@@ -30,6 +30,9 @@ on:
       - 'ios/**'
       - 'compartido/**'
       - 'gradle/libs.versions.toml'
+      # Para que el guardian de version corra justo cuando se sube el numero,
+      # que es el unico momento en que puede desincronizarse.
+      - 'version.properties'
       - '.github/workflows/verificar-ios.yml'
 
 permissions:
@@ -44,6 +47,46 @@ jobs:
     steps:
       - name: Traer el codigo
         uses: actions/checkout@v4
+
+      # Va primero porque es lo mas barato del workflow y lo que mas silencioso
+      # falla. La version de verdad sale de `version.properties`, que es lo que
+      # lee Android y lo que "Publicar iOS" le pasa a xcodebuild; `project.yml`
+      # repite los dos valores como respaldo para un build local en una Mac.
+      # Dos copias sin guardian es como iOS llego a declarar 0.1.0 con Android
+      # en 1.6.0 — y una version equivocada ya subida a una tienda no se
+      # corrige, se sube otra.
+      - name: Que la version de iOS no se haya quedado atras
+        run: |
+          clave_de_properties() {
+            grep -E "^$1=" version.properties | head -1 | cut -d= -f2 | tr -d ' '
+          }
+          ajuste_del_proyecto() {
+            grep -E "^ +$1: " ios/xcode/project.yml | head -1 \
+              | sed -E 's/.*: *"?([^"]*)"?.*/\1/'
+          }
+
+          NOMBRE=$(clave_de_properties nombre)
+          CODIGO=$(clave_de_properties codigo)
+          NOMBRE_XCODE=$(ajuste_del_proyecto MARKETING_VERSION)
+          CODIGO_XCODE=$(ajuste_del_proyecto CURRENT_PROJECT_VERSION)
+
+          echo "version.properties : $NOMBRE ($CODIGO)"
+          echo "project.yml        : $NOMBRE_XCODE ($CODIGO_XCODE)"
+
+          # Vacio tambien falla: significa que alguien renombro una clave y el
+          # guardian estaria comparando dos cadenas vacias entre si.
+          test -n "$NOMBRE" && test -n "$CODIGO" \
+            || { echo "no se pudo leer version.properties"; exit 1; }
+          test -n "$NOMBRE_XCODE" && test -n "$CODIGO_XCODE" \
+            || { echo "no se pudo leer la version de project.yml"; exit 1; }
+
+          test "$NOMBRE" = "$NOMBRE_XCODE" && test "$CODIGO" = "$CODIGO_XCODE" \
+            || {
+              echo "La version de project.yml no coincide con version.properties."
+              echo "Corregi MARKETING_VERSION y CURRENT_PROJECT_VERSION en"
+              echo "ios/xcode/project.yml para que digan $NOMBRE y $CODIGO."
+              exit 1
+            }
 
       - name: Preparar Java 21
         uses: actions/setup-java@v4
