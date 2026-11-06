@@ -4,6 +4,13 @@ Lo que hace el repositorio, lo que hay que hacer a mano, y en qué orden. Para
 Google Play el documento equivalente es
 [`docs/publicar-en-tiendas.md`](publicar-en-tiendas.md).
 
+> **Los pasos para hacerlo, desde Windows y sin Mac, están en
+> [`docs/app-store/GUIA.md`](app-store/GUIA.md).** Este documento es el detalle
+> técnico de qué hace el workflow y por qué; la guía es el orden en que se
+> hace, con el script de firma para Windows, la ficha campo por campo
+> ([`ficha.md`](app-store/ficha.md)) y las páginas de privacidad y soporte
+> listas para publicar ([`sitio/`](app-store/sitio/)).
+
 Una advertencia que vale para todo el documento: **el camino firmado no está
 verificado**. No hay cuenta de Apple Developer todavía, y un runner sin cuenta
 no puede firmar. Lo que sí está comprobado en CI es todo lo anterior a la firma,
@@ -26,6 +33,15 @@ hace, en una sola corrida:
 5. El **archivado en Release** (`.xcarchive`).
 6. Siete comprobaciones sobre lo que quedó adentro del `.app`.
 7. El `.ipa`, **sólo si están cargados los secretos de firma**.
+8. La **subida a App Store Connect**, si además está la clave de la API. Es lo
+   que permite publicar sin una Mac: Transporter y el Organizador de Xcode solo
+   existen en macOS.
+
+Antes de todo eso elige **Xcode 26**, que Apple exige para cualquier subida
+desde el 28 de abril de 2026, y después del archivado lee los símbolos del
+binario y falla si usa una API "con motivo obligatorio" que
+`PrivacyInfo.xcprivacy` no declara (sin eso, el aviso llega como ITMS-91053 por
+correo, después de subir).
 
 Sin los secretos no falla: archiva sin firmar, comprueba todo lo demás y sube
 el `.xcarchive`. Eso ya sirve para algo —prueba que Release arma— y es lo que
@@ -54,7 +70,16 @@ dos, y "Verificar iOS" falla si `project.yml` se desincroniza.
 
 ---
 
-## 2. Los cuatro secretos de firma
+## 2. Los secretos
+
+Siete. Los cuatro de firma de abajo, y tres para subir: `ASC_KEY_ID`,
+`ASC_ISSUER_ID` y `ASC_KEY_P8`, de una clave de la API de App Store Connect con
+rol *App Manager*. Sin esos tres, el `.ipa` queda como artefacto y no se sube.
+Desde Windows se arman y se cargan todos con
+[`app-store/preparar-firma.ps1`](app-store/preparar-firma.ps1); los pasos están
+en la guía.
+
+### Los cuatro de firma
 
 Hay que cargarlos en **Settings → Secrets and variables → Actions** del
 repositorio. Mientras falte alguno, el workflow archiva sin firmar y lo dice en
@@ -67,7 +92,7 @@ el resumen de la corrida.
 | `IOS_CERTIFICADO_CLAVE` | la contraseña que se le puso al exportar el `.p12` |
 | `IOS_PERFIL_BASE64` | el perfil de aprovisionamiento de App Store (`.mobileprovision`) en base64 |
 
-### Cómo sacarlos, en la Mac
+### Cómo sacarlos, si hay una Mac a mano
 
 El certificado y el perfil se crean una vez en
 `developer.apple.com/account/resources`:
@@ -116,8 +141,8 @@ no explican la causa.
 3. **El registro de la app** en App Store Connect: nombre, idioma principal, ese
    bundle ID y un SKU interno.
 4. **Certificado y perfil**, los de la sección anterior.
-5. **La primera subida.** Desde una Mac hay dos caminos, los dos sobre lo que
-   deja el workflow:
+5. **La primera subida.** La hace el workflow, con la clave de la API. Si no
+   estuviera cargada, desde una Mac hay dos caminos sobre lo que deja:
    - **Transporter** (gratis, en la Mac App Store): se arrastra el `.ipa`.
    - **Organizador de Xcode**: se abre el `.xcarchive` —por eso el workflow lo
      sube siempre— y se distribuye desde ahí, sin recompilar.
@@ -140,16 +165,21 @@ Lo que es trabajo de una persona:
 
 - [ ] **Capturas.** Ver la sección 4.
 - [ ] **Nombre, subtítulo, descripción y novedades.** Es texto de producto y en
-      este proyecto **lo escribe una persona**, nunca un agente. Lo que falta
-      está listado en [`docs/textos-para-completar.md`](textos-para-completar.md).
+      este proyecto **lo escribe una persona**, nunca un agente. Los huecos,
+      con su límite de caracteres, están en
+      [`docs/app-store/ficha.md`](app-store/ficha.md).
 - [ ] **Categoría** y el cuestionario de **clasificación por edad**.
 - [ ] **URL de política de privacidad**, obligatoria. El borrador está en
       [`docs/privacidad-borrador.md`](privacidad-borrador.md) y hay que
       publicarlo en una URL de `caaguazu.net`.
-- [ ] **App Privacy** (la "etiqueta nutricional"): con la misma auditoría que se
-      hizo para Play, la respuesta es *Data Not Collected* en casi todo. La app
-      no tiene push, ni token de dispositivo, ni telemetría saliendo del
-      teléfono, y no pide un solo permiso.
+- [ ] **App Privacy** (la "etiqueta nutricional"): **no** es *Data Not
+      Collected*, por el asistente. Lo que se escribe ahí sale del teléfono,
+      el servidor guarda la charla hasta 2 horas y la pasa a un proveedor de
+      IA: se declara *Other User Content*, no vinculado, para la funcionalidad
+      de la app. Todo lo demás sí es "no": sin push, sin token de
+      dispositivo, sin telemetría, sin un solo permiso. Las respuestas exactas
+      están en [`ficha.md`](app-store/ficha.md), y coinciden con
+      `PrivacyInfo.xcprivacy`.
 
 ---
 
@@ -165,10 +195,14 @@ en el momento de subir. Al día de hoy:
   1320 × 2868.
 - Hasta 10 por tamaño, en `.png`, `.jpg` o `.jpeg`.
 
-El workflow **"Captura de iOS"** saca capturas del simulador y, desde este
-cambio, **prefiere un simulador cuya pantalla coincida con la medida obligatoria
-e imprime los píxeles de cada captura**, para que se sepa sin medir si sirven
-para la tienda o sólo para mirar. Las deja como artefacto de la corrida.
+Las de la ficha las saca **"Capturas para la tienda"**: recorre ocho pantallas
+en un iPhone 16 Pro (1206 × 2622), en los tres idiomas, con la barra de estado
+de las capturas de Apple, y mide cada una. Se corre a mano cuando el contenido
+del panel es el que se quiere mostrar, porque fotografía lo publicado.
+
+El workflow **"Captura de iOS"** es otra cosa: corre en cada push para saber si
+la app dibuja. También prefiere un simulador de la medida obligatoria e imprime
+los píxeles de cada captura.
 
 Comprobado en una corrida real: arrancó el iPhone 16 Pro (iOS 18.5) al primer
 intento y las tres capturas salieron de **1206 × 2622**, la medida obligatoria.
@@ -188,6 +222,13 @@ es una decisión de producto.
 No son trámites: son los motivos por los que Apple rechaza apps parecidas a
 esta.
 
+- **Secciones vacías (guías 2.1 y 4.2).** El 6 de noviembre de 2026 el panel
+  tenía 6 lugares y ningún artículo, recorrido ni evento. Una sección vacía se
+  lee como app sin terminar. Hay que cargar contenido antes de mandarla.
+- **El asistente y la IA de terceros (guía 5.1.2(i)).** Desde noviembre de
+  2025 Apple pide avisar en la app, y pedir permiso, antes de mandar datos
+  personales a una IA de terceros. La pantalla del asistente hoy no avisa nada.
+  La recomendación y por qué está en la guía.
 - **Funcionalidad mínima (guía 4.2).** Fue un riesgo real mientras la app de iOS
   era sólo el mapa. Ya no: comparte las cuatro secciones, el buscador, las
   fichas, los artículos, los recorridos y el asistente con la de Android, porque

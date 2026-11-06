@@ -220,6 +220,12 @@ jobs:
           PERFIL_B64: ${{ secrets.IOS_PERFIL_BASE64 }}
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
+          # Sin espacios ni saltos de linea en los bordes: cargados desde
+          # PowerShell por tuberia llegan con uno al final, y una contrasena con
+          # un salto de linea de mas es una contrasena incorrecta.
+          CERTIFICADO_CLAVE=$(printf '%s' "$CERTIFICADO_CLAVE" | tr -d '\r\n')
+          TEAM_ID=$(printf '%s' "$TEAM_ID" | tr -d '[:space:]')
+
           if [ -z "$CERTIFICADO_B64" ] || [ -z "$PERFIL_B64" ] || [ -z "$TEAM_ID" ]; then
             echo "Sin secretos de firma: se archiva SIN FIRMAR y no se exporta .ipa."
             echo "Faltan IOS_CERTIFICADO_P12_BASE64, IOS_PERFIL_BASE64 o IOS_TEAM_ID."
@@ -287,6 +293,7 @@ jobs:
           CODIGO: ${{ steps.version.outputs.codigo }}
         run: |
           set -o pipefail
+          TEAM_ID=$(printf '%s' "$TEAM_ID" | tr -d '[:space:]')
 
           # MARKETING_VERSION y CURRENT_PROJECT_VERSION se pasan aca y llegan
           # al Info.plist porque `project.yml` los declara como $(...) en vez
@@ -498,6 +505,7 @@ jobs:
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           PERFIL: ${{ steps.firma.outputs.perfil }}
         run: |
+          TEAM_ID=$(printf '%s' "$TEAM_ID" | tr -d '[:space:]')
           # `app-store-connect` es el nombre actual del metodo; `app-store` es
           # el de antes de Xcode 15.3 y sigue aceptandose.
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
@@ -598,6 +606,9 @@ jobs:
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           PERFIL: ${{ steps.firma.outputs.perfil }}
         run: |
+          TEAM_ID=$(printf '%s' "$TEAM_ID" | tr -d '[:space:]')
+          ASC_KEY_ID=$(printf '%s' "$ASC_KEY_ID" | tr -d '[:space:]')
+          ASC_ISSUER_ID=$(printf '%s' "$ASC_ISSUER_ID" | tr -d '[:space:]')
           if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8" ]; then
             echo "Sin la clave de la API (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8): no se sube."
             echo "El .ipa queda como artefacto de la corrida."

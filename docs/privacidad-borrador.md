@@ -1,76 +1,125 @@
-# Política de privacidad — borrador técnico
+# Política de privacidad — borrador
 
-Esto es un borrador armado a partir de una auditoría del código, no un texto
-legal terminado. Antes de publicarlo hace falta: completar los datos entre
-`‹corchetes›`, que alguien con criterio legal lo revise, y alojarlo en una URL
-pública — las dos tiendas piden ese link en el formulario de alta.
+Armado a partir de una auditoría del código de la app (1.6.0) y del plugin
+`caaguazu-app-api` del panel, no de suposiciones. Sirve para las dos tiendas.
+
+Antes de publicarlo hace falta:
+
+1. **Completar lo que está entre `‹ángulos›`**: quién es el responsable, un correo
+   de contacto, qué proveedor de IA está cargado hoy en el panel y la fecha.
+2. **Que lo lea alguien con criterio legal.** Esto describe con exactitud qué
+   hace la app; si alcanza para la ley paraguaya de datos personales es otra
+   pregunta, y no me corresponde contestarla.
+3. **Publicarlo en una URL pública.** La versión lista para subir, en castellano
+   y en inglés, está en [`app-store/sitio/privacidad.html`](app-store/sitio/privacidad.html).
+   Si se cambia una, se cambia la otra.
+
+> **Qué cambió respecto del borrador anterior:** el asistente. Antes la app no
+> mandaba nada escrito por la persona a ningún lado; desde la 1.6.0, lo que se
+> escribe en el asistente viaja al servidor y a un proveedor de IA externo. Eso
+> obliga a decirlo acá, en la ficha de las dos tiendas y en el manifiesto de
+> privacidad de iOS.
 
 ---
 
-## Qué hace esta app
+## Qué es esta app
 
-Caaguazú Turismo es un cliente de consulta del contenido turístico publicado
-en caaguazu.net. Muestra un mapa, un inventario de sitios, artículos y
-recorridos. No tiene cuentas de usuario ni inicio de sesión.
+Una guía turística del distrito de Caaguazú (Paraguay). Muestra lugares,
+eventos, artículos y recorridos publicados en caaguazu.net, un mapa del
+distrito y un asistente que responde preguntas sobre ese contenido. No tiene
+cuentas de usuario ni inicio de sesión.
 
-## Qué datos NO recolecta
+## Lo que la app no hace
 
-- No pide nombre, correo, teléfono ni ningún dato de identidad.
-- No tiene analítica ni telemetría de uso: ningún tercero (Google Analytics,
-  Firebase, Meta, etc.) recibe información de quién usa la app o cómo.
-- No usa un identificador de publicidad (no muestra anuncios).
-- No comparte datos con nadie, porque no junta ninguno para compartir.
+- No pide nombre, correo, teléfono ni ningún dato para usarla.
+- No tiene analítica ni publicidad, y no usa identificadores de publicidad.
+- No sigue a nadie entre apps o sitios.
+- No pide la ubicación: el mapa se dibuja sin saber dónde está quien lo mira.
+- No vende ni comparte datos con fines comerciales.
 
-## Qué se guarda, y dónde
+## Lo que se guarda en el teléfono
 
-Todo lo que la app recuerda queda **en el teléfono, sin salir de él**:
+Todo esto queda en el teléfono y no se sube a ningún servidor:
 
-| Qué | Para qué | Se borra |
-|---|---|---|
-| Idioma elegido | Recordar la preferencia entre aperturas | Al desinstalar, o cambiándolo en Ajustes |
-| Avisos encendidos/apagados | Respetar la elección | Al desinstalar, o cambiándolo en Ajustes |
-| Favoritos y el recorrido propio en armado | Que no se pierdan al cerrar la app | Al desinstalar |
-| IDs de artículos y eventos ya avisados | No repetir el mismo aviso dos veces | Al apagar los avisos, o al desinstalar |
-| Copia de la última respuesta del servidor | Que la app funcione sin conexión | Desde la pantalla de diagnóstico, o al desinstalar |
+| Qué | Para qué |
+|---|---|
+| El idioma elegido | Abrir siempre en ese idioma |
+| Favoritos y el recorrido que uno arma | Que no se pierdan al cerrar la app |
+| Si los avisos están encendidos, y qué artículos y eventos ya se avisaron (solo Android) | No avisar dos veces lo mismo |
+| Una copia del contenido y de las fotos | Que la app funcione sin señal |
+| Un registro técnico de funcionamiento | Diagnosticar fallos. Solo sale del teléfono si la persona lo comparte a mano desde la pantalla de diagnóstico |
 
-Nada de esto se sube a ningún servidor. Si la persona desinstala la app,
-desaparece todo junto con el resto de los datos de la aplicación.
+Se borra todo al desinstalar la app.
 
-## Qué se pide por red
+## Lo que se pide por internet
 
-La app se conecta, solo por HTTPS, a `caaguazu.net` para traer contenido
-turístico público: categorías, sitios, artículos, recorridos y las imágenes
-que los acompañan. Estas consultas no incluyen ningún dato personal — solo
-lo necesario para pedir el contenido (por ejemplo, el idioma elegido, para
-recibir los textos en ese idioma).
+La app se conecta solo por HTTPS a `caaguazu.net` para traer el contenido
+público y sus fotos. Esos pedidos llevan el idioma, para recibir los textos en
+ese idioma, y nada que identifique a la persona. Como cualquier sitio web, el
+servidor puede registrar datos técnicos de la conexión —como la dirección IP—
+en sus registros habituales.
 
-## Permisos que pide el teléfono
+## El asistente
 
-- **Internet y estado de la red**: para traer el contenido turístico.
-- **Notificaciones** (Android 13 o más nuevo): para avisar de artículos
-  nuevos o eventos próximos, si la persona lo deja encendido. Se puede
-  apagar en cualquier momento desde Ajustes, dentro de la app o del sistema.
+El asistente es opcional. Si se usa:
 
-La app no pide acceso a contactos, cámara, micrófono, ubicación en segundo
-plano, ni al calendario (agendar un evento abre la app de calendario del
-teléfono con el evento ya cargado; la persona confirma ahí, la app nunca lee
-ni escribe la agenda).
+- **Lo que se escribe se manda a caaguazu.net**, junto con el idioma y un
+  identificador de conversación al azar que crea el servidor. No va ningún dato
+  de la persona ni del teléfono.
+- **El servidor guarda la conversación hasta 2 horas** (es un ajuste del panel,
+  que puede ir de 1 a 24 horas), para poder seguir la charla. Pasado ese tiempo
+  se borra sola. La conversación no está asociada a ninguna cuenta, porque no
+  hay cuentas.
+- **Para responder, el servidor manda la pregunta y los últimos mensajes de esa
+  conversación a un proveedor de inteligencia artificial externo**
+  (‹nombre del proveedor que esté cargado en el panel›), junto con el contenido
+  publicado en la app. Ese proveedor procesa el texto según sus propias
+  condiciones.
+- Para evitar abusos, el servidor cuenta cuántas preguntas llegan desde una
+  misma dirección IP, guardada en forma cifrada (hash), durante un día como
+  máximo.
+
+**Por eso conviene no escribir en el asistente datos personales** —nombre
+completo, documento, teléfono, salud— que no hagan falta para la pregunta.
+
+## Otras apps del teléfono
+
+Algunas funciones abren otra app, que tiene su propia política de privacidad:
+
+- **Cómo llegar** abre Google Maps —su app o su sitio web— o la app de mapas del teléfono, con el destino cargado.
+- **Agendar un evento** abre el calendario (Android) o la hoja de compartir con
+  el evento (iPhone). La persona confirma ahí; la app no lee ni escribe la
+  agenda.
+- **Compartir** abre la hoja de compartir del sistema.
+
+## Permisos
+
+- **iPhone:** ninguno.
+- **Android:** acceso a internet y al estado de la red, para traer el contenido;
+  y, desde Android 13, notificaciones, para avisar de artículos nuevos y eventos
+  próximos. Los avisos se pueden apagar en cualquier momento desde Ajustes, en
+  la app o en el sistema.
 
 ## Menores de edad
 
-La app no está dirigida específicamente a niños y no recolecta datos de
-nadie, sin importar la edad.
+La app no está dirigida a niños y no pide datos a nadie. Lo único que podría
+contener datos personales es lo que alguien escriba en el asistente.
 
-## Cambios a esta política
+## Cómo borrar los datos
 
-‹Cómo se va a avisar un cambio: por ejemplo, actualizando la fecha de esta
-página y la versión mínima de la app a partir de la cual aplica.›
+- Lo guardado en el teléfono se borra al desinstalar la app.
+- Las conversaciones del asistente se borran solas del servidor en el plazo de
+  arriba. Para pedir que se borre una antes, o para cualquier consulta sobre
+  privacidad, escribir a ‹correo de contacto›.
 
-## Contacto
+## Cambios
 
-‹Nombre de la organización o persona responsable, y un correo de contacto.›
+Si esta política cambia, se actualiza esta página y su fecha.
 
----
+## Responsable y contacto
 
-_Última actualización: ‹fecha›. Corresponde a partir de la versión ‹x.y.z›
-de la app._
+‹Nombre de la persona o la institución responsable de la app›
+‹Correo de contacto›
+‹Ciudad, Paraguay›
+
+_Última actualización: ‹fecha›._

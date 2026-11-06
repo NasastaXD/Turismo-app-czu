@@ -89,10 +89,15 @@ Estado a partir de una auditoría del código el 2026-09-16, revisada el
       de analítica) — falta completar los datos de contacto, que alguien
       con criterio legal lo revise, y subirlo a algún lugar público (podría
       ser una página más de caaguazu.net).
-- [ ] **Formulario de Data Safety.** Con lo que audité, la respuesta
-      honesta es **"No collects any user data"** en todas las categorías:
-      no hay cuentas, no hay analítica, no hay publicidad, y todo lo que se
-      guarda queda en el teléfono sin subirse a ningún lado.
+- [ ] **Formulario de Data Safety.** Ya **no** es "No collects any user
+      data", por el asistente (1.6.0): lo que se escribe ahí sale del
+      teléfono, el servidor guarda la charla hasta 2 horas y la pasa a un
+      proveedor de IA. Se declara **App activity → Other user-generated
+      content**, recolectado, no compartido con fines propios del tercero,
+      opcional, para la funcionalidad de la app, cifrado en tránsito. Todo lo
+      demás sigue siendo "no": no hay cuentas, ni analítica, ni publicidad. El
+      razonamiento completo, que es el mismo para Apple, está en
+      [`docs/app-store/ficha.md`](app-store/ficha.md), sección 3.
 - [ ] **Clasificación de contenido** (cuestionario IARC dentro de la
       consola): es una app de información turística sin contenido para
       adultos, sin interacción entre usuarios y sin compras — debería salir
