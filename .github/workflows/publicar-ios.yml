@@ -17,10 +17,30 @@
 # Sin secretos de firma cargados igual sirve: archiva sin firmar y sube el
 # .xcarchive. Lo que no puede hacer sin ellos es exportar el .ipa, porque un
 # .ipa sin firma no existe — Apple no lo acepta y el telefono no lo instala.
+#
+# Y si ademas esta la clave de la API de App Store Connect, **sube el .ipa a
+# App Store Connect** (aparece en TestFlight a los pocos minutos). Es lo que
+# permite publicar sin tener una Mac: Transporter y el Organizador de Xcode,
+# los dos caminos de siempre, existen solo en macOS. Todo el recorrido —firmar,
+# exportar y subir— pasa en el runner, y lo unico que queda del lado de la
+# persona es la web de App Store Connect, que anda en cualquier navegador.
 name: Publicar iOS (App Store)
 
 on:
+  # TEMPORAL: workflow_dispatch solo dispara workflows que ya estan en main,
+  # asi que para probar este antes de mezclarlo hace falta un push. Se saca
+  # en cuanto la corrida haya dicho algo.
+  push:
+    branches: [claude/apk-programming-wczoo7]
+    paths:
+      - '.github/workflows/publicar-ios.yml'
+      - 'ios/xcode/PrivacyInfo.xcprivacy'
   workflow_dispatch:
+    inputs:
+      subir:
+        description: 'Subir el .ipa a App Store Connect (TestFlight), si estan los secretos'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -37,6 +57,35 @@ jobs:
     steps:
       - name: Traer el codigo
         uses: actions/checkout@v4
+
+      # Desde el 28 de abril de 2026 App Store Connect rechaza cualquier subida
+      # que no se haya compilado con Xcode 26 y el SDK de iOS 26 (lo dice
+      # developer.apple.com/news/upcoming-requirements). La imagen del runner
+      # trae varias versiones de Xcode y la que viene elegida por omision no
+      # tiene por que ser esa, asi que se elige a mano y ANTES de Gradle:
+      # Kotlin/Native enlaza con el Xcode que diga `xcode-select`.
+      #
+      # La mas nueva de las 26 estables, nunca una beta: una beta tampoco se
+      # acepta en App Store Connect. Si la imagen no trae ninguna 26, se falla
+      # aca diciendolo, y no media hora despues con un rechazo de Apple.
+      - name: Elegir Xcode 26
+        run: |
+          echo "--- Xcode instalados en el runner ---"
+          ls -d /Applications/Xcode*.app
+
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null \
+            | grep -v -i -E 'beta|rc|release_candidate' \
+            | sort -V | tail -1)
+          test -n "$XCODE" || {
+            echo "La imagen no trae Xcode 26 estable, y Apple no acepta subidas"
+            echo "compiladas con uno anterior. Hay que cambiar runs-on por una"
+            echo "imagen que lo traiga (macos-26) o esperar a que GitHub la actualice."
+            exit 1
+          }
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          echo "elegido: $XCODE"
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
 
       # La version sale de `version.properties`, el mismo archivo que lee
       # `app/build.gradle.kts`. No se vuelve a comprobar que `project.yml`
@@ -351,6 +400,94 @@ jobs:
 
           echo "tamano del .app: $(du -sh "$APP" | cut -f1)"
 
+      - name: Comprobar las APIs que Apple obliga a justificar
+        # Apple revisa el binario al recibirlo y, si encuentra una de las APIs
+        # "con motivo obligatorio" sin su categoria declarada en
+        # PrivacyInfo.xcprivacy, rechaza la subida (ITMS-91053). Lo hace antes
+        # de cualquier revision humana, y avisa por correo.
+        #
+        # El binario de esta app no es solo codigo propio: Kotlin/Native,
+        # Compose, Coil y MapLibre quedan enlazados ESTATICAMENTE adentro, asi
+        # que sus manifiestos de privacidad —si los tienen— no viajan, y lo que
+        # usan tiene que declararlo la app. Nadie sabe de memoria que llama
+        # cada una; el binario si lo sabe. Esto lee los simbolos que importa y
+        # los compara con lo declarado, para enterarse aca y no por un correo de
+        # Apple despues de esperar la subida.
+        #
+        # Falla si falta una categoria. Si sobra una solo avisa: un acceso
+        # dinamico no deja simbolo, y sacar una declaracion por no verla aca
+        # seria peor que dejarla.
+        run: |
+          APP="$RUNNER_TEMP/Turismo.xcarchive/Products/Applications/Turismo.app"
+          BIN="$APP/Turismo"
+          MANIFIESTO="$APP/PrivacyInfo.xcprivacy"
+
+          # Simbolos importados (funciones de C y constantes de Foundation) y
+          # nombres de metodos de Objective-C, que viajan como texto.
+          nm -u "$BIN" 2>/dev/null | sed 's/^ *//' | sort -u > "$RUNNER_TEMP/importados.txt"
+          strings -a "$BIN" | sort -u > "$RUNNER_TEMP/textos.txt"
+
+          DECLARADAS=$(plutil -extract NSPrivacyAccessedAPITypes json -o - "$MANIFIESTO" \
+            | python3 -c 'import json,sys; print(" ".join(d["NSPrivacyAccessedAPIType"] for d in json.load(sys.stdin)))')
+          echo "declaradas: $DECLARADAS"
+
+          FALTAN=0
+          revisar() {
+            local categoria="$1" motivos="$2" simbolos="$3" metodos="$4" hallados=""
+            for s in $simbolos; do
+              grep -qxF "_$s" "$RUNNER_TEMP/importados.txt" && hallados="$hallados $s"
+            done
+            for m in $metodos; do
+              grep -qxF "$m" "$RUNNER_TEMP/textos.txt" && hallados="$hallados $m"
+            done
+            local declarada=no
+            case " $DECLARADAS " in *" $categoria "*) declarada=si ;; esac
+
+            if [ -n "$hallados" ] && [ "$declarada" = no ]; then
+              echo "FALTA  $categoria — el binario usa:$hallados"
+              echo "       motivos posibles: $motivos"
+              FALTAN=$((FALTAN + 1))
+            elif [ -n "$hallados" ]; then
+              echo "ok     $categoria — usa:$hallados"
+            elif [ "$declarada" = si ]; then
+              echo "aviso  $categoria declarada y sin simbolos a la vista (puede ser acceso dinamico)"
+            else
+              echo "-      $categoria no se usa"
+            fi
+          }
+
+          # Las listas son las de la documentacion de Apple ("Describing use of
+          # required reason API"), con los nombres que quedan en el binario.
+          revisar NSPrivacyAccessedAPICategoryFileTimestamp \
+            "C617.1 (archivos del contenedor de la app), DDA9.1, 3B52.1, 0A2A.1" \
+            "stat fstat lstat fstatat getattrlist getattrlistbulk fgetattrlist getattrlistat NSFileModificationDate NSFileCreationDate NSURLContentModificationDateKey NSURLCreationDateKey" \
+            "fileModificationDate"
+          revisar NSPrivacyAccessedAPICategorySystemBootTime \
+            "35F9.1 (medir tiempo transcurrido dentro de la app), 8FFB.1, 3D61.1" \
+            "mach_absolute_time" \
+            "systemUptime"
+          revisar NSPrivacyAccessedAPICategoryDiskSpace \
+            "E174.1 (ver si hay lugar antes de escribir), 85F4.1, 7D9E.1, B728.1" \
+            "statfs statvfs fstatfs fstatvfs NSFileSystemFreeSize NSFileSystemSize NSURLVolumeAvailableCapacityKey NSURLVolumeAvailableCapacityForImportantUsageKey NSURLVolumeAvailableCapacityForOpportunisticUsageKey NSURLVolumeTotalCapacityKey" \
+            ""
+          revisar NSPrivacyAccessedAPICategoryActiveKeyboards \
+            "3EC4.1, 54BD.1" \
+            "" \
+            "activeInputModes"
+          revisar NSPrivacyAccessedAPICategoryUserDefaults \
+            "CA92.1 (solo lo de la propia app), 1C8F.1, C56D.1, AC6B.1" \
+            "OBJC_CLASS_\$_NSUserDefaults" \
+            ""
+
+          if [ "$FALTAN" -gt 0 ]; then
+            echo
+            echo "$FALTAN categoria(s) sin declarar en ios/xcode/PrivacyInfo.xcprivacy."
+            echo "Apple rechazaria la subida con ITMS-91053. Hay que agregarlas con el"
+            echo "motivo que corresponda —el que describa lo que de verdad hace la app—"
+            echo "y volver a correr."
+            exit 1
+          fi
+
       - name: Exportar el .ipa
         # Solo con firma: un .ipa sin firmar no es un artefacto valido. Apple
         # no lo acepta y un telefono no lo instala, asi que exportarlo sin
@@ -440,7 +577,88 @@ jobs:
 
           ls -la entrega/
 
+      - name: Subir a App Store Connect
+        id: subida
+        # Sin Mac no hay Transporter ni Organizador de Xcode, asi que la subida
+        # la hace el runner con una clave de la API de App Store Connect. Va
+        # despues de "Preparar la entrega" a proposito: si la subida falla, el
+        # .ipa ya esta copiado y se guarda igual como artefacto.
+        #
+        # Primero con xcodebuild —exportar con `destination: upload` es el
+        # camino que documenta Apple— y si eso falla, con altool, que es el que
+        # usan casi todas las automatizaciones. Dos caminos porque desde aca no
+        # hay cuenta con que probar ninguno, y quedarse sin subir por una
+        # bandera que cambio de nombre en un Xcode nuevo seria perder la
+        # corrida entera.
+        if: steps.entrega.outputs.firmado == 'si' && inputs.subir != false
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          PERFIL: ${{ steps.firma.outputs.perfil }}
+        run: |
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8" ]; then
+            echo "Sin la clave de la API (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8): no se sube."
+            echo "El .ipa queda como artefacto de la corrida."
+            echo "subido=sin-clave" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Donde la buscan las dos herramientas.
+          CLAVES="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$CLAVES"
+          CLAVE="$CLAVES/AuthKey_$ASC_KEY_ID.p8"
+          printf '%s\n' "$ASC_KEY_P8" > "$CLAVE"
+          # Si se pego en base64 por error, se decodifica: es la confusion mas
+          # comun al cargar el secreto, porque los otros dos archivos SI van en
+          # base64.
+          if ! grep -q "BEGIN PRIVATE KEY" "$CLAVE"; then
+            printf '%s' "$ASC_KEY_P8" | base64 -d > "$CLAVE" 2>/dev/null || true
+          fi
+          grep -q "BEGIN PRIVATE KEY" "$CLAVE" || {
+            echo "ASC_KEY_P8 no parece el contenido de un .p8 (falta BEGIN PRIVATE KEY)."
+            exit 1
+          }
+
+          cat > "$RUNNER_TEMP/SubirOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>net.caaguazu.turismo</key><string>$PERFIL</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+          if xcodebuild -exportArchive \
+              -archivePath "$RUNNER_TEMP/Turismo.xcarchive" \
+              -exportOptionsPlist "$RUNNER_TEMP/SubirOptions.plist" \
+              -exportPath "$RUNNER_TEMP/subida" \
+              -authenticationKeyPath "$CLAVE" \
+              -authenticationKeyID "$ASC_KEY_ID" \
+              -authenticationKeyIssuerID "$ASC_ISSUER_ID"; then
+            echo "subido=si" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "xcodebuild no pudo subir; se prueba con altool."
+          IPA=$(ls entrega/*.ipa | head -1)
+          xcrun altool --upload-app --type ios --file "$IPA" \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          echo "subido=si" >> "$GITHUB_OUTPUT"
+
       - name: Guardar la entrega
+        if: always() && steps.entrega.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: caaguazu-ios
@@ -450,18 +668,30 @@ jobs:
       - name: Que quedo y que falta
         # Un resumen en la pagina de la corrida, para que no haya que leer el
         # log entero para saber si lo que salio se puede subir o no.
+        if: always()
         env:
           FIRMADO: ${{ steps.entrega.outputs.firmado }}
+          SUBIDO: ${{ steps.subida.outputs.subido }}
+          RESULTADO_SUBIDA: ${{ steps.subida.outcome }}
           NOMBRE: ${{ steps.version.outputs.nombre }}
           CODIGO: ${{ steps.version.outputs.codigo }}
         run: |
           {
             echo "## Turismo $NOMBRE (build $CODIGO)"
             echo
-            if [ "$FIRMADO" = "si" ]; then
-              echo "El \`.ipa\` esta firmado y listo para subir a App Store Connect."
-              echo "Se sube con Transporter o con el Organizador de Xcode;"
-              echo "el \`.xcarchive\` sirve para lo segundo sin recompilar."
+            if [ "$SUBIDO" = "si" ]; then
+              echo "**Subido a App Store Connect.** En 5 a 30 minutos aparece en"
+              echo "*TestFlight* con el numero $CODIGO; Apple manda un correo cuando"
+              echo "termina de procesarlo, o uno con el motivo si lo rechaza."
+            elif [ "$RESULTADO_SUBIDA" = "failure" ]; then
+              echo "**La subida fallo.** El \`.ipa\` quedo firmado en los artefactos;"
+              echo "el motivo esta en el paso \"Subir a App Store Connect\". Si dice"
+              echo "que el numero de compilacion ya existe, hay que subir \`codigo\`"
+              echo "en \`version.properties\` y volver a correr."
+            elif [ "$FIRMADO" = "si" ]; then
+              echo "El \`.ipa\` esta firmado y quedo en los artefactos, pero no se subio:"
+              echo "faltan los secretos \`ASC_KEY_ID\`, \`ASC_ISSUER_ID\` y \`ASC_KEY_P8\`,"
+              echo "o se corrio con *subir* apagado."
             else
               echo "**Sin firmar.** Se archivo en Release y se comprobo el"
               echo "contenido —mapa, textos, tipografias, icono, version y"
@@ -470,7 +700,8 @@ jobs:
               echo "\`IOS_CERTIFICADO_CLAVE\`, \`IOS_PERFIL_BASE64\` y"
               echo "\`IOS_TEAM_ID\`, que salen de una cuenta de Apple Developer."
               echo
-              echo "Como cargarlos esta en \`docs/publicar-en-app-store.md\`."
+              echo "Como cargarlos —tambien desde Windows— esta en"
+              echo "\`docs/app-store/GUIA.md\`."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

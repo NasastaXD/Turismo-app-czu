@@ -343,6 +343,7 @@ jobs:
             -configuration Debug \
             -destination "platform=iOS Simulator,id=$UDID" \
             -derivedDataPath dd \
+            -only-testing:TurismoUITests/CapturaUITests \
             -resultBundlePath ../../capturas/resultado.xcresult \
             > ../../capturas/salida-de-la-app.txt 2>&1 &
           echo $! > /tmp/pid-xcodebuild

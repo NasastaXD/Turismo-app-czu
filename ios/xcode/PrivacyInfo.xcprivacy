@@ -5,16 +5,28 @@
   App Store Connect se rechaza automaticamente, antes de cualquier revision
   humana.
 
-  Las tres primeras claves dicen la verdad de esta app y son faciles: no hay
-  seguimiento, no hay dominios de seguimiento y no se recolecta ningun dato.
-  No hay cuentas, no hay analitica, no hay publicidad, y lo que la app guarda
-  no sale del telefono.
+  Las dos primeras claves son faciles: no hay seguimiento ni dominios de
+  seguimiento. No hay cuentas, no hay analitica, no hay publicidad, y lo que la
+  app guarda (idioma, favoritos, la copia del contenido) no sale del telefono.
+
+  La tercera tiene UNA entrada, y es el asistente. Lo que la persona escribe
+  ahi sale del telefono: va a caaguazu.net, que guarda la charla hasta 2 horas
+  (configurable de 1 a 24 en wp-admin) para poder seguirla, y la manda a un
+  proveedor de IA externo para que conteste. Para Apple eso es "recolectar"
+  —sale del telefono y queda mas tiempo que el de contestar en el momento—,
+  asi que se declara: contenido del usuario, no vinculado a la identidad (no
+  hay cuenta: la charla se reconoce por un identificador al azar que da el
+  servidor), sin rastreo, solo para que la funcion ande. Tiene que coincidir
+  con lo que se responda en "App Privacy" de App Store Connect; las respuestas
+  estan en docs/app-store/ficha.md.
 
   La cuarta clave es la que hay que revisar cuando el codigo cambie: declara
   funciones del sistema que Apple obliga a justificar. Apple valida esto
   contra lo que la app realmente usa, asi que sobra tan mal como falta.
-  Hoy estan declaradas mirando lo que MapLibre necesita para leer el mapa
-  embebido; cuando `Ajustes` y `Cache` crucen a iOS hay que volver aca.
+  No se adivina: el workflow "Publicar iOS" lee los simbolos que importa el
+  binario de Release —que trae enlazados adentro Kotlin/Native, Compose, Coil y
+  MapLibre— y falla si encuentra una categoria que aca no esta. Si falla, dice
+  cual y con que motivos posibles.
 -->
 <plist version="1.0">
 <dict>
@@ -25,7 +37,21 @@
   <array/>
 
   <key>NSPrivacyCollectedDataTypes</key>
-  <array/>
+  <array>
+    <dict>
+      <!-- Las preguntas al asistente. -->
+      <key>NSPrivacyCollectedDataType</key>
+      <string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+      <key>NSPrivacyCollectedDataTypeLinked</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypeTracking</key>
+      <false/>
+      <key>NSPrivacyCollectedDataTypePurposes</key>
+      <array>
+        <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+      </array>
+    </dict>
+  </array>
 
   <key>NSPrivacyAccessedAPITypes</key>
   <array>
