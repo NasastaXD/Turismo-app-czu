@@ -15,13 +15,6 @@
 name: Capturas para la tienda
 
 on:
-  # TEMPORAL: para ver el aviso nuevo del asistente dibujado en un iPhone antes
-  # de mezclar (workflow_dispatch no dispara un workflow que no esta en main).
-  # Se saca en el commit siguiente.
-  push:
-    branches: [claude/apk-programming-wczoo7]
-    paths:
-      - 'interfaz/src/commonMain/kotlin/net/caaguazu/turismo/ui/asistente/**'
   workflow_dispatch:
     inputs:
       idiomas:
