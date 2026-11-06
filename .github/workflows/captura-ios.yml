@@ -33,9 +33,12 @@ permissions:
 jobs:
   captura:
     runs-on: macos-15
-    # Con cache la corrida entera es de unos 4 minutos. 25 deja margen de sobra
-    # para una corrida en frio y corta en seco cualquier paso que se cuelgue.
-    timeout-minutes: 25
+    # Con cache la corrida entera es de unos 4 minutos. En frio no: el 6 de
+    # noviembre de 2026 la corrida llego a los 25 minutos en el ultimo paso
+    # —compilar para telefono, que enlaza otro framework entero— despues de
+    # haber sacado las capturas bien, y GitHub la marco "cancelled". 40 deja
+    # margen para una corrida en frio y sigue cortando un paso colgado.
+    timeout-minutes: 40
 
     steps:
       - name: Traer el codigo

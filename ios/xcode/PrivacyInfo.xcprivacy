@@ -66,6 +66,39 @@
       </array>
     </dict>
     <dict>
+      <!--
+        Tiempo desde el arranque del telefono (`systemUptime`). No lo llama el
+        codigo propio: viene de alguna de las bibliotecas enlazadas adentro
+        (Kotlin/Native, Compose, Coil o MapLibre; cual, no se averiguo). Lo
+        encontro el chequeo de simbolos de "Publicar iOS" en el binario de
+        Release del 6 de noviembre de 2026; sin declararlo, App Store Connect
+        rechaza la subida con ITMS-91053. Lo que esas bibliotecas hacen con el
+        es medir intervalos, que es lo que dice el motivo.
+      -->
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <!-- 35F9.1: medir el tiempo que pasa entre cosas que ocurren en la app. -->
+        <string>35F9.1</string>
+      </array>
+    </dict>
+    <dict>
+      <!--
+        Espacio libre en disco (`statfs`, `fstatfs`). Tampoco es codigo propio,
+        y salio del mismo chequeo. Lo que guarda algo en disco en esta app son
+        las caches —la de las fotos y la del contenido—, y para eso es el
+        motivo: ver si hay lugar antes de escribir.
+      -->
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <!-- E174.1: ver si hay lugar antes de escribir, o liberar cuando falta. -->
+        <string>E174.1</string>
+      </array>
+    </dict>
+    <dict>
       <!-- Preferencias del sistema, para el idioma elegido y los favoritos. -->
       <key>NSPrivacyAccessedAPIType</key>
       <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
