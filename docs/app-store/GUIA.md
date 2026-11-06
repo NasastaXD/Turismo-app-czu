@@ -78,6 +78,17 @@ Ni la de iPhone ni la de Android se vieron nunca en un teléfono de verdad.
 TestFlight (paso 9) es para eso: es gratis, no pasa por revisión y se instala en
 cualquier iPhone.
 
+### Y uno del panel, que no rechaza pero se ve
+
+Con el teléfono en inglés o en portugués —y los revisores de Apple trabajan en
+inglés— la app muestra **«Inventario», «Artículos» y «Recorridos» en
+castellano**. No es la app: es el panel, que para un idioma sin textos cargados
+devolvía los de castellano, y esos pisaban las traducciones que la app ya trae.
+Está arreglado en la versión **0.11.10** de `caaguazu-app-api` (rama
+`claude/strings-por-idioma` del repositorio del panel): se instala el zip en
+WordPress como cualquier actualización del plugin, y en inglés pasa a decir
+«Tourism Inventory», «Tourism Articles» y «Routes».
+
 ---
 
 ## Paso 0. Mezclar el PR #31

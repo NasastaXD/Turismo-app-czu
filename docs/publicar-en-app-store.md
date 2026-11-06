@@ -279,6 +279,23 @@ Comprobado en CI, en un runner macOS:
   cosmético: es la prueba de que el número salió de `version.properties` y llegó
   hasta el `Info.plist`.
 
+- que **archiva con Xcode 26**, que es lo que Apple exige desde abril de 2026
+  (corrida del 6 de noviembre de 2026);
+- que el chequeo de APIs con motivo obligatorio **sirve**: en su primera corrida
+  encontró dos categorías que el manifiesto no declaraba —`SystemBootTime`
+  (`systemUptime`) y `DiskSpace` (`statfs`, `fstatfs`), las dos de bibliotecas
+  enlazadas— y la subida habría sido rechazada con ITMS-91053. Declaradas, la
+  corrida siguiente pasó entera:
+
+  ```
+  ok  FileTimestamp  — stat fstat lstat NSFileModificationDate
+  ok  SystemBootTime — systemUptime
+  ok  DiskSpace      — statfs fstatfs
+  ok  UserDefaults   — NSUserDefaults
+  ```
+- que "Capturas para la tienda" saca las capturas en **1206 × 2622, sin canal
+  alfa**, en los tres idiomas.
+
 No comprobado, y hace falta la cuenta o un teléfono — no hay forma de
 adelantarlo desde acá:
 
